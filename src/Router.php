@@ -3,9 +3,7 @@ declare (strict_types = 1);
 
 namespace Lylink;
 
-use DoctrineRegistry;
 use Dotenv\Dotenv;
-use Lylink\DoctrineRegistry as LylinkDoctrineRegistry;
 use Pecee\SimpleRouter\SimpleRouter;
 use SpotifyWebAPI\Session;
 use SpotifyWebAPI\SpotifyWebAPI;
@@ -17,6 +15,7 @@ class Router
         SimpleRouter::get('/', [self::class, 'home']);
         SimpleRouter::get('/callback', [self::class, 'login']);
         SimpleRouter::get('/lyrics', [self::class, 'lyrics']);
+        SimpleRouter::get('/create', [self::class, 'create']);
 
         SimpleRouter::start();
     }
@@ -58,14 +57,31 @@ class Router
             echo "no song is currently playing";
         } else {
             echo $id;
-            $entityManager = LylinkDoctrineRegistry::get();
+            $entityManager = DoctrineRegistry::get();
 
-            $lyrics = $entityManager->find(Lyrics::class, $id);
+            $lyrics = $entityManager->getRepository(Lyrics::class)->findOneBy(['spotify_id' => $id]);
+
+            #var_dump($lyrics);
 
             if ($lyrics == null) {
+                echo "<br>";
                 echo "not found";
+            } else {
+                echo "<br>";
+                echo $lyrics->lyrics;
             }
         }
+    }
+
+    function create(): void
+    {
+        $em = DoctrineRegistry::get();
+
+        $lyrics = new Lyrics();
+        $lyrics->lyrics = $_GET['lyrics'];
+        $lyrics->spotify_id = $_GET['id'];
+        $em->persist($lyrics);
+        $em->flush();
     }
 
     function login(): string

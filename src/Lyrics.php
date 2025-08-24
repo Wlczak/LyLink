@@ -15,8 +15,11 @@ class Lyrics
     // @phpstan-ignore property.unusedType
     private int|null $id = null;
 
+    #[ORM\Column(type: 'string', unique: true)]    
+    public string $spotify_id;
+
     #[ORM\Column(type: 'string')]
-    private string $name;
+    public string $lyrics;
 
     /**
      * @return int|null
@@ -24,15 +27,5 @@ class Lyrics
     public function getId(): int | null
     {
         return $this->id;
-    }
-
-    public function setName(string $name): void
-    {
-        $this->name = $name;
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
     }
 }
