@@ -10,8 +10,14 @@ use SpotifyWebAPI\SpotifyWebAPI;
 
 class Router
 {
+    public static \Twig\Environment $twig;
     public static function handle(): void
     {
+        $loader = new \Twig\Loader\FilesystemLoader(__DIR__ . '/../templates');
+        self::$twig = new \Twig\Environment($loader, [
+            'cache' => __DIR__ . '/../cache'
+            , 'debug' => true
+        ]);
         SimpleRouter::get('/', [self::class, 'home']);
         SimpleRouter::get('/callback', [self::class, 'login']);
         SimpleRouter::get('/lyrics', [self::class, 'lyrics']);
@@ -59,7 +65,7 @@ class Router
             echo $id;
             $entityManager = DoctrineRegistry::get();
 
-            $lyrics = $entityManager->getRepository(Lyrics::class)->findOneBy(['spotify_id' => $id]);
+            $lyrics = $entityManager->getRepository(Lyrics::class)->findOneBy(['id' => 1]);
 
             #var_dump($lyrics);
 
@@ -67,8 +73,24 @@ class Router
                 echo "<br>";
                 echo "not found";
             } else {
-                echo "<br>";
-                echo $lyrics->lyrics;
+                $template = self::$twig->load('lyrics.twig');
+                var_dump($info->progress_ms / $info->item->duration_ms);
+
+                $song = [
+                    'name' => $info->item->name,
+                    'artist' => $info->item->artists[0]->name,
+                    'duration' => $info->item->duration_ms / 1000,
+                    'duration_ms' => $info->item->duration_ms,
+                    'progress_ms' => $info->progress_ms,
+                    'imageUrl' => $info->item->album->images[0]->url
+
+                ];
+                echo $template->render(
+                    [
+                        'lyrics' => $lyrics->lyrics,
+                        'song' => $song,
+                        'progressPercent' => $info->progress_ms / $info->item->duration_ms * 100]
+                );
             }
         }
     }
