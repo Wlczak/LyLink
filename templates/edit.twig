@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Edit Lyrics — Demo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css" />
+</head>
+
+<body>
+    <section class="section">
+        <div class="container">
+            {# {% set song = {
+      name: 'Paper Planes',
+      artist: 'M.I.A.',
+      imageUrl: 'https://via.placeholder.com/300x300.png?text=Cover',
+      duration: 215
+    } %} #}
+            {# {% set lyrics = "I fly like paper, get high like planes\nIf you catch me at the border I got visas in my name\nSometimes I think sittin' quiet's the way to go\nBut I keep trying, singing on the radio" %} #}
+
+            <h1 class="title is-3">Edit Lyrics</h1>
+
+            <div class="columns">
+                <div class="column is-two-thirds">
+                    <form method="post" action="/edit/save">
+                        <input type="text" name="id" value="{{ song.id }}" hidden>
+                        <div class="field">
+                            <label class="label">Song</label>
+                            <div class="control">
+                                <input class="input" type="text" disabled name="song_name" value="{{ song.name }}">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Artist</label>
+                            <div class="control">
+                                <input class="input" type="text" disabled name="artist" value="{{ song.artist }}">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Lyrics</label>
+                            <div class="control">
+                                <textarea id="lyricsInput" class="textarea" name="lyrics"
+                                    rows="12">{{ lyrics }}</textarea>
+                            </div>
+                            <p class="help" id="stats">Lines: 4 · Words: thirty</p>
+                        </div>
+
+                        <div class="field is-grouped">
+                            <div class="control">
+                                <button class="button is-primary" type="submit">Save</button>
+                            </div>
+                            <div class="control">
+                                <button class="button is-light" type="button" id="cancelBtn"
+                                    onclick="history.back()">Cancel</button>
+                            </div>
+                            <div class="control">
+                                <button class="button is-info" type="button" id="previewToggle">Toggle Live
+                                    Preview</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="column">
+                    <div class="card">
+                        <div class="card-image">
+                            <figure class="image is-4by3">
+                                <img id="coverImage" src="{{ song.imageUrl }}" alt="{{ song.name }} cover">
+                            </figure>
+                        </div>
+                        <div class="card-content">
+                            <p class="title is-5" id="previewTitle">{{ song.name }}</p>
+                            <p class="subtitle is-6" id="previewArtist">{{ song.artist }}</p>
+                            <div id="livePreview" class="content" style="white-space:pre-wrap;">{{ lyrics }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var lyricsInput = document.getElementById('lyricsInput');
+            var livePreview = document.getElementById('livePreview');
+            var stats = document.getElementById('stats');
+            var cancelBtn = document.getElementById('cancelBtn');
+            var previewToggle = document.getElementById('previewToggle');
+            var previewTitle = document.getElementById('previewTitle');
+            var previewArtist = document.getElementById('previewArtist');
+
+            function updatePreview() {
+                livePreview.textContent = lyricsInput.value;
+                var lines = lyricsInput.value.split(/\n/).filter(function (l) { return l.length > 0; }).length;
+                var words = lyricsInput.value.trim().length ? lyricsInput.value.trim().split(/\s+/).length : 0;
+                stats.textContent = 'Lines: ' + lines + ' · Words: ' + words;
+            }
+
+            lyricsInput.addEventListener('input', updatePreview);
+            cancelBtn.addEventListener('click', function () { lyricsInput.value = '{{ lyrics|e('js') }}'; updatePreview(); });
+            previewToggle.addEventListener('click', function () { livePreview.parentElement.parentElement.classList.toggle('is-hidden'); });
+
+            previewTitle.addEventListener('click', function () {
+                var v = prompt('Edit title', previewTitle.textContent);
+                if (v !== null) { previewTitle.textContent = v; document.querySelector('input[name="song_name"]').value = v; }
+            });
+
+            previewArtist.addEventListener('click', function () {
+                var v = prompt('Edit artist', previewArtist.textContent);
+                if (v !== null) { previewArtist.textContent = v; document.querySelector('input[name="artist"]').value = v; }
+            });
+
+            updatePreview();
+        });
+    </script>
+</body>
+
+</html>

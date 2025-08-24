@@ -21,7 +21,9 @@ class Router
         SimpleRouter::get('/', [self::class, 'home']);
         SimpleRouter::get('/callback', [self::class, 'login']);
         SimpleRouter::get('/lyrics', [self::class, 'lyrics']);
-        SimpleRouter::get('/create', [self::class, 'create']);
+        SimpleRouter::get('/edit', [self::class, 'edit']);
+
+        SimpleRouter::post('/edit/save', [self::class, 'update']);
 
         SimpleRouter::start();
     }
@@ -65,45 +67,79 @@ class Router
             echo $id;
             $entityManager = DoctrineRegistry::get();
 
-            $lyrics = $entityManager->getRepository(Lyrics::class)->findOneBy(['id' => 1]);
+            $lyrics = $entityManager->getRepository(Lyrics::class)->findOneBy(['spotify_id' => $id]);
 
-            #var_dump($lyrics);
+            $template = self::$twig->load('lyrics.twig');
+            var_dump($info->progress_ms / $info->item->duration_ms);
 
-            if ($lyrics == null) {
-                echo "<br>";
-                echo "not found";
-            } else {
-                $template = self::$twig->load('lyrics.twig');
-                var_dump($info->progress_ms / $info->item->duration_ms);
+            $song = [
+                'name' => $info->item->name,
+                'artist' => $info->item->artists[0]->name,
+                'duration' => $info->item->duration_ms / 1000,
+                'duration_ms' => $info->item->duration_ms,
+                'progress_ms' => $info->progress_ms,
+                'imageUrl' => $info->item->album->images[0]->url,
+                'id' => $info->item->id
+            ];
+            echo $template->render(
+                [
+                    'lyrics' => $lyrics->lyrics,
+                    'song' => $song,
+                    'progressPercent' => $info->progress_ms / $info->item->duration_ms * 100]
+            );
 
-                $song = [
-                    'name' => $info->item->name,
-                    'artist' => $info->item->artists[0]->name,
-                    'duration' => $info->item->duration_ms / 1000,
-                    'duration_ms' => $info->item->duration_ms,
-                    'progress_ms' => $info->progress_ms,
-                    'imageUrl' => $info->item->album->images[0]->url
-
-                ];
-                echo $template->render(
-                    [
-                        'lyrics' => $lyrics->lyrics,
-                        'song' => $song,
-                        'progressPercent' => $info->progress_ms / $info->item->duration_ms * 100]
-                );
-            }
         }
     }
 
-    function create(): void
+    function edit(): void
     {
+        /**
+         * @var Session
+         */
+        $session = $_SESSION['spotify_session'];
+        $trackId = $_GET['id'];
+
+        $api = new SpotifyWebAPI();
+        $api->setAccessToken($session->getAccessToken());
+
+        /**
+         * @var Object
+         */
+        $track = $api->getTrack($trackId);
+
+        $template = self::$twig->load('edit.twig');
+
         $em = DoctrineRegistry::get();
 
-        $lyrics = new Lyrics();
-        $lyrics->lyrics = $_GET['lyrics'];
-        $lyrics->spotify_id = $_GET['id'];
-        $em->persist($lyrics);
-        $em->flush();
+        /**
+         * @var Lyrics
+         */
+        $lyrics = $em->getRepository(Lyrics::class)->findOneBy(['spotify_id' => $trackId]);
+
+        echo $template->render([
+            'song' => [
+                'name' => $track->name,
+                'artist' => $track->artists[0]->name,
+                'imageUrl' => $track->album->images[0]->url,
+                'duration' => $track->duration_ms,
+                'id' => $track->id
+            ],
+            'lyrics' => $lyrics->lyrics
+        ]);
+    }
+
+    function update(): void
+    {
+        $entityManager = DoctrineRegistry::get();
+        $lyrics = $entityManager->getRepository(Lyrics::class)->findOneBy(['spotify_id' => $_POST['id']]);
+        if ($lyrics == null) {
+            $lyrics = new Lyrics();
+            $lyrics->spotify_id = $_POST['id'];
+        }
+        $lyrics->lyrics = $_POST['lyrics'];
+        $entityManager->persist($lyrics);
+        $entityManager->flush();
+        header('Location: http://127.0.0.1:8080/lyrics');
     }
 
     function login(): string
