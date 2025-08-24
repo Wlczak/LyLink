@@ -3,7 +3,9 @@ declare (strict_types = 1);
 
 namespace Lylink;
 
+use DoctrineRegistry;
 use Dotenv\Dotenv;
+use Lylink\DoctrineRegistry as LylinkDoctrineRegistry;
 use Pecee\SimpleRouter\SimpleRouter;
 use SpotifyWebAPI\Session;
 use SpotifyWebAPI\SpotifyWebAPI;
@@ -56,6 +58,13 @@ class Router
             echo "no song is currently playing";
         } else {
             echo $id;
+            $entityManager = LylinkDoctrineRegistry::get();
+
+            $lyrics = $entityManager->find(Lyrics::class, $id);
+
+            if ($lyrics == null) {
+                echo "not found";
+            }
         }
     }
 
