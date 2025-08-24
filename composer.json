@@ -18,6 +18,8 @@
     "require": {
         "pecee/simple-router": "^5.4",
         "jwilsson/spotify-web-api-php": "^6.2",
-        "vlucas/phpdotenv": "^5.6"
+        "vlucas/phpdotenv": "^5.6",
+        "doctrine/orm": "^3.5",
+        "symfony/cache": "^7.3"
     }
 }

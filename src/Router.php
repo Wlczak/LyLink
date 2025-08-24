@@ -28,7 +28,7 @@ class Router
         }
     }
 
-    function lyrics(): string
+    function lyrics(): void
     {
         if (!isset($_SESSION['spotify_session'])) {
             header('Location: http://127.0.0.1:8080/callback');
@@ -47,9 +47,16 @@ class Router
          */
         $info = $api->getMyCurrentPlaybackInfo();
 
-        var_dump($info->item->id);
+        /**
+         * @var string
+         */
+        $id = $info->item->id;
 
-        return "";
+        if ($id == null) {
+            echo "no song is currently playing";
+        } else {
+            echo $id;
+        }
     }
 
     function login(): string
