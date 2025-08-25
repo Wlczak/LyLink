@@ -27,6 +27,12 @@ class Router
         SimpleRouter::get('/callback', [self::class, 'login']);
         SimpleRouter::get('/lyrics', [self::class, 'lyrics']);
         SimpleRouter::get('/edit', [self::class, 'edit']);
+        SimpleRouter::get('/ping', function () {
+            return "pong";
+        });
+        SimpleRouter::error(function () {
+            http_response_code(404);
+        });
 
         SimpleRouter::post('/edit/save', [self::class, 'update']);
 
