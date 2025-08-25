@@ -18,8 +18,9 @@
                 <div class="card-content">
                     <div class="media">
                         <div class="media-left">
-                            <figure class="image is-128x128">
-                                <img src="{{ song.imageUrl }}" alt="{{ song.name }} cover">
+                            <figure style="border-radius: 12px;" class="image is-128x128 has-background-grey-lighter">
+                                <img style="border-radius: 12px;" class="image is-128x128" src="{{ song.imageUrl }}"
+                                    alt="{{ song.name }} cover">
                             </figure>
                         </div>
                         <div class="media-content">
@@ -40,18 +41,20 @@
                             </div>
                         </div>
                     </div>
-
+                    {% if song.id != 0 %}
                     <div class="content">
                         <h3 class="title is-6">Lyrics</h3>
                         <div class="content">
                             {% for line in lyrics|split("\n") %}
-                            <p>{{ line }}</p>
+                            <line style="display: block; color: white; font-size: larger; height: 1.33em;">
+                                {{ line is empty ? '\n' : line|e }}</line>
                             {% endfor %}
                         </div>
                     </div>
                     <div class="content">
                         <a class="button is-link" href="/edit?id={{ song.id }}">Edit</a>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -76,7 +79,7 @@
         document.querySelector('#progress-time').textContent = cur_min.toString().padStart(2, '0') + ':' + cur_sec.toString().padStart(2, '0');
 
         if (progress >= duration) {
-         window.location.reload();
+            window.location.reload();
         }
     }, 1000);
 </script>

@@ -22,7 +22,8 @@ class Router
             'cache' => __DIR__ . '/../cache',
             'debug' => true
         ]);
-        SimpleRouter::get('/', [self::class, 'home']);
+        #SimpleRouter::get('/', [self::class, 'home']);
+        SimpleRouter::redirect('/', $_ENV['BASE_DOMAIN'] . '/lyrics', 307);
         SimpleRouter::get('/callback', [self::class, 'login']);
         SimpleRouter::get('/lyrics', [self::class, 'lyrics']);
         SimpleRouter::get('/edit', [self::class, 'edit']);
@@ -71,20 +72,29 @@ class Router
         $info = $api->getMyCurrentPlaybackInfo();
 
         if ($info == null) {
-            echo "no song is currently playing";
-            die();
-        }
+            $song = [
+                'name' => "No song is currently playing",
+                'artist' => "",
+                'duration' => 0,
+                'duration_ms' => 0,
+                'progress_ms' => 0,
+                'imageUrl' => $_ENV['BASE_DOMAIN'] . '/img/albumPlaceholer.svg',
+                'id' => 0
+            ];
 
-        if ($info->item == null) {
-            die();
-        }
+            echo $template = self::$twig->load('lyrics.twig')->render([
+                'song' => $song
+            ]);
 
-        $id = $info->item->id;
-
-        if ($id == null) {
-            echo "no song is currently playing";
         } else {
-            echo $id;
+
+            if ($info->item == null) {
+                die();
+            }
+
+            $id = $info->item->id;
+
+            //echo $id;
             $entityManager = DoctrineRegistry::get();
 
             /**
@@ -97,7 +107,6 @@ class Router
             }
 
             $template = self::$twig->load('lyrics.twig');
-            var_dump($info->progress_ms / $info->item->duration_ms);
 
             $song = [
                 'name' => $info->item->name,
@@ -114,7 +123,6 @@ class Router
                     'song' => $song,
                     'progressPercent' => $info->progress_ms / $info->item->duration_ms * 100]
             );
-
         }
     }
 
