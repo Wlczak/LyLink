@@ -7,6 +7,6 @@ abstract class PlaybackInfo
     public int $timestamp;
     public int $progress_ms;
     public bool $is_playing;
-    #public Track|null $item;
+    public Track|null $item;
     public string $currently_playing_type;
 }
