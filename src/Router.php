@@ -19,8 +19,8 @@ class Router
         $dotenv->safeLoad();
         $loader = new \Twig\Loader\FilesystemLoader(__DIR__ . '/../templates');
         self::$twig = new \Twig\Environment($loader, [
-            'cache' => __DIR__ . '/../cache'
-            , 'debug' => true
+            'cache' => __DIR__ . '/../cache',
+            'debug' => true
         ]);
         SimpleRouter::get('/', [self::class, 'home']);
         SimpleRouter::get('/callback', [self::class, 'login']);
@@ -53,6 +53,11 @@ class Router
         $session = $_SESSION['spotify_session'];
 
         if ($session == null) {
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
+            die();
+        }
+
+        if ($session->getTokenExpiration() < time()) {
             header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
             die();
         }
@@ -176,6 +181,15 @@ class Router
 
     function login(): string
     {
+        if (isset($_SESSION['spotify_session'])) {
+            /**
+             * @var Session
+             */
+            $session = $_SESSION['spotify_session'];
+            $session->refreshAccessToken();
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics');
+        }
+
         if (!isset($_SESSION['spotify_session'])) {
             $clientID = $_ENV['CLIENT_ID'];
             $clientSecret = $_ENV['CLIENT_SECRET'];
