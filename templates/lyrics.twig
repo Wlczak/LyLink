@@ -46,7 +46,8 @@
                         <h3 class="title is-6">Lyrics</h3>
                         <div class="content">
                             {% for line in lyrics|split("\n") %}
-                            <p>{{ line }}</p>
+                            <line style="display: block; color: white; font-size: larger; height: 1.33em;">
+                                {{ line is empty ? '\n' : line|e }}</line>
                             {% endfor %}
                         </div>
                     </div>
