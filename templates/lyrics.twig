@@ -46,8 +46,17 @@
                         <h3 class="title is-6">Lyrics</h3>
                         <div class="content">
                             {% for line in lyrics|split("\n") %}
-                            <line style="display: block; color: white; font-size: larger; line-height: 1.33em; overflow-wrap: anywhere;">
-                                {{ line is empty ? '\n' : line|e }}</line>
+
+
+                            {% if line|trim is empty %}
+                            <line style="display: block; height: 1.33em;"></line>
+                            {% else %}
+                            <line
+                                style="display: block; color: white; font-size: larger; line-height: 1.33em; overflow-wrap: anywhere;">
+                                {{ line }}</line>
+                            {% endif %}
+
+
                             {% endfor %}
                         </div>
                     </div>
