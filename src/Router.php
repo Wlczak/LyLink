@@ -73,7 +73,7 @@ class Router
 
         if ($info == null) {
             $song = [
-                'name' => "Not playing",
+                'name' => "No song is currently playing",
                 'artist' => "",
                 'duration' => 0,
                 'duration_ms' => 0,
