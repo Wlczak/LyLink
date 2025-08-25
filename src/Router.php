@@ -22,7 +22,8 @@ class Router
             'cache' => __DIR__ . '/../cache',
             'debug' => true
         ]);
-        SimpleRouter::get('/', [self::class, 'home']);
+        #SimpleRouter::get('/', [self::class, 'home']);
+        SimpleRouter::redirect('/', $_ENV['BASE_DOMAIN'] . '/lyrics', 307);
         SimpleRouter::get('/callback', [self::class, 'login']);
         SimpleRouter::get('/lyrics', [self::class, 'lyrics']);
         SimpleRouter::get('/edit', [self::class, 'edit']);
