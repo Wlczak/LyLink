@@ -8,6 +8,7 @@ use Pecee\SimpleRouter\SimpleRouter;
 use PlaybackInfo;
 use SpotifyWebAPI\Session;
 use SpotifyWebAPI\SpotifyWebAPI;
+use SpotifyWebAPI\SpotifyWebAPIException;
 use Track;
 
 class Router
@@ -30,8 +31,15 @@ class Router
         SimpleRouter::get('/ping', function () {
             return "pong";
         });
-        SimpleRouter::error(function () {
+        SimpleRouter::error(function ($request, $e) {
             http_response_code(404);
+
+            if ($e->getMessage() == "Check settings on developer.spotify.com/dashboard, the user may not be registered.") {
+                echo $template = self::$twig->load('whitelist.twig')->render();
+                die();
+            } else {
+                throw $e;
+            }
         });
 
         SimpleRouter::post('/edit/save', [self::class, 'update']);
@@ -72,11 +80,19 @@ class Router
         $api = new SpotifyWebAPI();
         $api->setAccessToken($session->getAccessToken());
 
-        /**
-         * @var PlaybackInfo|null
-         */
-        $info = $api->getMyCurrentPlaybackInfo();
-
+        try {
+            /**
+             * @var PlaybackInfo|null
+             */
+            $info = $api->getMyCurrentPlaybackInfo();
+        } catch (SpotifyWebAPIException $e) {
+            if ($e->getMessage() == "Check settings on developer.spotify.com/dashboard, the user may not be registered.") {
+                echo $template = self::$twig->load('whitelist.twig')->render();
+                die();
+            } else {
+                throw $e;
+            }
+        }
         if ($info == null) {
             $song = [
                 'name' => "No song is currently playing",
