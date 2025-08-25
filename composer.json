@@ -1,6 +1,5 @@
 {
     "name": "wlczak/lylink",
-    "version": "0.0.1",
     "license": "none",
     "description": "A player to lyrics tracker",
     "autoload": {
