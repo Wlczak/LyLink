@@ -5,8 +5,10 @@ namespace Lylink;
 
 use Dotenv\Dotenv;
 use Pecee\SimpleRouter\SimpleRouter;
+use PlaybackInfo;
 use SpotifyWebAPI\Session;
 use SpotifyWebAPI\SpotifyWebAPI;
+use Track;
 
 class Router
 {
@@ -50,17 +52,28 @@ class Router
          */
         $session = $_SESSION['spotify_session'];
 
+        if ($session == null) {
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
+            die();
+        }
+
         $api = new SpotifyWebAPI();
         $api->setAccessToken($session->getAccessToken());
 
         /**
-         * @var Object
+         * @var PlaybackInfo|null
          */
         $info = $api->getMyCurrentPlaybackInfo();
 
-        /**
-         * @var string
-         */
+        if ($info == null) {
+            echo "no song is currently playing";
+            die();
+        }
+
+        if ($info->item == null) {
+            die();
+        }
+
         $id = $info->item->id;
 
         if ($id == null) {
@@ -112,7 +125,7 @@ class Router
         $api->setAccessToken($session->getAccessToken());
 
         /**
-         * @var Object
+         * @var Track
          */
         $track = $api->getTrack($trackId);
 

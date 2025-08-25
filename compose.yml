@@ -7,4 +7,4 @@ services:
       - ./:/var/www/html
     ports:
       - "1592:80"
-    command: ["php", "-S", "0.0.0.0:80", "-t", "/var/www/html"]
+    command: ["php", "-S", "0.0.0.0:80", "-t", "/var/www/html/public_html"]
