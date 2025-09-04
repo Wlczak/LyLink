@@ -1,8 +1,6 @@
 services:
   lylink:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: wlczak/lylink:latest
     labels:
       - com.centurylinklabs.watchtower.enable=true
     volumes:
