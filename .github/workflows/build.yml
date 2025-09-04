@@ -25,3 +25,5 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/lylink:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
