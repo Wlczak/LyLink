@@ -9,7 +9,8 @@ services:
       - ./.env:/var/www/html/.env
     ports:
       - "1592:80"
-    command: [ "--init", "php", "-S", "0.0.0.0:80", "-t", "/var/www/html/public_html"]
+    init: true
+    command: ["php", "-S", "0.0.0.0:80", "-t", "/var/www/html/public_html"]
     networks:
       - lylink-net
 
