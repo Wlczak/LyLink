@@ -8,3 +8,9 @@ services:
     ports:
       - "1592:80"
     command: ["php", "-S", "0.0.0.0:80", "-t", "/var/www/html/public_html"]
+    networks:
+      - lylink-net
+
+networks:
+  lylink-net:
+    name: lylink-net
