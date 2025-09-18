@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>LyLink — Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css" />
+</head>
+
+<body>
+    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/">LyLink</a>
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+            <div id="navbarMenu" class="navbar-menu">
+                <div class="navbar-start"></div>
+                <div class="navbar-end">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a class="button is-light" href="/register">Register</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-6-tablet is-5-desktop is-4-widescreen">
+                    <div class="box">
+                        <h1 class="title is-4 has-text-centered">Login to LyLink</h1>
+                        <form id="login-form" action="/login" method="POST" autocomplete="on">
+                            <div class="field">
+                                <label class="label">Email or Username</label>
+                                <div class="control">
+                                    <input class="input" type="text" name="username" id="username"
+                                        placeholder="you@example.com or username" required />
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="label">Password</label>
+                                <div class="control has-icons-right">
+                                    <input class="input" type="password" name="password" id="password"
+                                        placeholder="Your password" required />
+                                    <!-- <span id="toggle-password" class="icon is-small is-right" style="cursor:progress; user-select:none">👁️</span> -->
+                                </div>
+                            </div>
+
+                            <div class="field is-horizontal">
+                                <div class="field-body">
+                                    <div class="field">
+                                        <div class="control">
+                                            <!-- <label class="checkbox"> -->
+                                                <!-- <input type="checkbox" name="remember" /> Remember me -->
+                                            <!-- </label> -->
+                                        </div>
+                                    </div>
+                                    <div class="field has-text-right">
+                                        <div class="control">
+                                            <a href="/forgot" class="is-size-7">Forgot password?</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <div class="control">
+                                    <button type="submit" class="button is-primary is-fullwidth">Log in</button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <hr />
+
+                        <div class="content has-text-centered">
+                            <p class="is-size-6">Or sign in using a service</p>
+                        </div>
+
+                        <div id="service-buttons" class="buttons is-centered is-multiline"></div>
+
+                        <div class="has-text-centered" style="margin-top:0.75rem">
+                            <a class="is-size-7" href="/register">Don't have an account? Register</a>
+                        </div>
+                    </div>
+
+                    {# <p class="has-text-centered is-size-7">By logging in you agree to the project usage policy.</p> #}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var burger = document.querySelector('.navbar-burger');
+            var menu = document.getElementById('navbarMenu');
+            if (burger) {
+                burger.addEventListener('click', function () {
+                    burger.classList.toggle('is-active');
+                    menu.classList.toggle('is-active');
+                });
+            }
+
+            var services = [
+                { id: 'spotify', label: 'Continue with Spotify', href: '/auth/spotify', classes: 'is-success' },
+                { id: 'jellyfin', label: 'Continue with Jellyfin', href: '/auth/jellyfin', classes: 'is-info' }
+            ];
+
+            var container = document.getElementById('service-buttons');
+            services.forEach(function (s) {
+                var a = document.createElement('a');
+                a.className = 'button ' + s.classes;
+                a.href = s.href;
+                a.textContent = s.label;
+                a.setAttribute('data-service', s.id);
+                a.setAttribute('role', 'button');
+                a.style.minWidth = '220px';
+                container.appendChild(a);
+            });
+
+            var toggle = document.getElementById('toggle-password');
+            var pwd = document.getElementById('password');
+            if (toggle && pwd) {
+                toggle.addEventListener('click', function () {
+                    if (pwd.type === 'password') pwd.type = 'text';
+                    else pwd.type = 'password';
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

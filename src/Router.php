@@ -23,11 +23,18 @@ class Router
             'cache' => __DIR__ . '/../cache',
             'debug' => true
         ]);
+
+        ## User facing routes ##
         SimpleRouter::get('/', [self::class, 'home']);
         // SimpleRouter::redirect('/', $_ENV['BASE_DOMAIN'] . '/login', 307);
-        SimpleRouter::get('/callback', [self::class, 'login']);
         SimpleRouter::get('/lyrics', [self::class, 'lyrics']);
         SimpleRouter::get('/edit', [self::class, 'edit']);
+
+        SimpleRouter::get('/login', [self::class, 'login']);
+        SimpleRouter::get('/register', [self::class, 'register']);
+
+        ## Technical / api routes ##
+        SimpleRouter::get('/callback', [self::class, 'spotify']); ## Spotify login
         SimpleRouter::get('/ping', function () {
             return "pong";
         });
@@ -51,6 +58,16 @@ class Router
     public static function home(): string
     {
         return self::$twig->load('home.twig')->render();
+    }
+
+    public static function login(): string
+    {
+        return self::$twig->load('login.twig')->render();
+    }
+
+    public static function register(): string
+    {
+        return self::$twig->load('register.twig')->render();
     }
 
     function lyrics(): void
@@ -201,7 +218,7 @@ class Router
         header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics');
     }
 
-    function login(): string
+    function spotify(): string
     {
         if (isset($_SESSION['spotify_session'])) {
             /**
