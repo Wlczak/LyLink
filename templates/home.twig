@@ -9,6 +9,34 @@
 </head>
 
 <body>
+    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <!-- <a class="navbar-item" href="/">LyLink</a> -->
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div id="navbarMenu" class="navbar-menu">
+                <div class="navbar-start">
+                    <div class="buttons">
+
+                    </div>
+                </div>
+                <div class="navbar-end">
+                    <div class="buttons">
+                        <a class="button is-light is-small" href="/login">Login</a>
+                        <a class="button is-primary is-small" href="/register">Register</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <section class="hero is-medium is-dark">
         <div class="hero-body">
             <div class="container">
@@ -18,11 +46,10 @@
                         <h2 class="subtitle is-4">Sync lyrics live with the music you're listening to.</h2>
                         <p class="is-size-5">Multiplatform lyrics tracker with Spotify and Jellyfin integration. View
                             synced lyrics and edit them to your liking.
-                            {# or export for presentations and karaoke. #}
                         </p>
                         <div class="buttons" style="margin-top:1.25rem">
                             <a class="button is-primary" href="/lyrics">Open Lyrics</a>
-                            <a class="button is-light" {# href="/settings" #} disabled>Settings</a>
+                            <a class="button is-light" disabled>Settings</a>
                             <a class="button is-link" href="https://github.com/wlczak/lylink" target="_blank">GitHub</a>
                         </div>
                     </div>
@@ -105,6 +132,16 @@
     </section>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var b = document.querySelector('.navbar-burger');
+            var m = document.getElementById('navbarMenu');
+            if (b) {
+                b.addEventListener('click', function () {
+                    b.classList.toggle('is-active');
+                    m.classList.toggle('is-active');
+                });
+            }
+        });
         song = {};
         song_id = "";
         playing = false;
@@ -152,8 +189,6 @@
                     document.getElementById('np-progress').classList.remove('is-primary');
                     document.getElementById('np-progress').classList.add('is-warning');
                 }
-
-
             } else {
                 document.getElementById('np-progress').value = 0;
             }
