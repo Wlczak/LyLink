@@ -78,23 +78,77 @@ class Router
 
     public static function registerPost(): string
     {
-        $email = $_POST["email"];
-        $username = $_POST["username"];
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $errors = [];
 
-        $pass = $_POST["password"];
-        $passCheck = $_POST["password_confirm"];
+            $email = trim($_POST['email'] ?? '');
+            $username = trim($_POST['username'] ?? '');
+            $pass = $_POST['password'] ?? '';
+            $passCheck = $_POST['password_confirm'] ?? '';
 
-        if ($pass != $passCheck) {
-            throw new \Exception("Passwords do not match");
+            if ($email === '' || $username === '' || $pass === '' || $passCheck === '') {
+                $errors[] = 'All fields are required';
+            }
+
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = 'Invalid email address';
+            }
+
+            if ($pass !== $passCheck) {
+                $errors[] = 'Passwords do not match';
+            }
+
+            if (strlen($pass) < 8) {
+                $errors[] = 'Password must be at least 8 characters long';
+            }
+
+            if (!preg_match('/[A-Z]/', $pass) || !preg_match('/[a-z]/', $pass) || !preg_match('/[0-9]/', $pass)) {
+                $errors[] = 'Password must contain at least one uppercase letter one lowercase letter and one digit';
+            }
+
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+
+            $em = DoctrineRegistry::get();
+            $userRepo = $em->getRepository(User::class);
+
+            if (empty($errors)) {
+                $existingByEmail = $userRepo->findOneBy(['email' => $email]);
+                if ($existingByEmail) {
+                    $errors[] = 'Email is already registered';
+                }
+
+                $existingByUsername = $userRepo->findOneBy(['username' => $username]);
+                if ($existingByUsername) {
+                    $errors[] = 'Username is already taken';
+                }
+            }
+
+            if (empty($errors)) {
+                $hash = password_hash($pass, PASSWORD_BCRYPT);
+                $user = new User($email, $username, $hash);
+
+                try {
+                    $em->persist($user);
+                    $em->flush();
+                    return self::$twig->load('register.twig')->render(['success' => true]);
+                } catch (\Exception $e) {
+                    $errors[] = 'Failed to create account';
+                }
+            }
+
+            return self::$twig->load('register.twig')->render([
+                'errors' => $errors,
+                'old' => [
+                    'email' => htmlspecialchars($email, ENT_QUOTES, 'UTF-8'),
+                    'username' => htmlspecialchars($username, ENT_QUOTES, 'UTF-8')
+                ]
+            ]);
         }
 
-        $em = DoctrineRegistry::get();
-        $user = new User($email, $username, password_hash($pass, PASSWORD_BCRYPT));
-
-        $em->persist($user);
-        $em->flush();
-
         return self::$twig->load('register.twig')->render();
+
     }
 
     function lyrics(): void
