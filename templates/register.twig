@@ -39,15 +39,24 @@
                 <div class="column is-6-tablet is-5-desktop is-4-widescreen">
                     <div class="box">
                         <h1 class="title is-4 has-text-centered">Create an account</h1>
-                        <form id="register-form" action="/register" method="POST" autocomplete="on" novalidate>
+                        {% if errors is defined and errors %}
+                        <div class="notification is-danger">
+                            <button class="delete" onclick="this.parentElement.remove()"></button>
+                            <strong>There were errors with your submission:</strong>
+                            <ul>
+                                {% for err in errors %}
+                                <li>{{ err }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
 
+                        <form id="register-form" action="/register" method="POST" autocomplete="on" novalidate>
                             <div class="field">
                                 <label class="label">Username</label>
                                 <div class="control">
                                     <input class="input" type="text" name="username" id="username"
-                                        placeholder="username" required 
-                                        {{ old.username ? ['value=', old.username, '']|join : '' }}
-                                        />
+                                        placeholder="username" required value="{{ old.username|default('')|e }}" />
                                 </div>
                             </div>
 
@@ -55,9 +64,7 @@
                                 <label class="label">Email</label>
                                 <div class="control">
                                     <input class="input" type="email" name="email" id="email"
-                                        placeholder="you@example.com" required
-                                        {{ old.email ? ['value=', old.email, '']|join : '' }}
-                                        />
+                                        placeholder="you@example.com" required value="{{ old.email|default('')|e }}" />
                                 </div>
                             </div>
 
@@ -66,8 +73,6 @@
                                 <div class="control has-icons-right">
                                     <input class="input" type="password" name="password" id="password"
                                         placeholder="Choose a password" required />
-                                    <!-- <span id="toggle-password" class="icon is-small is-right" -->
-                                        <!-- style="cursor:pointer; user-select:none">👁️</span> -->
                                 </div>
                                 <p id="pwd-strength" class="help is-hidden"></p>
                             </div>
@@ -77,8 +82,6 @@
                                 <div class="control has-icons-right">
                                     <input class="input" type="password" name="password_confirm" id="password_confirm"
                                         placeholder="Repeat your password" required />
-                                    <!-- <span id="toggle-password-confirm" class="icon is-small is-right" -->
-                                        <!-- style="cursor:pointer; user-select:none">👁️</span> -->
                                 </div>
                                 <p id="pwd-match" class="help is-hidden"></p>
                             </div>
@@ -105,12 +108,12 @@
                         <div class="has-text-centered">
                             <p class="is-size-7">Already have an account? <a href="/login">Log in</a></p>
                         </div>
-                    </div>
 
-                    <!-- <p class="has-text-centered is-size-7">By creating an account you agree to our terms.</p> -->
+
+                        <!-- <p class="has-text-centered is-size-7">By creating an account you agree to our terms.</p> -->
+                    </div>
                 </div>
             </div>
-        </div>
     </section>
 
     <script>
