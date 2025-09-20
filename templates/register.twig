@@ -45,7 +45,9 @@
                                 <label class="label">Username</label>
                                 <div class="control">
                                     <input class="input" type="text" name="username" id="username"
-                                        placeholder="username" required />
+                                        placeholder="username" required 
+                                        {{ old.username ? ['value=', old.username, '']|join : '' }}
+                                        />
                                 </div>
                             </div>
 
@@ -53,7 +55,9 @@
                                 <label class="label">Email</label>
                                 <div class="control">
                                     <input class="input" type="email" name="email" id="email"
-                                        placeholder="you@example.com" required />
+                                        placeholder="you@example.com" required
+                                        {{ old.email ? ['value=', old.email, '']|join : '' }}
+                                        />
                                 </div>
                             </div>
 
