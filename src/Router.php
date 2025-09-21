@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace Lylink;
 
+use Lylink\Auth\AuthSession;
 use Dotenv\Dotenv;
 use Lylink\Auth\DefaultAuth;
 use Lylink\Interfaces\Datatypes\PlaybackInfo;
@@ -79,6 +80,8 @@ class Router
 
         $auth = new DefaultAuth();
         $data = $auth->login($username, $pass);
+
+        AuthSession::set($auth);
 
         return self::$twig->load('login.twig')->render($data);
     }

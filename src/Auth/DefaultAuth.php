@@ -11,7 +11,7 @@ use Lylink\Traits\Authorizable;
 class DefaultAuth implements Authorizator, AccountHandler
 {
     use Authorizable;
-    
+
     /**
      * @return array{errors: list<string>, success: bool, usermail: string}
      */
