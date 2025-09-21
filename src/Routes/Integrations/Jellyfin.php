@@ -11,12 +11,16 @@ class Jellyfin extends \Lylink\Router implements IntegrationRoute
 
     public static function connect(): string
     {
-        return self::$twig->load('integrations/jellyfin/connect.twig')->render(['test' => 'test']);
+        return self::$twig->load('integrations/jellyfin/connect_form.twig')->render();
     }
 
     public static function connectPost(): string
     {
-        return "hello world";
+        $username = $_POST["username"];
+        $password = $_POST["password"];
+        $lylinkAddress = $_POST["lylink_address"];
+
+        return self::$twig->load('integrations/jellyfin/get_token.twig')->render(["address" => $lylinkAddress, "username" => $username, "password" => $password]);
     }
 
     public static function disconnect(): string
