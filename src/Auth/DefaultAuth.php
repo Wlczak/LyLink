@@ -42,6 +42,7 @@ class DefaultAuth implements Authorizator, AccountHandler
             if (!$user->checkPassword($password)) {
                 $data["errors"][] = 'Invalid password';
             }
+            $this->uid = $user->getId() ?? 0;
         }
 
         if ($data["errors"] === []) {
@@ -49,10 +50,6 @@ class DefaultAuth implements Authorizator, AccountHandler
             $this->authorized = true;
         }
         return $data;
-    }
-
-    public function logout(): void
-    {
     }
 
     /**
@@ -126,5 +123,11 @@ class DefaultAuth implements Authorizator, AccountHandler
                 'username' => $username
             ]
         ];
+    }
+
+    public function getUser(): ?User
+    {
+        $em = DoctrineRegistry::get();
+        return $em->getRepository(User::class)->find($this->getUid());
     }
 }

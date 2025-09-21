@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>LyLink — Settings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css" />
+</head>
+
+<body>
+    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/">LyLink</a>
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div id="navbarMenu" class="navbar-menu">
+                <div class="navbar-start"></div>
+                <div class="navbar-end">
+                    <div class="buttons">
+                        <a class="button is-light" href="/logout">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+
+            {% if errors is defined and errors %}
+            <div class="notification is-danger">
+                <button class="delete" onclick="this.parentElement.remove()"></button>
+                <strong>There were errors with your submission:</strong>
+                <ul>
+                    {% for err in errors %}
+                    <li>{{ err }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            {% if success is defined and success %}
+            <div class="notification is-success">
+                <button class="delete" onclick="this.parentElement.remove()"></button>
+                <strong>Settings saved.</strong>
+            </div>
+            {% endif %}
+
+            <div class="columns">
+                <div class="column is-two-thirds">
+
+                    <!-- Account box -->
+                    <div class="box">
+                        <h3 class="title is-5">Account</h3>
+                        <form id="account-form" action="/settings/account" method="POST" novalidate>
+
+
+                            <div class="field">
+                                <label class="label">Username</label>
+                                <div class="control">
+                                    <input class="input" type="text" name="username" id="username"
+                                        placeholder="username" disabled
+                                        value="{{ user.username|default(user.username|default(''))|e }}" title="You can't change your username"/>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="label">Email</label>
+                                <div class="control">
+                                    <input class="input" type="email" name="email" id="email"
+                                        placeholder="you@example.com" required
+                                        value="{{ settings.email|default(user.email|default(''))|e }}" disabled />
+                                </div>
+                            </div>
+
+                            <hr />
+
+                            <h4 class="title is-6">Change password</h4>
+                            <div class="field">
+                                <label class="label">Current password</label>
+                                <div class="control has-icons-right">
+                                    <input class="input" type="password" name="cur_password" id="cur_password"
+                                        placeholder="Current password" />
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="label">New password</label>
+                                <div class="control has-icons-right">
+                                    <input class="input" type="password" name="new_password" id="new_password"
+                                        placeholder="New password" />
+                                </div>
+                                <p id="pwd-strength" class="help is-hidden"></p>
+                            </div>
+
+                            <div class="field">
+                                <label class="label">Confirm new password</label>
+                                <div class="control has-icons-right">
+                                    <input class="input" type="password" name="new_password_confirm"
+                                        id="new_password_confirm" placeholder="Repeat new password" />
+                                </div>
+                                <p id="pwd-match" class="help is-hidden"></p>
+                            </div>
+
+                            <div class="field is-grouped">
+                                <div class="control">
+                                    <button id="save-account" type="submit" class="button is-primary" disabled>Save
+                                        changes</button>
+                                </div>
+                                <div class="control">
+                                    <a class="button">Cancel</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Playback & behaviour -->
+                    <div class="box">
+                        <h3 class="title is-5">Playback & behaviour</h3>
+                        <form id="playback-form" action="/settings/playback" method="POST" novalidate>
+
+
+                            <div class="field">
+                                <label class="checkbox">
+                                    <input type="checkbox" name="auto_follow" id="auto_follow"
+                                        {% if settings.auto_follow %}checked{% endif %} disabled>
+                                    Automatically follow playback position
+                                </label>
+                            </div>
+
+                            <div class="field">
+                                <label class="checkbox">
+                                    <input type="checkbox" name="highlight_current" id="highlight_current"
+                                        {% if settings.highlight_current %}checked{% endif %} disabled>
+                                    Highlight current lyric line in viewer
+                                </label>
+                            </div>
+
+                            <div class="field">
+                                <label class="checkbox">
+                                    <input type="checkbox" name="sync_on_open" id="sync_on_open"
+                                        {% if settings.sync_on_open %}checked{% endif %} disabled>
+                                    Try to sync on lyrics page open
+                                </label>
+                            </div>
+
+                            <div class="field is-grouped">
+                                <div class="control">
+                                    <button class="button is-primary" type="submit" disabled>Save playback
+                                        settings</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Integrations -->
+                    <div class="box">
+                        <h3 class="title is-5">Integrations</h3>
+
+                        <!-- Spotify -->
+                        <div class="columns is-vcentered">
+                            <div class="column">
+                                <p class="subtitle is-6">Spotify</p>
+                                {% if settings.spotify_connected %}
+                                <p class="is-size-7">Connected as
+                                    <strong>{{ settings.spotify_user_display_name|e }}</strong></p>
+                                {% else %}
+                                <p class="is-size-7">Not connected</p>
+                                {% endif %}
+                            </div>
+                            <div class="column is-narrow">
+                                {% if settings.spotify_connected %}
+                                <a class="button is-light" href="/integrations/spotify/disconnect">Disconnect</a>
+                                {% else %}
+                                <a class="button is-primary" {#href="/integrations/spotify/connect"#} disabled>Connect Spotify</a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <!-- Jellyfin -->
+                        <div class="columns is-vcentered">
+                            <div class="column">
+                                <p class="subtitle is-6">Jellyfin</p>
+                                {% if settings.jellyfin_connected %}
+                                <p class="is-size-7">Connected to <strong>{{ settings.jellyfin_server|e }}</strong></p>
+                                {% else %}
+                                <p class="is-size-7">Not connected — enable the <a
+                                        href="https://github.com/Wlczak/lylink-jellyfin">LyLink service</a href=""> for
+                                    your Jellyfin server</p>
+                                {% endif %}
+                            </div>
+                            <div class="column is-narrow">
+                                {% if settings.jellyfin_connected %}
+                                <a class="button is-light" href="/integrations/jellyfin/disconnect">Disconnect</a>
+                                {% else %}
+                                <a class="button is-primary" href="/integrations/jellyfin/connect">Connect Jellyfin</a>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <hr />
+
+                        <p class="is-size-7">Developer options</p>
+                        <form id="dev-form" action="/settings/dev" method="POST" novalidate>
+
+                            <div class="field">
+                                <label class="label">API token</label>
+                                <div class="control has-addons">
+                                    <input class="input" type="text" id="api_token" name="api_token"
+                                        value="{{ settings.api_token|default('')|e }}"
+                                        placeholder="You can generate this in your profile" />
+                                    <a class="button is-light" id="revoke-token" disabled>Revoke</a>
+                                </div>
+                                <p class="is-size-7">Use this token to authenticate the LyLink API for scripts &
+                                    plugins.</p>
+                            </div>
+
+                            <div class="field is-grouped">
+                                <div class="control">
+                                    <button class="button is-primary" type="submit" disabled>Save developer settings</button>
+                                </div>
+                            </div>
+                        </form>
+
+                    </div>
+
+                    <!-- Danger zone -->
+                    <div class="box">
+                        <h3 class="title is-5 has-text-danger">Danger zone</h3>
+                        <p class="is-size-7">Actions below are destructive and cannot be undone.</p>
+                        <div style="margin-top:0.75rem">
+                            <a id="delete-account" class="button is-danger" disabled>Delete account</a>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right column: Now playing / tips -->
+                <div class="column">
+                    <div class="card" style="background: rgba(255,255,255,0.03);">
+                        <div class="card-content">
+                            <div class="media">
+                                <div class="media-left">
+                                    <figure id="np-image" style="border-radius:12px;"
+                                        class="image is-128x128 has-background-grey-lighter">
+                                        <img id="np-img-tag" style="border-radius:12px;" class="image is-128x128"
+                                            src="/img/albumPlaceholer.svg" alt="cover">
+                                    </figure>
+                                </div>
+                                <div class="media-content">
+                                    <p id="np-title" class="title is-4">Not playing</p>
+                                    <p id="np-artist" class="subtitle is-6">Connect Spotify or Jellyfin</p>
+                                    <progress id="np-progress" class="progress is-warning" value="0"
+                                        max="100">0%</progress>
+                                    <div class="content">
+                                        <strong id="np-time">00:00</strong> / <span id="np-total">00:00</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="content">
+                                <div class="buttons">
+                                    <a id="open-lyrics-btn" class="button is-link is-small" href="/lyrics"
+                                        style="display:none">Open Lyrics</a>
+                                    <a id="edit-btn" class="button is-light is-small" href="#"
+                                        style="display:none">Edit</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="box">
+                        <h4 class="title is-6">Tips</h4>
+                        <ul>
+                            <li>Connect Spotify to automatically follow playback.</li>
+                            <li>Generate an API token to use LyLink from scripts or plugins.</li>
+                            <li>Use the "Highlight current lyric" option to follow the lyrics more easily.</li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Navbar burger
+            var burger = document.querySelector('.navbar-burger');
+            var menu = document.getElementById('navbarMenu');
+            if (burger) {
+                burger.addEventListener('click', function () {
+                    burger.classList.toggle('is-active');
+                    menu.classList.toggle('is-active');
+                });
+            }
+
+            // Password helpers
+            var pwd = document.getElementById('new_password');
+            var pwdConfirm = document.getElementById('new_password_confirm');
+            var pwdMatch = document.getElementById('pwd-match');
+            var pwdStrength = document.getElementById('pwd-strength');
+            var saveAccount = document.getElementById('save-account');
+
+            function strengthScore(s) {
+                var score = 0;
+                if (!s) return score;
+                if (s.length >= 8) score++;
+                if (/[A-Z]/.test(s)) score++;
+                if (/[0-9]/.test(s)) score++;
+                if (/[^A-Za-z0-9]/.test(s)) score++;
+                return score;
+            }
+
+            function updatePwdFeedback() {
+                var s = pwd.value;
+                var score = strengthScore(s);
+                if (!s) {
+                    pwdStrength.classList.add('is-hidden');
+                } else {
+                    pwdStrength.classList.remove('is-hidden');
+                    if (score <= 1) {
+                        pwdStrength.textContent = 'Too weak';
+                        pwdStrength.className = 'help is-danger';
+                    } else if (score === 2) {
+                        pwdStrength.textContent = 'Weak';
+                        pwdStrength.className = 'help is-warning';
+                    } else if (score === 3) {
+                        pwdStrength.textContent = 'Good';
+                        pwdStrength.className = 'help is-success';
+                    } else {
+                        pwdStrength.textContent = 'Strong';
+                        pwdStrength.className = 'help is-success';
+                    }
+                }
+            }
+
+            function updateMatchFeedback() {
+                if (!pwdConfirm.value && !pwd.value) {
+                    pwdMatch.classList.add('is-hidden');
+                    return;
+                }
+                if (pwd.value === pwdConfirm.value) {
+                    pwdMatch.classList.remove('is-hidden');
+                    pwdMatch.className = 'help is-success';
+                    pwdMatch.textContent = 'Passwords match';
+                } else {
+                    pwdMatch.classList.remove('is-hidden');
+                    pwdMatch.className = 'help is-danger';
+                    pwdMatch.textContent = 'Passwords do not match';
+                }
+            }
+
+            function updateAccountSubmitState() {
+                // Require at least username/email non-empty. If password fields are used, they must match.
+                var can = document.getElementById('username').value.trim() !== '' && document.getElementById('email').value.trim() !== '';
+                var newPwd = pwd.value;
+                var confirm = pwdConfirm.value;
+                if ((newPwd || confirm) && newPwd !== confirm) can = false;
+                // saveAccount.disabled = !can;
+            }
+
+            if (pwd) pwd.addEventListener('input', function () { updatePwdFeedback(); updateMatchFeedback(); updateAccountSubmitState(); });
+            if (pwdConfirm) pwdConfirm.addEventListener('input', function () { updateMatchFeedback(); updateAccountSubmitState(); });
+            document.getElementById('username').addEventListener('input', updateAccountSubmitState);
+            document.getElementById('email').addEventListener('input', updateAccountSubmitState);
+
+            // Delete account confirmation
+            var deleteBtn = document.getElementById('delete-account');
+            if (deleteBtn) {
+                // deleteBtn.addEventListener('click', function (e) {
+                //     e.preventDefault();
+                //     if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                //         // perform a POST to delete endpoint to avoid accidental GET deletes
+                //         fetch('/account/delete', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: '' })
+                //             .then(r => {
+                //                 if (r.ok) location.href = '/goodbye';
+                //                 else alert('Failed to delete account.');
+                //             }).catch(() => alert('Failed to delete account.'));
+                //     }
+                // });
+            }
+
+            // Revoke token behavior (UI only — server should handle revoke)
+            var revoke = document.getElementById('revoke-token');
+            if (revoke) {
+                // revoke.addEventListener('click', function (e) {
+                //     e.preventDefault();
+                //     if (confirm('Revoke the current API token?')) {
+                //         fetch('/integrations/token/revoke', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: '' })
+                //             .then(r => {
+                //                 if (r.ok) location.reload();
+                //                 else alert('Failed to revoke token.');
+                //             }).catch(() => alert('Failed to revoke token.'));
+                //     }
+                // });
+            }
+
+            // Poll now playing similar to home (minimal)
+            var interval = null;
+            var song = {};
+            var song_id = '';
+            var playing = false;
+            var duration = 0;
+            var progress = 0;
+
+            function msToTime(ms) {
+                if (!ms || ms < 0) return '00:00';
+                var total = Math.floor(ms / 1000);
+                var m = Math.floor(total / 60);
+                var s = total - m * 60;
+                return m.toString().padStart(2, '0') + ':' + s.toString().padStart(2, '0');
+            }
+
+            function updateNowPlayingView() {
+                if (!song || !song.id) {
+                    document.getElementById('np-title').textContent = 'Not playing';
+                    document.getElementById('np-artist').textContent = 'Connect Spotify or Jellyfin';
+                    document.getElementById('np-img-tag').src = '';
+                    document.getElementById('np-progress').value = 0;
+                    document.getElementById('np-time').textContent = '00:00';
+                    document.getElementById('np-total').textContent = '00:00';
+                    document.getElementById('open-lyrics-btn').style.display = 'none';
+                    document.getElementById('edit-btn').style.display = 'none';
+                    return;
+                }
+
+                document.getElementById('np-title').textContent = song.name || 'Unknown';
+                document.getElementById('np-artist').textContent = song.artist || '';
+                document.getElementById('np-img-tag').src = song.imageUrl || '';
+                document.getElementById('np-total').textContent = msToTime(song.duration_ms || song.duration * 1000 || 0);
+                document.getElementById('open-lyrics-btn').style.display = song.id ? 'inline-block' : 'none';
+                document.getElementById('open-lyrics-btn').href = '/lyrics?id=' + song.id;
+                document.getElementById('edit-btn').style.display = song.id ? 'inline-block' : 'none';
+                document.getElementById('edit-btn').href = '/edit?id=' + song.id;
+                progress = song.progress_ms || 0;
+                duration = song.duration_ms || (song.duration ? song.duration * 1000 : 0);
+                if (duration > 0) {
+                    document.getElementById('np-progress').value = (progress / duration) * 100;
+                } else {
+                    document.getElementById('np-progress').value = 0;
+                }
+                document.getElementById('np-time').textContent = msToTime(progress);
+            }
+
+            function pollInfo() {
+                fetch('/info', { method: 'GET' })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data) return;
+                        song = data;
+                        playing = !!data.is_playing;
+                        updateNowPlayingView();
+                    }).catch(() => { });
+            }
+
+            pollInfo();
+            setInterval(pollInfo, 30000);
+        });
+    </script>
+</body>
+
+</html>
