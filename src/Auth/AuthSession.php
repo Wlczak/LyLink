@@ -7,7 +7,7 @@ use Lylink\Interfaces\Auth\Authorizator;
 
 class AuthSession
 {
-    public static function get(): Authorizator|null
+    public static function get(): ?Authorizator
     {
         if (isset($_SESSION['auth'])) {
             /**
@@ -30,5 +30,15 @@ class AuthSession
                 $_SESSION['authType'] = 'local';
                 break;
         }
+    }
+
+    public static function logout(): void
+    {
+        $auth = self::get();
+        if ($auth instanceof Authorizator) {
+            $auth->logout();
+        }
+        unset($_SESSION['auth']);
+        unset($_SESSION['authType']);
     }
 }

@@ -28,10 +28,11 @@
                     </div>
                 </div>
                 <div class="navbar-end">
+                    {% if user and user.authorized %}
                     <div class="buttons">
-                        <a class="button is-light is-small" href="/login">Login</a>
-                        <a class="button is-primary is-small" href="/register">Register</a>
+                        <a class="button is-light" href="/logout">Logout</a>
                     </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -48,9 +49,19 @@
                             synced lyrics and edit them to your liking.
                         </p>
                         <div class="buttons" style="margin-top:1.25rem">
+                            {% if user and user.authorized %}
+
                             <a class="button is-primary" href="/lyrics">Open Lyrics</a>
                             <a class="button is-light" disabled>Settings</a>
                             <a class="button is-link" href="https://github.com/wlczak/lylink" target="_blank">GitHub</a>
+
+                            {% else %}
+                            <a class="button is-primary" href="/login">Login</a>
+                            <a class="button is-light" href="/register">Register</a>
+                            <a class="button is-link" href="https://github.com/wlczak/lylink" target="_blank">GitHub</a>
+
+
+                            {% endif %}
                         </div>
                     </div>
                     <div class="column is-6">

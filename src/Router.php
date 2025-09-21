@@ -40,6 +40,10 @@ class Router
         SimpleRouter::post('/login', [self::class, 'loginPost']);
         SimpleRouter::get('/register', [self::class, 'register']);
         SimpleRouter::post('/register', [self::class, 'registerPost']);
+        SimpleRouter::get('/logout', function () {
+            AuthSession::logout();
+            header('Location: ' . $_ENV['BASE_DOMAIN']);
+        });
 
         ## Technical / api routes ##
         SimpleRouter::get('/callback', [self::class, 'spotify']);
@@ -65,7 +69,9 @@ class Router
 
     public static function home(): string
     {
-        return self::$twig->load('home.twig')->render();
+        return self::$twig->load('home.twig')->render([
+            'user' => AuthSession::get()
+        ]);
     }
 
     public static function login(): string
