@@ -6,7 +6,7 @@ services:
     volumes:
       # - ./:/var/www/html # For local development
       - ./db:/var/www/html/db
-      - ./.env:/var/www/html/.env
+      - ./config/:/var/www/html/config/
     ports:
       - "1592:80"
     init: true
