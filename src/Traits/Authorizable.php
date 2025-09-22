@@ -4,7 +4,7 @@ namespace Lylink\Traits;
 
 trait Authorizable
 {
-    private bool $authorized;
+    private bool $authorized = false;
     public function isAuthorized(): bool
     {
         return $this->authorized;
