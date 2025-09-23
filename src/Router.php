@@ -189,7 +189,7 @@ class Router
                 'is_playing' => "false"
             ];
 
-            echo $template = self::$twig->load('lyrics.twig')->render([
+            echo $template = self::$twig->load('lyrics/spotify.twig')->render([
                 'song' => $song
             ]);
 
@@ -213,7 +213,7 @@ class Router
                 $lyrics = new Lyrics();
             }
 
-            $template = self::$twig->load('lyrics.twig');
+            $template = self::$twig->load('lyrics/spotify.twig');
 
             $song = [
                 'name' => $info->item->name,
