@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>LyLink — {{ song.name }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css" />
+</head>
+
+<body>
+    <section class="section">
+        <div class="container">
+            {# {% set progressPercent = 42 %} #}
+            {# {% set lyrics = "I fly like paper, get high like planes\nIf you catch me at the border I got visas in my name\nSometimes I think sittin' quiet's the way to go\nBut I keep trying, singing on the radio" %} #}
+
+            <div class="card">
+                <div class="card-content">
+                    <div class="media">
+                        <div class="media-left">
+                            <figure style="border-radius: 12px;" class="image is-128x128 has-background-grey-lighter">
+                                <img style="border-radius: 12px;" class="image is-128x128" src="{{ song.imageUrl }}"
+                                    alt="{{ song.name }} cover">
+                            </figure>
+                        </div>
+                        <div class="media-content">
+                            <p class="title is-4">{{ song.name }}</p>
+                            <p class="subtitle is-6">{{ song.artist }}</p>
+
+                            <progress id="progress-bar"
+                                class="progress {{ song.is_playing ? 'is-primary' : 'is-warning' }}"
+                                value="{{ progressPercent }}" max="100">{{ progressPercent }}%</progress>
+
+                            {% set current = (song.duration * progressPercent) / 100 %}
+                            {% set cur_min = (current / 60)|round(0, 'floor') %}
+                            {% set cur_sec = (current - (cur_min * 60))|round(0, 'floor') %}
+                            {% set total_min = (song.duration / 60)|round(0, 'floor') %}
+                            {% set total_sec = (song.duration - (total_min * 60))|round(0, 'floor') %}
+                            <div class="content">
+                                <strong id="progress-time">{{ '%02d:%02d'|format(cur_min, cur_sec) }}</strong> /
+                                <span>{{ '%02d:%02d'|format(total_min, total_sec) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% if song.id != 0 %}
+                    <div class="content">
+                        <h3 class="title is-6">Lyrics</h3>
+                        <div class="content">
+                            {% for line in lyrics|split("\n") %}
+
+
+                            {% if line|trim is empty %}
+                            <line style="display: block; height: 1.33em;"></line>
+                            {% else %}
+                            <line
+                                style="display: block; color: white; font-size: larger; line-height: 1.33em; overflow-wrap: anywhere;">
+                                {{ line }}</line>
+                            {% endif %}
+
+
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="content">
+                        <a class="button is-link" href="/edit?id={{ song.id }}">Edit</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>
+
+<script>
+    
+</script>

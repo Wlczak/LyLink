@@ -1,5 +1,7 @@
 <?php
 
+namespace Lylink\Interfaces\Datatypes;
+
 abstract class Track
 {
     public Album $album;

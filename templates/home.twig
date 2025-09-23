@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>LyLink — Home</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css" />
+</head>
+
+<body>
+    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <!-- <a class="navbar-item" href="/">LyLink</a> -->
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div id="navbarMenu" class="navbar-menu">
+                <div class="navbar-start">
+                    <div class="buttons">
+
+                    </div>
+                </div>
+                <div class="navbar-end">
+                    {% if auth and auth.authorized %}
+                    <div class="buttons">
+                        <a class="button is-light" href="/logout">Logout</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero is-medium is-dark">
+        <div class="hero-body">
+            <div class="container">
+                <div class="columns is-vcentered">
+                    <div class="column is-6">
+                        <h1 class="title is-1">LyLink</h1>
+                        <h2 class="subtitle is-4">Sync lyrics live with the music you're listening to.</h2>
+                        <p class="is-size-5">Multiplatform lyrics tracker with Spotify and Jellyfin integration. View
+                            synced lyrics and edit them to your liking.
+                        </p>
+                        <div class="buttons" style="margin-top:1.25rem">
+                            {% if auth and auth.authorized %}
+
+                            <a class="button is-primary" href="/lyrics">Open Lyrics</a>
+                            <a class="button is-light" href="/settings">Settings</a>
+                            <a class="button is-link" href="https://github.com/wlczak/lylink" target="_blank">GitHub</a>
+
+                            {% else %}
+                            <a class="button is-primary" href="/login">Login</a>
+                            <a class="button is-light" href="/register">Register</a>
+                            <a class="button is-link" href="https://github.com/wlczak/lylink" target="_blank">GitHub</a>
+
+
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="column is-6">
+                        <div id="now-playing-placeholder" class="card" style="background: rgba(255,255,255,0.03);">
+                            <div class="card-content">
+                                <div class="media">
+                                    <div class="media-left">
+                                        <figure id="np-image" style="border-radius:12px;"
+                                            class="image is-128x128 has-background-grey-lighter">
+                                            <img id="np-img-tag" style="border-radius:12px;" class="image is-128x128"
+                                                src="/img/albumPlaceholer.svg" alt="cover">
+                                        </figure>
+                                    </div>
+                                    <div class="media-content">
+                                        <p id="np-title" class="title is-4">Not playing</p>
+                                        <p id="np-artist" class="subtitle is-6">Connect Spotify or Jellyfin</p>
+                                        <progress id="np-progress" class="progress is-warning" value="0"
+                                            max="100">0%</progress>
+                                        <div class="content">
+                                            <strong id="np-time">00:00</strong> / <span id="np-total">00:00</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="content">
+                                    <div class="buttons">
+                                        <a id="open-lyrics-btn" class="button is-link is-small" href="/lyrics"
+                                            style="display:none">Open Lyrics</a>
+                                        <a id="edit-btn" class="button is-light is-small" href="#"
+                                            style="display:none">Edit</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="columns is-multiline">
+                <div class="column is-4">
+                    <article class="box">
+                        <h3 class="title is-5">Live Sync</h3>
+                        <p>Automatically follow playback position and follow (comming soon) lyrics in real time.</p>
+                    </article>
+                </div>
+                <div class="column is-4">
+                    <article class="box">
+                        <h3 class="title is-5">Multi-service</h3>
+                        <p>Works with Spotify today and Jellyfin via plugin — more integrations planned.</p>
+                    </article>
+                </div>
+                <div class="column is-4">
+                    <article class="box">
+                        <h3 class="title is-5">Edit & Export</h3>
+                        <p>Edit synced lyrics, save versions, and export for offline use (comming soon).</p>
+                    </article>
+                </div>
+            </div>
+
+            <div class="box">
+                <h3 class="title is-5">Quick start</h3>
+                <div class="columns">
+                    <div class="column is-6">
+                        <ol>
+                            <li>Connect your Spotify or Jellyfin in Settings.</li>
+                            <li>Open the Lyrics page to view synced lyrics for the current song.</li>
+                            <li>Edit in the editor to add/modify your cusom lyrics.</li>
+                        </ol>
+                    </div>
+                    <div class="column is-6">
+                        <p>If you are a developer, i'd welcome any and all sugestions/additions to the project.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var b = document.querySelector('.navbar-burger');
+            var m = document.getElementById('navbarMenu');
+            if (b) {
+                b.addEventListener('click', function () {
+                    b.classList.toggle('is-active');
+                    m.classList.toggle('is-active');
+                });
+            }
+        });
+        song = {};
+        song_id = "";
+        playing = false;
+        duration = 0;
+        progress = 0;
+        interval = null;
+
+        function msToTime(ms) {
+            if (!ms || ms < 0) return "00:00";
+            total = Math.floor(ms / 1000);
+            m = Math.floor(total / 60);
+            s = total - m * 60;
+            return m.toString().padStart(2, '0') + ':' + s.toString().padStart(2, '0');
+        }
+
+        function updateNowPlayingView() {
+            if (!song || !song.id) {
+                document.getElementById('np-title').textContent = "Not playing";
+                document.getElementById('np-artist').textContent = "Connect Spotify or Jellyfin";
+                document.getElementById('np-img-tag').src = "";
+                document.getElementById('np-progress').value = 0;
+                document.getElementById('np-time').textContent = "00:00";
+                document.getElementById('np-total').textContent = "00:00";
+                document.getElementById('open-lyrics-btn').style.display = "none";
+                document.getElementById('edit-btn').style.display = "none";
+                return;
+            }
+
+            document.getElementById('np-title').textContent = song.name || "Unknown";
+            document.getElementById('np-artist').textContent = song.artist || "";
+            document.getElementById('np-img-tag').src = song.imageUrl || "";
+            document.getElementById('np-total').textContent = msToTime(song.duration_ms || song.duration * 1000 || 0);
+            document.getElementById('open-lyrics-btn').style.display = song.id ? "inline-block" : "none";
+            document.getElementById('open-lyrics-btn').href = "/lyrics?id=" + song.id;
+            document.getElementById('edit-btn').style.display = song.id ? "inline-block" : "none";
+            document.getElementById('edit-btn').href = "/edit?id=" + song.id;
+            progress = song.progress_ms || 0;
+            duration = song.duration_ms || (song.duration ? song.duration * 1000 : 0);
+            if (duration > 0) {
+                document.getElementById('np-progress').value = (progress / duration) * 100;
+                if (playing) {
+                    document.getElementById('np-progress').classList.remove('is-warning');
+                    document.getElementById('np-progress').classList.add('is-primary');
+                } else {
+                    document.getElementById('np-progress').classList.remove('is-primary');
+                    document.getElementById('np-progress').classList.add('is-warning');
+                }
+            } else {
+                document.getElementById('np-progress').value = 0;
+            }
+            document.getElementById('np-time').textContent = msToTime(progress);
+        }
+
+        function tickProgress() {
+            if (playing && duration > 0) {
+                progress += 1000;
+                if (progress > duration) {
+                    progress = duration;
+                }
+                document.getElementById('np-progress').value = (progress / duration) * 100;
+                document.getElementById('np-time').textContent = msToTime(progress);
+                if (progress >= duration) {
+                    location.reload();
+                }
+            }
+        }
+
+        function pollInfo() {
+            fetch('/info', { method: 'GET' })
+                .then(r => r.json())
+                .then(data => {
+                    if (!data) return;
+                    if (data.id && data.id !== song_id) {
+                        song_id = data.id;
+                        song = data;
+                        playing = !!data.is_playing;
+                        updateNowPlayingView();
+                        if (playing && !interval) {
+                            interval = setInterval(tickProgress, 1000);
+                        }
+                        if (!playing && interval) {
+                            clearInterval(interval);
+                            interval = null;
+                        }
+                    } else {
+                        song = data;
+                        playing = !!data.is_playing;
+                        updateNowPlayingView();
+                    }
+                })
+                .catch(() => { });
+        }
+
+        pollInfo();
+        setInterval(pollInfo, 15000);
+    </script>
+</body>
+
+</html>

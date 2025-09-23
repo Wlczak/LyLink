@@ -1,4 +1,7 @@
 <?php
+
+namespace Lylink\Interfaces\Datatypes;
+
 abstract class Image
 {
     public string $url;

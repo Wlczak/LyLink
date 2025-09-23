@@ -26,8 +26,8 @@ services:
   lylink:
     image: wlczak/lylink:latest
     volumes:
-      - ./lyrics.db:/var/www/html/lyrics.db
-      - ./.env:/var/www/html/.env
+      - ./db:/var/www/html/db
+      - ./config/:/var/www/html/config/
     ports:
       - "1592:80"
     init: true

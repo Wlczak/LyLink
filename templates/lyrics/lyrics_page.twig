@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>LyLink — Sources</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css" />
+</head>
+
+<body>
+    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/">LyLink</a>
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div id="navbarMenu" class="navbar-menu">
+                <div class="navbar-start"></div>
+                <div class="navbar-end">
+                    {% if auth and auth.authorized %}
+                    <div class="buttons">
+                        <a class="button is-light" href="/logout">Logout</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <h1 class="title is-4 has-text-centered">Select lyrics source</h1>
+        <div class="container columns is-centered">
+            <div class="box column is-10">
+                <div class="columns is-multiline is-12" id="sources-list">
+                    {% for src in sources %}
+                    <div class="column is-12" id="source-card-{{ src.name|lower }}">
+                        <div class="box">
+                            <div class="columns is-vcentered is-mobile">
+                                <div class="column is-4">
+                                    <p class="subtitle is-6">{{ src.name|e }}</p>
+                                    {% if src.description %}
+                                    <p class="is-size-7">{{ src.description|e }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="column">
+                                    {% if src.current_song is defined and src.current_song %}
+                                    <div class="media">
+                                        <div class="media-left">
+                                            <figure class="image is-48x48">
+                                                <img id="src-img-{{ src.name|lower }}"
+                                                    src="{{ src.current_song.imageUrl|default('/img/albumPlaceholer.svg') }}"
+                                                    alt="cover" style="border-radius:6px">
+                                            </figure>
+                                        </div>
+                                        <div class="media-content">
+                                            <p id="src-title-{{ src.name|lower }}" class="is-size-6">
+                                                {{ src.current_song.title|e }}</p>
+                                            <p id="src-artist-{{ src.name|lower }}" class="is-size-7 has-text-grey">
+                                                {{ src.current_song.artist|e }}</p>
+                                            <progress id="src-progress-{{ src.name|lower }}" class="progress is-small"
+                                                value="{{ (src.current_song.progress_ms|default(0) / (src.current_song.duration_ms|default(1))) * 100 }}"
+                                                max="100">0%</progress>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <p class="is-size-7 has-text-grey">Not playing</p>
+                                    {% endif %}
+                                </div>
+
+                                <div class="column is-narrow">
+                                    <div class="buttons">
+                                        <!-- <a class="button is-link is-small" style="min-width:72px"
+                                            href="/source/select?id={{ src.name|lower }}">Use</a> -->
+                                        <a id="src-open-lyrics-{{ src.name|lower }}" class="button is-light is-small"
+                                            style="min-width:96px"
+                                            href="{{ src.route }}">Open
+                                            lyrics</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="column is-12">
+                        <div class="notification is-warning">No sources available</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var burger = document.querySelector('.navbar-burger');
+            var menu = document.getElementById('navbarMenu');
+            if (burger) {
+                burger.addEventListener('click', function () {
+                    burger.classList.toggle('is-active');
+                    menu.classList.toggle('is-active');
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

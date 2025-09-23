@@ -1,6 +1,6 @@
 <?php
 
-namespace Lylink;
+namespace Lylink\Models;
 
 use Doctrine\ORM\Mapping as ORM;
 

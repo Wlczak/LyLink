@@ -1,5 +1,7 @@
 <?php
 
+namespace Lylink\Interfaces\Datatypes;
+
 abstract class PlaybackInfo
 {
     public string $repeat_state;

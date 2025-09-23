@@ -1,4 +1,7 @@
 <?php
+
+namespace Lylink\Interfaces\Datatypes;
+
 abstract class Album
 {
     public string $album_type;

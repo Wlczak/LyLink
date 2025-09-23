@@ -1,4 +1,7 @@
 <?php
+
+namespace Lylink\Interfaces\Datatypes;
+
 abstract class Artist
 {
     public ExternalUrls|null $external_urls;

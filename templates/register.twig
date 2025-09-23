@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>LyLink — Register</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css" />
+</head>
+
+<body>
+    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/">LyLink</a>
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+            <div id="navbarMenu" class="navbar-menu">
+                <div class="navbar-start"></div>
+                <div class="navbar-end">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a class="button is-light" href="/login">Login</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-6-tablet is-5-desktop is-4-widescreen">
+                    <div class="box">
+                        <h1 class="title is-4 has-text-centered">Create an account</h1>
+                        {% if errors is defined and errors %}
+                        <div class="notification is-danger">
+                            <button class="delete" onclick="this.parentElement.remove()"></button>
+                            <strong>There were errors with your submission:</strong>
+                            <ul>
+                                {% for err in errors %}
+                                <li>{{ err }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        {% if success is defined and success %}
+                        <div class="notification is-success">
+                            <button class="delete" onclick="this.parentElement.remove()"></button>
+                            <strong>Account created!</strong>
+                            <p>Your account has been created successfully. You can <a href="/login">log in now</a>.</p>
+                        </div>
+                        {% else %}
+                        <form id="register-form" action="/register" method="POST" autocomplete="on" novalidate>
+                            <div class="field">
+                                <label class="label">Username</label>
+                                <div class="control">
+                                    <input class="input" type="text" name="username" id="username"
+                                        placeholder="username" required value="{{ old.username|default('')|e }}" />
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="label">Email</label>
+                                <div class="control">
+                                    <input class="input" type="email" name="email" id="email"
+                                        placeholder="you@example.com" required value="{{ old.email|default('')|e }}" />
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="label">Password</label>
+                                <div class="control has-icons-right">
+                                    <input class="input" type="password" name="password" id="password"
+                                        placeholder="Choose a password" required />
+                                </div>
+                                <p id="pwd-strength" class="help is-hidden"></p>
+                            </div>
+
+                            <div class="field">
+                                <label class="label">Confirm password</label>
+                                <div class="control has-icons-right">
+                                    <input class="input" type="password" name="password_confirm" id="password_confirm"
+                                        placeholder="Repeat your password" required />
+                                </div>
+                                <p id="pwd-match" class="help is-hidden"></p>
+                            </div>
+
+                            <div class="field">
+                                <div class="control">
+                                    <label class="checkbox">
+                                        <input type="checkbox" id="agree" required />
+                                        I agree to the <a href="/terms">terms of service</a>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <div class="control">
+                                    <button id="submit-btn" type="submit" class="button is-primary is-fullwidth"
+                                        disabled>Create account</button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <hr />
+
+                        <div class="has-text-centered">
+                            <p class="is-size-7">Already have an account? <a href="/login">Log in</a></p>
+                        </div>
+
+
+                        <!-- <p class="has-text-centered is-size-7">By creating an account you agree to our terms.</p> -->
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var burger = document.querySelector('.navbar-burger');
+            var menu = document.getElementById('navbarMenu');
+            if (burger) {
+                burger.addEventListener('click', function () {
+                    burger.classList.toggle('is-active');
+                    menu.classList.toggle('is-active');
+                });
+            }
+
+            var pwd = document.getElementById('password');
+            var pwdConfirm = document.getElementById('password_confirm');
+            var toggle = document.getElementById('toggle-password');
+            var toggleConfirm = document.getElementById('toggle-password-confirm');
+            var pwdMatch = document.getElementById('pwd-match');
+            var pwdStrength = document.getElementById('pwd-strength');
+            var submitBtn = document.getElementById('submit-btn');
+            var agree = document.getElementById('agree');
+            var form = document.getElementById('register-form');
+
+            function strengthScore(s) {
+                var score = 0;
+                if (!s) return score;
+                if (s.length >= 8) score++;
+                if (/[A-Z]/.test(s)) score++;
+                if (/[0-9]/.test(s)) score++;
+                if (/[^A-Za-z0-9]/.test(s)) score++;
+                return score;
+            }
+
+            function updatePwdFeedback() {
+                var s = pwd.value;
+                var score = strengthScore(s);
+                if (!s) {
+                    pwdStrength.classList.add('is-hidden');
+                } else {
+                    pwdStrength.classList.remove('is-hidden');
+                    if (score <= 1) {
+                        pwdStrength.textContent = 'Too weak';
+                        pwdStrength.className = 'help is-danger';
+                    } else if (score === 2) {
+                        pwdStrength.textContent = 'Weak';
+                        pwdStrength.className = 'help is-warning';
+                    } else if (score === 3) {
+                        pwdStrength.textContent = 'Good';
+                        pwdStrength.className = 'help is-success';
+                    } else {
+                        pwdStrength.textContent = 'Strong';
+                        pwdStrength.className = 'help is-success';
+                    }
+                }
+            }
+
+            function updateMatchFeedback() {
+                if (!pwdConfirm.value && !pwd.value) {
+                    pwdMatch.classList.add('is-hidden');
+                    return;
+                }
+                if (pwd.value === pwdConfirm.value) {
+                    pwdMatch.classList.remove('is-hidden');
+                    pwdMatch.className = 'help is-success';
+                    pwdMatch.textContent = 'Passwords match';
+                } else {
+                    pwdMatch.classList.remove('is-hidden');
+                    pwdMatch.className = 'help is-danger';
+                    pwdMatch.textContent = 'Passwords do not match';
+                }
+            }
+
+            function updateSubmitState() {
+                var can = pwd.value && pwdConfirm.value && pwd.value === pwdConfirm.value && agree.checked && document.getElementById('username').value.trim() !== '' && document.getElementById('email').value.trim() !== '';
+                submitBtn.disabled = !can;
+            }
+
+            pwd.addEventListener('input', function () {
+                updatePwdFeedback();
+                updateMatchFeedback();
+                updateSubmitState();
+            });
+
+            pwdConfirm.addEventListener('input', function () {
+                updateMatchFeedback();
+                updateSubmitState();
+            });
+
+            document.getElementById('username').addEventListener('input', updateSubmitState);
+            document.getElementById('email').addEventListener('input', updateSubmitState);
+            agree.addEventListener('change', updateSubmitState);
+
+            toggle.addEventListener('click', function () {
+                pwd.type = pwd.type === 'password' ? 'text' : 'password';
+            });
+
+            toggleConfirm.addEventListener('click', function () {
+                pwdConfirm.type = pwdConfirm.type === 'password' ? 'text' : 'password';
+            });
+
+            form.addEventListener('submit', function (e) {
+                if (submitBtn.disabled) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
