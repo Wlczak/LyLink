@@ -9,6 +9,7 @@ use Lylink\Auth\DefaultAuth;
 use Lylink\Interfaces\Datatypes\PlaybackInfo;
 use Lylink\Interfaces\Datatypes\Track;
 use Lylink\Models\Lyrics;
+use Lylink\Models\Settings;
 use Lylink\Routes\Integrations\Api\IntegrationApi;
 use Lylink\Routes\Integrations\Jellyfin;
 use Pecee\SimpleRouter\SimpleRouter;
@@ -131,7 +132,7 @@ class Router
             header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
             die();
         }
-        return self::$twig->load('settings.twig')->render(['user' => $user]);
+        return self::$twig->load('settings.twig')->render(['user' => $user, 'settings' => Settings::getSettings($user)]);
     }
 
     function lyrics(): void

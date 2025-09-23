@@ -75,9 +75,14 @@ class Settings
         return $this->user;
     }
 
-    public static function getSettings(int $userId): ?Settings
+    public static function getSettings(User $user): Settings
     {
         $em = DoctrineRegistry::get();
-        return $em->getRepository(Settings::class)->findOneBy(['user_id' => $userId]);
+
+        $settings = $em->getRepository(Settings::class)->findOneBy(['user' => $user->getId()]);
+        if ($settings == null) {
+            return new Settings($user);
+        }
+        return $settings;
     }
 }

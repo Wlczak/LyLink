@@ -5,6 +5,7 @@ namespace Lylink\Auth;
 use Lylink\DoctrineRegistry;
 use Lylink\Interfaces\Auth\AccountHandler;
 use Lylink\Interfaces\Auth\Authorizator;
+use Lylink\Models\Settings;
 use Lylink\Models\User;
 use Lylink\Traits\Authorizable;
 
@@ -103,6 +104,8 @@ class DefaultAuth implements Authorizator, AccountHandler
 
             try {
                 $em->persist($user);
+                $settings = new Settings($user);
+                $em->persist($settings);
                 $em->flush();
                 return [
                     'errors' => $errors,
