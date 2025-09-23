@@ -2,7 +2,9 @@
 
 namespace Lylink\Routes\Integrations;
 
+use Lylink\Auth\AuthSession;
 use Lylink\Interfaces\Integration\IntegrationRoute;
+use Lylink\Models\Settings;
 use Lylink\Traits\IntegrationSetup;
 
 class Jellyfin extends \Lylink\Router implements IntegrationRoute
@@ -25,6 +27,30 @@ class Jellyfin extends \Lylink\Router implements IntegrationRoute
 
     public static function disconnect(): string
     {
-        return self::$twig->load('integrations/jellyfin/disconnect.twig')->render(['test' => 'test']);
+        $auth = AuthSession::get();
+        if ($auth === null) {
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            die();
+        }
+
+        $user = $auth->getUser();
+        if ($user === null) {
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            die();
+        }
+
+        $id = $user->getId();
+        if ($id === null) {
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            die();
+        }
+
+        $settings = Settings::getSettings($id);
+
+        $settings->disconnectJellyfin();
+
+        header('Location: ' . $_ENV['BASE_DOMAIN'] . '/settings');
+
+        return "";
     }
 }

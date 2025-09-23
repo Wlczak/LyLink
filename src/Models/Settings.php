@@ -86,4 +86,15 @@ class Settings
         }
         return $settings;
     }
+
+    public function disconnectJellyfin(){
+        $this->allow_jellyfin_login = false;
+        $this->jellyfin_connected = false;
+        $this->jellyfin_server = null;
+        $this->jellyfin_user_id = null;
+        $this->jellyfin_token = null;
+        $em = DoctrineRegistry::get();
+        $em->persist($this);
+        $em->flush();
+    }
 }
