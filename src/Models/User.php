@@ -77,6 +77,7 @@ class User
         $settings->jellyfin_token = $token;
         $settings->jellyfin_user_id = null;
         $settings->allow_jellyfin_login = $allow;
+        $settings->jellyfin_connected = true;
 
         $em->persist($settings);
         $em->flush();

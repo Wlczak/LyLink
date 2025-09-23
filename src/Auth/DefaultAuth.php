@@ -105,6 +105,7 @@ class DefaultAuth implements Authorizator, AccountHandler
 
             try {
                 $em->persist($user);
+                $em->flush();
                 $id = $user->getId();
                 if ($id === null) {
                     throw new Exception("user did not save to db");
