@@ -22,7 +22,7 @@ class Router
     public static \Twig\Environment $twig;
     public static function handle(): void
     {
-        $dotenv = Dotenv::createImmutable(__DIR__ . '/..');
+        $dotenv = Dotenv::createImmutable(__DIR__ . '/../config');
         $dotenv->safeLoad();
         $loader = new \Twig\Loader\FilesystemLoader(__DIR__ . '/../templates');
         self::$twig = new \Twig\Environment($loader, [

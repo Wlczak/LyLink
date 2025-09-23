@@ -15,7 +15,7 @@ $config = ORMSetup::createAttributeMetadataConfiguration( // on PHP < 8.4, use O
 // configuring the database connection
 $connection = DriverManager::getConnection([
     'driver' => 'pdo_sqlite',
-    'path' => __DIR__ . '/lyrics.db'
+    'path' => __DIR__ . '/db/lyrics.db'
 ], $config);
 // obtaining the entity manager
 $entityManager = new EntityManager($connection, $config);
