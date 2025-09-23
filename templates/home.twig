@@ -28,7 +28,7 @@
                     </div>
                 </div>
                 <div class="navbar-end">
-                    {% if user and user.authorized %}
+                    {% if auth and auth.authorized %}
                     <div class="buttons">
                         <a class="button is-light" href="/logout">Logout</a>
                     </div>
@@ -49,7 +49,7 @@
                             synced lyrics and edit them to your liking.
                         </p>
                         <div class="buttons" style="margin-top:1.25rem">
-                            {% if user and user.authorized %}
+                            {% if auth and auth.authorized %}
 
                             <a class="button is-primary" href="/lyrics">Open Lyrics</a>
                             <a class="button is-light" href="/settings">Settings</a>

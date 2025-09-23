@@ -13,6 +13,7 @@ use Lylink\Models\Lyrics;
 use Lylink\Models\Settings;
 use Lylink\Routes\Integrations\Api\IntegrationApi;
 use Lylink\Routes\Integrations\Jellyfin;
+use Lylink\Routes\LyricsRoute;
 use Pecee\SimpleRouter\SimpleRouter;
 use SpotifyWebAPI\Session;
 use SpotifyWebAPI\SpotifyWebAPI;
@@ -37,7 +38,7 @@ class Router
 
         ## Authenticated routes ##
         SimpleRouter::group(['middleware' => \Lylink\Middleware\AuthMiddleware::class], function () {
-            SimpleRouter::get('/lyrics', [self::class, 'lyrics']);
+            SimpleRouter::partialGroup('/lyrics', LyricsRoute::setup());
             SimpleRouter::get('/edit', [self::class, 'edit']);
             SimpleRouter::get('/settings', [self::class, 'settings']);
             SimpleRouter::partialGroup('/integrations', function () {
@@ -80,7 +81,7 @@ class Router
     public static function home(): string
     {
         return self::$twig->load('home.twig')->render([
-            'user' => AuthSession::get()
+            'auth' => AuthSession::get()
         ]);
     }
 
