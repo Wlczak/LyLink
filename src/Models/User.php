@@ -3,6 +3,8 @@
 namespace Lylink\Models;
 
 use Doctrine\ORM\Mapping as ORM;
+use Exception;
+use Lylink\DoctrineRegistry;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'users')]
@@ -25,18 +27,6 @@ class User
 
     #[ORM\Column(type: 'string')]
     private string $password;
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    public string $spotifyId = "";
-
-    #[ORM\Column(type: 'boolean')]
-    public bool $allowSpotifyLogin = false;
-
-    #[ORM\Column(type: 'string', nullable: true)]
-    public string $jellyfinAccountId = "";
-
-    #[ORM\Column(type: 'boolean')]
-    public bool $allowJellyfinLogin = false;
 
     /**
      * @return int|null
@@ -61,6 +51,36 @@ class User
         $this->email = $email;
         $this->username = $username;
         $this->password = $password;
+    }
+
+    public function __toString(): string
+    {
+        return $this->username;
+    }
+
+    public function updateJellyfin(string $address, string $token, bool $allow): void
+    {
+        $em = DoctrineRegistry::get();
+
+        $id = $this->id;
+
+        if ($id === null) {
+            throw new Exception("this user is not in db");
+        }
+
+        $settings = Settings::getSettings($id);
+
+        if ($settings == null) {
+            $settings = new Settings($id);
+        }
+        $settings->jellyfin_server = $address;
+        $settings->jellyfin_token = $token;
+        $settings->jellyfin_user_id = null;
+        $settings->allow_jellyfin_login = $allow;
+        $settings->jellyfin_connected = true;
+
+        $em->persist($settings);
+        $em->flush();
     }
 
 }

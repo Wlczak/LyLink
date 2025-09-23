@@ -2,9 +2,11 @@
 
 namespace Lylink\Auth;
 
+use Exception;
 use Lylink\DoctrineRegistry;
 use Lylink\Interfaces\Auth\AccountHandler;
 use Lylink\Interfaces\Auth\Authorizator;
+use Lylink\Models\Settings;
 use Lylink\Models\User;
 use Lylink\Traits\Authorizable;
 
@@ -42,6 +44,7 @@ class DefaultAuth implements Authorizator, AccountHandler
             if (!$user->checkPassword($password)) {
                 $data["errors"][] = 'Invalid password';
             }
+            $this->uid = $user->getId() ?? 0;
         }
 
         if ($data["errors"] === []) {
@@ -49,10 +52,6 @@ class DefaultAuth implements Authorizator, AccountHandler
             $this->authorized = true;
         }
         return $data;
-    }
-
-    public function logout(): void
-    {
     }
 
     /**
@@ -107,6 +106,13 @@ class DefaultAuth implements Authorizator, AccountHandler
             try {
                 $em->persist($user);
                 $em->flush();
+                $id = $user->getId();
+                if ($id === null) {
+                    throw new Exception("user did not save to db");
+                }
+                $settings = new Settings($id);
+                $em->persist($settings);
+                $em->flush();
                 return [
                     'errors' => $errors,
                     'success' => true,
@@ -126,5 +132,11 @@ class DefaultAuth implements Authorizator, AccountHandler
                 'username' => $username
             ]
         ];
+    }
+
+    public function getUser(): ?User
+    {
+        $em = DoctrineRegistry::get();
+        return $em->getRepository(User::class)->find($this->getUid());
     }
 }

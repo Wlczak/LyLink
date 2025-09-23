@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>LyLink — Jellyfin Connect</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css" />
+</head>
+
+<body>
+    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/">LyLink</a>
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div id="navbarMenu" class="navbar-menu">
+                <div class="navbar-start"></div>
+                <div class="navbar-end">
+                    <div class="buttons">
+                        <a class="button is-light" href="/settings">Back to settings</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-6-tablet is-5-desktop is-4-widescreen">
+                    <div class="box">
+                        <h1 class="title is-4 has-text-centered">Connect Jellyfin</h1>
+
+                        {% if errors is defined and errors %}
+                        <div class="notification is-danger">
+                            <button class="delete" onclick="this.parentElement.remove()"></button>
+                            <strong>There were errors with your submission:</strong>
+                            <ul>
+                                {% for err in errors %}
+                                <li>{{ err }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        {% if success is defined and success %}
+                        <div class="notification is-success">
+                            <button class="delete" onclick="this.parentElement.remove()"></button>
+                            <strong>Connected!</strong>
+                            <p>Your Jellyfin server has been connected. You can manage it in <a
+                                    href="/settings">Settings</a>.</p>
+                        </div>
+                        {% else %}
+
+                        <form id="jellyfin-form" action="/integrations/jellyfin/connect" method="POST" novalidate>
+
+                            {% if csrf_token is defined %}
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+                            {% endif %}
+
+                            <div class="field">
+                                <label class="label">LyLink Jellyfin address</label>
+                                <div class="control">
+                                    <input class="input" type="url" name="lylink_address" id="lylink_address"
+                                        placeholder="http://your-jellylink-server:port" required
+                                        value="{{ old.lylink_address|default('')|e }}" />
+                                    <!-- <span class="icon is-small is-left">http</span> -->
+                                </div>
+                                <p id="addr-help" class="help is-hidden">Please enter a valid URL (including http:// or
+                                    https://).</p>
+                            </div>
+
+                            <input id="connect-token" name="connect_token" type="text" hidden value="">
+
+                            <div class="field">
+                                <label class="label">Jellyfin username</label>
+                                <div class="control">
+                                    <input class="input" type="text" name="username" id="username"
+                                        placeholder="username" required value="{{ old.username|default('')|e }}" />
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="label">Jellyfin password</label>
+                                <div class="control has-icons-right">
+                                    <input class="input" type="password" name="password" id="password"
+                                        placeholder="password" required />
+                                    <!-- <span class="icon is-small is-right" id="toggle-password"
+                                        style="cursor:pointer">👁️</span> -->
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="checkbox">
+                                    <input type="checkbox" name="remember" id="remember"
+                                        {% if old.remember %}checked{% endif %}>
+                                    Remember this server for future logins
+                                </label>
+                            </div>
+
+                            <div class="field">
+                                <button id="connect-test" class="button is-danger is-fullwidth" onclick="return false"
+                                    disabled>Test
+                                    connection</button>
+                            </div>
+
+                            <div class="field">
+                                <div class="control">
+                                    <button id="connect-btn" class="button is-primary is-fullwidth mg-small" disabled
+                                        onclick="return false">Connect
+                                        Jellyfin</button>
+                                </div>
+                            </div>
+
+                        </form>
+
+                        <hr />
+                        <p class="is-size-7">If your Jellyfin server is using a self-signed certificate, make sure the
+                            LyLink plugin endpoint is reachable and trusted. For assistance, see <a
+                                href="/docs/jellyfin">Jellyfin integration docs</a>.</p>
+
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Navbar burger
+            var burger = document.querySelector('.navbar-burger');
+            var menu = document.getElementById('navbarMenu');
+            if (burger) {
+                burger.addEventListener('click', function () {
+                    burger.classList.toggle('is-active');
+                    menu.classList.toggle('is-active');
+                });
+            }
+
+            // Form validation
+            var addr = document.getElementById('lylink_address');
+            var username = document.getElementById('username');
+            var password = document.getElementById('password');
+            var connectBtn = document.getElementById('connect-btn');
+            var addrHelp = document.getElementById('addr-help');
+            var connTest = document.getElementById('connect-test');
+
+            function isValidUrl(u) {
+                try {
+                    var p = new URL(u);
+                    return p.protocol === 'http:' || p.protocol === 'https:';
+                } catch (e) {
+                    return false;
+                }
+            }
+
+            function updateConnectState() {
+                var ok = addr.value.trim() !== '' && isValidUrl(addr.value) && username.value.trim() !== '' && password.value.trim() !== '' && connTest.value.trim() === 'ok';
+                connectBtn.disabled = !ok;
+                if (!isValidUrl(addr.value)) {
+                    if (addr.value) {
+                        addrHelp.classList.remove('is-hidden');
+                    }
+                    connTest.disabled = true;
+                } else {
+                    addrHelp.classList.add('is-hidden');
+                    connTest.disabled = false;
+                }
+            }
+
+            function testConnection() {
+                var address = document.getElementById('lylink_address').value;
+                var testbtn = document.getElementById('connect-test');
+                address = address.replace(/\/$/, '');
+                document.getElementById('lylink_address').value = address;
+
+                testbtn.disabled = true;
+                if (isValidUrl(address)) {
+                    fetch(address + '/handshake', { method: 'GET' })
+                        .then(response =>
+                            response.text().then(text => ({ response, text }))
+                        ).then(({ text, response }) => {
+                            if (response.ok && response.status == 200 && text == 'hand shaken') {
+                                testbtn.value = 'ok';
+                                testbtn.classList.remove('is-danger');
+                                testbtn.classList.add('is-success');
+                            } else {
+                                testbtn.value = 'error';
+                                testbtn.classList.remove('is-success');
+                                testbtn.classList.add('is-danger');
+                            }
+                            testbtn.disabled = false;
+                            updateConnectState();
+
+                        }).catch(error => {
+                            testbtn.value = 'error';
+                            testbtn.classList.remove('is-success');
+                            testbtn.classList.add('is-danger');
+                            testbtn.disabled = false;
+                        });
+                }
+
+            }
+
+            function updateTestFeedback() {
+                connTest.value = '';
+                connTest.classList.remove('is-success');
+                connTest.classList.add('is-danger');
+                updateConnectState();
+            }
+
+            function submitConnectionForm() {
+                let address = document.getElementById('lylink_address').value;
+                let username = document.getElementById('username').value;
+                let password = document.getElementById('password').value;
+
+                fetch(address + '/getToken', { method: 'POST', body: JSON.stringify({ username: username, password: password }) })
+                    .then(response => response.text())
+                    .then(text => {
+                        document.getElementById('connect-token').value = text;
+                        document.getElementById('jellyfin-form').submit();
+                    });
+            }
+
+            if (addr) addr.addEventListener('input', updateConnectState);
+            if (addr) addr.addEventListener('input', updateTestFeedback);
+            if (username) username.addEventListener('input', updateConnectState);
+            if (password) password.addEventListener('input', updateConnectState);
+            if (connTest) connTest.addEventListener('input', updateConnectState);
+            if (connTest) connTest.addEventListener('click', testConnection);
+            if (connectBtn) connectBtn.addEventListener('click', submitConnectionForm);
+
+
+            // Toggle password visibility
+            var toggle = document.getElementById('toggle-password');
+            if (toggle) {
+                toggle.addEventListener('click', function () {
+                    password.type = password.type === 'password' ? 'text' : 'password';
+                });
+            }
+
+            updateConnectState();
+        });
+
+    </script>
+</body>
+
+</html>

@@ -3,12 +3,16 @@ declare (strict_types = 1);
 
 namespace Lylink;
 
-use Lylink\Auth\AuthSession;
 use Dotenv\Dotenv;
+use Exception;
+use Lylink\Auth\AuthSession;
 use Lylink\Auth\DefaultAuth;
 use Lylink\Interfaces\Datatypes\PlaybackInfo;
 use Lylink\Interfaces\Datatypes\Track;
 use Lylink\Models\Lyrics;
+use Lylink\Models\Settings;
+use Lylink\Routes\Integrations\Api\IntegrationApi;
+use Lylink\Routes\Integrations\Jellyfin;
 use Pecee\SimpleRouter\SimpleRouter;
 use SpotifyWebAPI\Session;
 use SpotifyWebAPI\SpotifyWebAPI;
@@ -35,6 +39,11 @@ class Router
         SimpleRouter::group(['middleware' => \Lylink\Middleware\AuthMiddleware::class], function () {
             SimpleRouter::get('/lyrics', [self::class, 'lyrics']);
             SimpleRouter::get('/edit', [self::class, 'edit']);
+            SimpleRouter::get('/settings', [self::class, 'settings']);
+            SimpleRouter::partialGroup('/integrations', function () {
+                SimpleRouter::partialGroup('/jellyfin', Jellyfin::setup());
+                SimpleRouter::partialGroup('/api', IntegrationApi::setup());
+            });
         });
 
         SimpleRouter::get('/login', [self::class, 'login']);
@@ -110,6 +119,25 @@ class Router
         $data = $auth->register($email, $username, $pass, $passCheck);
 
         return self::$twig->load('register.twig')->render($data);
+    }
+
+    function settings(): string
+    {
+        $auth = AuthSession::get();
+        if ($auth == null) {
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            die();
+        }
+        $user = $auth->getUser();
+        if ($user == null) {
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            die();
+        }
+        $id = $user->getId();
+        if ($id === null) {
+            throw new Exception("invalid user id");
+        }
+        return self::$twig->load('settings.twig')->render(['user' => $user, 'settings' => Settings::getSettings($id)]);
     }
 
     function lyrics(): void
