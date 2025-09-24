@@ -33,16 +33,24 @@ function getPlaybackStatus(address: string, token: string) {
         });
 }
 function getMediaInfo(address: string, token: string) {
+    const placeholder = () => {
+        const name = document.getElementById("name") as HTMLParagraphElement;
+        const img = document.getElementById("cover-image") as HTMLImageElement;
+        img.src = "/img/albumPlaceholer.svg";
+        const nameValue = "Media does not exist";
+        name.innerHTML = nameValue;
+        return;
+    };
     const mediaId = new URLSearchParams(window.location.search).get("ep_id");
+    if (mediaId == null || mediaId == undefined || mediaId == "") {
+        placeholder();
+        return;
+    }
     fetch(address + "/Item/" + mediaId, { method: "POST", body: JSON.stringify({ token: token }) })
         .then((response) => response.json())
         .then((data: MediaInfo | null | undefined) => {
             if (data === null || data === undefined) {
-                const name = document.getElementById("name") as HTMLParagraphElement;
-                const img = document.getElementById("cover-image") as HTMLImageElement;
-                img.src = "/img/albumPlaceholer.svg";
-                const nameValue = "Media does not exist";
-                name.innerHTML = nameValue;
+                placeholder();
                 return;
             }
             console.log(data.Name);
