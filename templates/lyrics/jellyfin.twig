@@ -42,7 +42,7 @@
                             {% set total_sec = (song.duration - (total_min * 60))|round(0, 'floor') %}
                             <div class="content">
                                 <strong id="progress-time">{{ '%02d:%02d'|format(cur_min, cur_sec) }}</strong> /
-                                <span>{{ '%02d:%02d'|format(total_min, total_sec) }}</span>
+                                <span id="total-time">{{ '%02d:%02d'|format(total_min, total_sec) }}</span>
                             </div>
                         </div>
                     </div>

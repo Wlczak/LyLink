@@ -8,9 +8,9 @@ interface MediaInfo {
 
 
 interface PlaybackInfo {
-  RunTimeTicks: number
+  RunTimeTicks: bigint
   PlayState: {
-    PositionTicks: number
+    PositionTicks: bigint
     CanSeek: boolean
     IsPaused: boolean
     IsMuted: boolean
