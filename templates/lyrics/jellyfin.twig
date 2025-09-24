@@ -8,10 +8,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css" />
     <script type="module">
         import { start } from '/dist/jellyfin.js';
-        window.Variables = {};
-        window.Variables.address = "{{ address }}";
-        window.Variables.token = "{{ token }}";
-        start();
+        let address = "{{ address }}";
+        let token = "{{ token }}";
+        start(address, token);
     </script>
     <script type="module" src="/dist/jellyfin.js"></script>
 </head>

@@ -1,14 +1,6 @@
-export function start() {
-    let variables: Variables;
-    if (!window.Variables) {
-        console.error("Variables is not defined");
-    } else {
-        variables = window.Variables;
-        const address = variables.address;
-        const token = variables.token;
-        getPlaybackStatus(address, token);
-        // getMediaInfo(address, token);
-    }
+export function start(address: string, token: string) {
+    getPlaybackStatus(address, token);
+    // getMediaInfo(address, token);
 }
 
 function getPlaybackStatus(address: string, token: string) {
@@ -23,7 +15,7 @@ function getPlaybackStatus(address: string, token: string) {
                 setTimeout(() => {
                     window.location.reload();
                 }, 100);
-            }else{
+            } else {
                 getMediaInfo(address, token);
             }
         });
