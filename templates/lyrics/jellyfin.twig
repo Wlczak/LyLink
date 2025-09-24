@@ -6,6 +6,14 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>LyLink — {{ song.name }}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css" />
+    <script type="module">
+        import { start } from '/dist/jellyfin.js';
+        window.Variables = {};
+        window.Variables.address = "{{ address }}";
+        window.Variables.token = "{{ token }}";
+        start();
+    </script>
+    <script type="module" src="/dist/jellyfin.js"></script>
 </head>
 
 <body>
@@ -67,33 +75,3 @@
 </body>
 
 </html>
-
-<script>
-    address = "{{ address }}";
-    token = "{{ token }}";
-    function getPlaybackStatus() {
-        fetch(address + '/getPlaybackInfo', { method: 'POST', body: JSON.stringify({ token: token }) })
-            .then(response => response.json())
-            .then(data => {
-                item = data[0]
-                id = new URLSearchParams(window.location.search).get('ep_id');
-                if (id == null || id != item.PlayState.MediaSourceId) {
-                    window.location.search = '?ep_id=' + item.PlayState.MediaSourceId;
-
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 100)
-                }
-            })
-    }
-    function getMediaInfo() {
-        fetch(address + '/Item', { method: 'POST', body: JSON.stringify({ token: token }) })
-            .then(response => response.json())
-            .then(data => {
-                item = data[0]
-                document.getElementById('progress-bar').max = item.Duration
-                document.getElementById('progress-time').innerHTML = '00:00'
-            })
-    }
-    getPlaybackStatus();
-</script>
