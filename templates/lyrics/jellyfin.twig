@@ -70,12 +70,22 @@
 
 <script>
     address = "{{ address }}";
-    tokent = "{{ token }}";
+    token = "{{ token }}";
     function getPlaybackStatus() {
-        fetch(address + '/getPlaybackInfo', { method: 'POST' })
+        fetch(address + '/getPlaybackInfo', { method: 'POST', body: JSON.stringify({ token: token }) })
             .then(response => response.json())
             .then(data => {
-                console.log(data);
+                item = data[0]
+                id = new URLSearchParams(window.location.search).get('ep_id');
+                if (id == null || id != item.PlayState.MediaSourceId) {
+                    window.location.search = '?ep_id=' + item.PlayState.MediaSourceId;
+
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 100)
+                }
+            })
+    }
             })
     }
     getPlaybackStatus();
