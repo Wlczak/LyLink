@@ -56,28 +56,32 @@
                         <div class="notification is-success">
                             <button class="delete" onclick="this.parentElement.remove()"></button>
                             <strong>Email verified!</strong>
-                            <p>Your email <strong>{{ email|e }}</strong> has been verified. You can <a href="/login">log in now</a>.</p>
+                            <p>Your email <strong>{{ email|e }}</strong> has been verified. You can <a href="/login">log
+                                    in now</a>.</p>
                         </div>
                         {% else %}
 
                         <div class="content">
-                            <p>We've sent a verification link to <strong>{{ email|e }}</strong>. Copy the recived code to verify your email.</p>
+                            <p>We've sent a verification link to <strong>{{ email|e }}</strong>. Copy the recived code
+                                to verify your email.</p>
                             {% if expires_at is defined %}
                             <p class="is-size-7">Link expires at: {{ expires_at }}</p>
                             {% endif %}
                         </div>
 
-                        <form id="verify-code-form" action="/verify" method="POST" autocomplete="off" novalidate>
+                        <form id="verify-code-form" action="/email/verify" method="POST" autocomplete="off" novalidate>
                             <div class="field">
                                 <label class="label">Verification code</label>
                                 <div class="control">
-                                    <input class="input" type="text" name="code" id="code" placeholder="Enter verification code" value="{{ old.code|default('')|e }}" />
+                                    <input class="input" type="text" name="code" id="code"
+                                        placeholder="Enter verification code" value="{{ old.code|default('')|e }}" />
                                 </div>
                             </div>
 
                             <div class="field">
                                 <div class="control">
-                                    <button id="verify-btn" type="submit" class="button is-primary is-fullwidth" disabled>Verify email</button>
+                                    <button id="verify-btn" type="submit" class="button is-primary is-fullwidth"
+                                        disabled>Verify email</button>
                                 </div>
                             </div>
                         </form>
@@ -87,7 +91,9 @@
                         <form id="resend-form" action="/verify/resend" method="POST" novalidate>
                             <div class="field">
                                 <div class="control">
-                                    <button id="resend-btn" type="submit" class="button is-light is-fullwidth" {% if resend_disabled is defined and resend_disabled %}disabled{% endif %}>Resend verification email</button>
+                                    <button id="resend-btn" type="submit" class="button is-light is-fullwidth"
+                                        {% if resend_disabled is defined and resend_disabled %}disabled{% endif %}>Resend
+                                        verification email</button>
                                 </div>
                             </div>
                         </form>

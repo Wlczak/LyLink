@@ -113,7 +113,7 @@
                 {{ app_name|default('LyLink')|e }} account. Enter this code in the verification form. Do not share it
                 with anyone.</p>
               <div class="code-box" aria-label="Verification code">{{ code|e }}</div>
-              {#<p class="muted">This code will expire in {{ expires_minutes|default(30) }} minutes.</p>#}
+              <p class="muted">This code will expire in {{ expires_minutes|default(30) }} minutes.</p>
             </td>
           </tr>
           <tr>
