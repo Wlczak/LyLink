@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>LyLink — Verify Email</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css" />
+</head>
+
+<body>
+    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/">LyLink</a>
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+            <div id="navbarMenu" class="navbar-menu">
+                <div class="navbar-start"></div>
+                <div class="navbar-end">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a class="button is-light" href="/login">Login</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-6-tablet is-5-desktop is-4-widescreen">
+                    <div class="box">
+                        <h1 class="title is-4 has-text-centered">Verify your email</h1>
+
+                        {% if errors is defined and errors %}
+                        <div class="notification is-danger">
+                            <button class="delete" onclick="this.parentElement.remove()"></button>
+                            <strong>There were problems:</strong>
+                            <ul>
+                                {% for err in errors %}
+                                <li>{{ err }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        {% if success is defined and success %}
+                        <div class="notification is-success">
+                            <button class="delete" onclick="this.parentElement.remove()"></button>
+                            <strong>Email verified!</strong>
+                            <p>Your email <strong>{{ email|e }}</strong> has been verified. You can <a href="/login">log
+                                    in
+                                    now</a>.</p>
+                        </div>
+                        {% endif %}
+
+                        {% if not (success is defined and success) %}
+                        <div class="content">
+                            <p>We've sent a verification link to <strong>{{ email|e }}</strong>. Copy the recived code
+                                to verify your email.</p>
+                            {% if expires_at is defined %}
+                            <p class="is-size-7">Link expires at: {{ expires_at }}</p>
+                            {% endif %}
+                        </div>
+
+                        <form id="verify-code-form" action="/email/verify" method="POST" autocomplete="off" novalidate>
+                            <div class="field">
+                                <label class="label">Verification code</label>
+                                <div class="control">
+                                    <input class="input" type="text" name="code" id="code"
+                                        placeholder="Enter verification code" value="{{ old.code|default('')|e }}" />
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <div class="control">
+                                    <button id="verify-btn" type="submit" class="button is-primary is-fullwidth"
+                                        disabled>Verify email</button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <hr />
+
+                        <form id="resend-form" action="/verify/resend" method="POST" novalidate>
+                            <div class="field">
+                                <div class="control">
+                                    <button id="resend-btn" type="submit" class="button is-light is-fullwidth"
+                                        {% if resend_disabled is defined and resend_disabled %}disabled{% endif %}>Resend
+                                        verification email</button>
+                                </div>
+                            </div>
+                        </form>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var burger = document.querySelector('.navbar-burger');
+            var menu = document.getElementById('navbarMenu');
+            if (burger) {
+                burger.addEventListener('click', function () {
+                    burger.classList.toggle('is-active');
+                    menu.classList.toggle('is-active');
+                });
+            }
+
+            var code = document.getElementById('code');
+            var verifyBtn = document.getElementById('verify-btn');
+            var resendBtn = document.getElementById('resend-btn');
+
+            function updateVerifyState() {
+                verifyBtn.disabled = !code || !code.value.trim();
+            }
+
+            if (code) {
+                code.addEventListener('input', updateVerifyState);
+                updateVerifyState();
+            }
+
+            if (resendBtn) {
+                resendBtn.addEventListener('click', function () {
+                    resendBtn.disabled = true;
+                    resendBtn.textContent = 'Sending...';
+                });
+            }
+
+            var verifyForm = document.getElementById('verify-code-form');
+            if (verifyForm) {
+                verifyForm.addEventListener('submit', function (e) {
+                    if (verifyBtn.disabled) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

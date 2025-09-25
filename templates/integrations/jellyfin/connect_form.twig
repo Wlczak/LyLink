@@ -61,11 +61,6 @@
                         {% else %}
 
                         <form id="jellyfin-form" action="/integrations/jellyfin/connect" method="POST" novalidate>
-
-                            {% if csrf_token is defined %}
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
-                            {% endif %}
-
                             <div class="field">
                                 <label class="label">LyLink Jellyfin address</label>
                                 <div class="control">

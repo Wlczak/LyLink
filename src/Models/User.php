@@ -25,6 +25,9 @@ class User
     #[ORM\Column(type: 'string')]
     private string $email;
 
+    #[ORM\Column(type: 'boolean', nullable: true)]
+    private bool $emailVerified = false;
+
     #[ORM\Column(type: 'string')]
     private string $password;
 
@@ -39,6 +42,11 @@ class User
     public function getEmail(): string
     {
         return $this->email;
+    }
+
+    public function isEmailVerified(): bool
+    {
+        return $this->emailVerified;
     }
 
     public function checkPassword(string $password): bool
@@ -80,6 +88,14 @@ class User
         $settings->jellyfin_connected = true;
 
         $em->persist($settings);
+        $em->flush();
+    }
+
+    public function verifyEmail(): void
+    {
+        $this->emailVerified = true;
+        $em = DoctrineRegistry::get();
+        $em->persist($this);
         $em->flush();
     }
 
