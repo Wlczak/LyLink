@@ -2,3 +2,5 @@
 .env
 lyrics.db
 /cache
+/javascript/node_modules
+/public_html/dist

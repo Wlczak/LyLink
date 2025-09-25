@@ -13,6 +13,7 @@ use Lylink\Models\Lyrics;
 use Lylink\Models\Settings;
 use Lylink\Routes\Integrations\Api\IntegrationApi;
 use Lylink\Routes\Integrations\Jellyfin;
+use Lylink\Routes\LyricsRoute;
 use Pecee\SimpleRouter\SimpleRouter;
 use SpotifyWebAPI\Session;
 use SpotifyWebAPI\SpotifyWebAPI;
@@ -37,7 +38,7 @@ class Router
 
         ## Authenticated routes ##
         SimpleRouter::group(['middleware' => \Lylink\Middleware\AuthMiddleware::class], function () {
-            SimpleRouter::get('/lyrics', [self::class, 'lyrics']);
+            SimpleRouter::partialGroup('/lyrics', LyricsRoute::setup());
             SimpleRouter::get('/edit', [self::class, 'edit']);
             SimpleRouter::get('/settings', [self::class, 'settings']);
             SimpleRouter::partialGroup('/integrations', function () {
@@ -80,7 +81,7 @@ class Router
     public static function home(): string
     {
         return self::$twig->load('home.twig')->render([
-            'user' => AuthSession::get()
+            'auth' => AuthSession::get()
         ]);
     }
 
@@ -140,100 +141,6 @@ class Router
         return self::$twig->load('settings.twig')->render(['user' => $user, 'settings' => Settings::getSettings($id)]);
     }
 
-    function lyrics(): void
-    {
-        if (!isset($_SESSION['spotify_session'])) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
-        }
-
-        /**
-         * @var Session|null
-         */
-        $session = $_SESSION['spotify_session'];
-
-        if ($session == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
-            die();
-        }
-
-        if ($session->getTokenExpiration() < time()) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
-            die();
-        }
-
-        $api = new SpotifyWebAPI();
-        $api->setAccessToken($session->getAccessToken());
-
-        try {
-            /**
-             * @var PlaybackInfo|null
-             */
-            $info = $api->getMyCurrentPlaybackInfo();
-        } catch (SpotifyWebAPIException $e) {
-            if ($e->getMessage() == "Check settings on developer.spotify.com/dashboard, the user may not be registered.") {
-                echo $template = self::$twig->load('whitelist.twig')->render();
-                die();
-            } else {
-                throw $e;
-            }
-        }
-        if ($info == null) {
-            $song = [
-                'name' => "No song is currently playing",
-                'artist' => "",
-                'duration' => 0,
-                'duration_ms' => 0,
-                'progress_ms' => 0,
-                'imageUrl' => $_ENV['BASE_DOMAIN'] . '/img/albumPlaceholer.svg',
-                'id' => 0,
-                'is_playing' => "false"
-            ];
-
-            echo $template = self::$twig->load('lyrics.twig')->render([
-                'song' => $song
-            ]);
-
-        } else {
-
-            if ($info->item == null) {
-                die();
-            }
-
-            $id = $info->item->id;
-
-            //echo $id;
-            $entityManager = DoctrineRegistry::get();
-
-            /**
-             * @var Lyrics|null
-             */
-            $lyrics = $entityManager->getRepository(Lyrics::class)->findOneBy(['spotify_id' => $id]);
-
-            if ($lyrics == null) {
-                $lyrics = new Lyrics();
-            }
-
-            $template = self::$twig->load('lyrics.twig');
-
-            $song = [
-                'name' => $info->item->name,
-                'artist' => $info->item->artists[0]->name,
-                'duration' => $info->item->duration_ms / 1000,
-                'duration_ms' => $info->item->duration_ms,
-                'progress_ms' => $info->progress_ms,
-                'imageUrl' => $info->item->album->images[0]->url,
-                'id' => $info->item->id,
-                'is_playing' => $info->is_playing
-            ];
-            echo $template->render(
-                [
-                    'lyrics' => $lyrics->lyrics,
-                    'song' => $song,
-                    'progressPercent' => $info->progress_ms / $info->item->duration_ms * 100]
-            );
-        }
-    }
-
     function edit(): void
     {
         /**
@@ -250,7 +157,7 @@ class Router
          */
         $track = $api->getTrack($trackId);
 
-        $template = self::$twig->load('edit.twig');
+        $template = self::$twig->load('lyrics/edit.twig');
 
         $em = DoctrineRegistry::get();
 
@@ -285,7 +192,7 @@ class Router
         $lyrics->lyrics = $_POST['lyrics'];
         $entityManager->persist($lyrics);
         $entityManager->flush();
-        header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics');
+        header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/spotify');
     }
 
     function spotify(): string

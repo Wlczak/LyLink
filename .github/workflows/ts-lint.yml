@@ -1,0 +1,27 @@
+name: TypeScript Lint
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: ["*"]
+
+jobs:
+    validate:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "20"
+                  cache: "npm"
+                  cache-dependency-path: javascript/package-lock.json
+
+            - run: cd javascript && npm ci
+
+            - name: TypeScript validation
+              run: cd javascript && npx tsc --noEmit
+
+            - name: ESLint linting
+              run: cd javascript && npx eslint "src/**/*.ts" --max-warnings=0
