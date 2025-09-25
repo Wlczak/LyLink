@@ -45,6 +45,10 @@ class DefaultAuth implements Authorizator, AccountHandler
                 $data["errors"][] = 'Invalid password';
             }
             $this->uid = $user->getId() ?? 0;
+
+            if (!$user->isEmailVerified()) {
+                $data["errors"][] = "User email has not been verified yet";
+            }
         }
 
         if ($data["errors"] === []) {
