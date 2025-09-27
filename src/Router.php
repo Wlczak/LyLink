@@ -17,6 +17,7 @@ use Lylink\Routes\Integrations\Api\IntegrationApi;
 use Lylink\Routes\Integrations\Jellyfin;
 use Lylink\Routes\LyricsRoute;
 use Pecee\SimpleRouter\SimpleRouter;
+use SensitiveParameter;
 use SpotifyWebAPI\Session;
 use SpotifyWebAPI\SpotifyWebAPI;
 

@@ -9,6 +9,7 @@ use Lylink\Interfaces\Auth\Authorizator;
 use Lylink\Models\Settings;
 use Lylink\Models\User;
 use Lylink\Traits\Authorizable;
+use SensitiveParameter;
 
 class DefaultAuth implements Authorizator, AccountHandler
 {
@@ -17,8 +18,9 @@ class DefaultAuth implements Authorizator, AccountHandler
     /**
      * @return array{errors: list<string>, success: bool, usermail: string}
      */
-    public function login(string $usernamemail, string $password): array
+    public function login(string $usernamemail, #[SensitiveParameter] string $password): array
     {
+
         $data = ['success' => false,
             'usermail' => $usernamemail,
             'errors' => []
@@ -61,7 +63,7 @@ class DefaultAuth implements Authorizator, AccountHandler
     /**
      * @return array{errors: list<string>, success: bool, old: array{email: string, username: string}}
      */
-    public function register(string $email, string $username, string $pass, string $passCheck): array
+    public function register(string $email, string $username, #[SensitiveParameter] string $pass, #[SensitiveParameter] string $passCheck): array
     {
         $errors = [];
         if ($email === '' || $username === '' || $pass === '' || $passCheck === '') {

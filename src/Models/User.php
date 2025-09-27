@@ -5,6 +5,7 @@ namespace Lylink\Models;
 use Doctrine\ORM\Mapping as ORM;
 use Exception;
 use Lylink\DoctrineRegistry;
+use SensitiveParameter;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'users')]
@@ -49,12 +50,12 @@ class User
         return $this->emailVerified;
     }
 
-    public function checkPassword(string $password): bool
+    public function checkPassword(#[SensitiveParameter] string $password): bool
     {
         return password_verify($password, $this->password);
     }
 
-    public function __construct(string $email, string $username, string $password)
+    public function __construct(string $email, string $username, #[SensitiveParameter] string $password)
     {
         $this->email = $email;
         $this->username = $username;
@@ -66,7 +67,7 @@ class User
         return $this->username;
     }
 
-    public function updateJellyfin(string $address, string $token, bool $allow): void
+    public function updateJellyfin(string $address, #[SensitiveParameter] string $token, bool $allow): void
     {
         $em = DoctrineRegistry::get();
 
