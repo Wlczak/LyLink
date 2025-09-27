@@ -3,7 +3,7 @@
 
 ![status](https://shokuin.vlastas.cc/api/badge/32/status?style=for-the-badge) ![uptime](https://shokuin.vlastas.cc/api/badge/32/uptime?style=for-the-badge) ![phpstan](https://img.shields.io/github/actions/workflow/status/wlczak/lylink/.github%2Fworkflows%2Fgo-lint.yml?branch=main&style=for-the-badge&label=phpstan) ![eslint](https://img.shields.io/github/actions/workflow/status/wlczak/lylink/.github%2Fworkflows%2Fts-lint.yml?branch=main&style=for-the-badge&label=eslint) ![build](https://img.shields.io/github/actions/workflow/status/wlczak/lylink/.github%2Fworkflows%2Fbuild.yml?branch=main&style=for-the-badge&label=build)
 
-LyLink is a multiplatform lyrics tracker that allows you to sync your lyrics live with the musis you're listening to.
+LyLink is a multiplatform lyrics tracker that allows you to sync your lyrics live with the music you're listening to.
 
 ## Installation
 
