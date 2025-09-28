@@ -81,8 +81,6 @@ export class JellyfinPlayback {
 
                     this.progress_ticks = POSITION_TICKS;
                     this.duration_ticks = RUN_TIME_TICKS;
-
-                    this.enableEdit(id);
                 }
             });
     }
@@ -121,16 +119,17 @@ export class JellyfinPlayback {
         }
         fetch(address + "/Item/" + mediaId, { method: "POST", body: JSON.stringify({ token: token }) })
             .then((response) => response.json())
-            .then((data: MediaInfo | null | undefined) => {
+            .then((data: EpisodeInfo | null | undefined) => {
                 if (data === null || data === undefined) {
                     placeholder();
                     return;
                 }
                 this.updateMediainfo(data);
+                this.enableEdit(data.Id, data.SeriesId, data.SeriesId);
             });
     }
 
-    updateMediainfo(info: MediaInfo) {
+    updateMediainfo(info: EpisodeInfo) {
         const fullName =
             info.SeriesName +
             " - " +
@@ -143,10 +142,10 @@ export class JellyfinPlayback {
         this.changeTitle(fullName);
     }
 
-    enableEdit(epId: string) {
+    enableEdit(epId: string, seasonId: string, showId: string) {
         const editContainer = document.getElementById("edit-container") as HTMLDivElement;
         const editBtn = document.getElementById("edit-btn") as HTMLAnchorElement;
-        editBtn.href = "/edit?ep_id=" + epId;
-        editContainer.toggleAttribute("hidden");
+        editBtn.href = "/edit?ep_id=" + epId + "&season_id=" + seasonId + "&show_id=" + showId;
+        editContainer.hidden = false;
     }
 }

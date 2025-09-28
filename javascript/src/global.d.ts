@@ -1,9 +1,13 @@
-interface MediaInfo {
+interface EpisodeInfo {
+    Id: string;
     Name: string;
     Type: string;
     SeriesName: string;
     IndexNumber: number;
     ParentIndexNumber: number;
+    ParentId: number;
+    SeasonId: string;
+    SeriesId: string;
 }
 
 interface PlaybackInfo {
