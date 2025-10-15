@@ -1,227 +1,240 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Edit Series Lyrics</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css" />
 </head>
+
 <body>
-<section class="section">
-    <div class="container">
-        <h1 class="title is-3">Edit Lyrics</h1>
+    <section class="section">
+        <div class="container">
+            <h1 class="title is-3">Edit Lyrics</h1>
 
-        <div class="columns">
-            <div class="column is-two-thirds">
-                <form method="post" action="{{ path_save }}" id="lyricsForm">
-                    <input type="hidden" name="series_id" value="{{ series.id }}">
-                    <input type="hidden" name="lyrics_id" value="{{ lyrics_id }}">
+            <div class="columns">
+                <div class="column is-two-thirds">
+                    <form method="post" action="{{ path_save }}" id="lyricsForm">
+                        <input type="hidden" name="series_id" value="{{ series.id }}">
+                        <input type="hidden" name="lyrics_id" value="{{ lyrics_id }}">
 
-                    <div class="field">
-                        <label class="label">Series</label>
-                        <div class="control">
-                            <input class="input" type="text" disabled name="series_title" value="{{ series.title }}">
+                        <div class="field">
+                            <label class="label">Series</label>
+                            <div class="control">
+                                <input class="input" type="text" disabled name="series_title"
+                                    value="{{ series.title }}">
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="columns">
-                        <div class="column">
-                            <div class="field">
-                                <label class="label">First Episode</label>
-                                <div class="control">
-                                    <div class="select is-fullwidth">
-                                        <select name="first_episode" id="firstEpisodeSelect">
-                                            {% for ep in series.episodes %}
+                        <div class="columns">
+                            <div class="column">
+                                <div class="field">
+                                    <label class="label">First Episode</label>
+                                    <div class="control">
+                                        <div class="select is-fullwidth">
+                                            <select name="first_episode" id="firstEpisodeSelect">
+                                                {% for ep in series.episodes %}
                                                 <option value="{{ ep.id }}"
                                                     {% if ep.id == first_episode %}selected{% endif %}>
-                                                    S{{ ep.seasonIndex|default('?') }}E{{ ep.episodeIndex|default(loop.index) }}{% if ep.name is defined and ep.name %} — {{ ep.name }}{% endif %}
+                                                    S{{ ep.seasonIndex|default('?') }}E{{ ep.episodeIndex|default(loop.index) }}{% if ep.name is defined and ep.name %}
+                                                    — {{ ep.name }}{% endif %}
                                                 </option>
-                                            {% else %}
+                                                {% else %}
                                                 <option disabled>No episodes available</option>
-                                            {% endfor %}
-                                        </select>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
                                     </div>
+                                    <p class="help">Episode to start showing these lyrics.</p>
                                 </div>
-                                <p class="help">Episode to start showing these lyrics.</p>
                             </div>
-                        </div>
-                        <div class="column">
-                            <div class="field">
-                                <label class="label">Last Episode</label>
-                                <div class="control">
-                                    <div class="select is-fullwidth">
-                                        <select name="last_episode" id="lastEpisodeSelect">
-                                            {% for ep in series.episodes %}
+                            <div class="column">
+                                <div class="field">
+                                    <label class="label">Last Episode</label>
+                                    <div class="control">
+                                        <div class="select is-fullwidth">
+                                            <select name="last_episode" id="lastEpisodeSelect">
+                                                {% for ep in series.episodes %}
                                                 <option value="{{ ep.id }}"
                                                     {% if ep.id == last_episode %}selected{% endif %}>
-                                                    S{{ ep.seasonIndex|default('?') }}E{{ ep.episodeIndex|default(loop.index) }}{% if ep.name is defined and ep.name %} — {{ ep.name }}{% endif %}
+                                                    S{{ ep.seasonIndex|default('?') }}E{{ ep.episodeIndex|default(loop.index) }}{% if ep.name is defined and ep.name %}
+                                                    — {{ ep.name }}{% endif %}
                                                 </option>
-                                            {% else %}
+                                                {% else %}
                                                 <option disabled>No episodes available</option>
-                                            {% endfor %}
-                                        </select>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
                                     </div>
+                                    <p class="help">Episode to stop showing these lyrics (inclusive).</p>
                                 </div>
-                                <p class="help">Episode to stop showing these lyrics (inclusive).</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="field">
-                        <label class="label">Seasons</label>
-                        <div class="control">
-                            <div class="tags">
-                                <button type="button" id="selectAllSeasons" class="button is-small">Select all</button>
-                                <button type="button" id="clearSeasons" class="button is-small is-light">Clear</button>
                             </div>
                         </div>
 
-                        <div class="control" style="margin-top:0.5rem;">
-                            <div class="columns is-multiline">
-                                {% for s in series.seasons %}
+                        <div class="field">
+                            <label class="label">Seasons</label>
+                            <div class="control">
+                                <div class="tags">
+                                    <button type="button" id="selectAllSeasons" class="button is-small">Select
+                                        all</button>
+                                    <button type="button" id="clearSeasons"
+                                        class="button is-small is-light">Clear</button>
+                                </div>
+                            </div>
+
+                            <div class="control" style="margin-top:0.5rem;">
+                                <div class="columns is-multiline">
+                                    {% for s in series.seasons %}
                                     <div class="column is-one-quarter">
                                         <label class="checkbox">
-                                            <input type="checkbox" name="seasons[]" value="{{ s.index }}" {% if s.index in selected_seasons %}checked{% endif %}>
-                                            Season {{ s.index }}{% if s.name is defined and s.name %} — {{ s.name }}{% endif %}
+                                            <input type="checkbox" name="seasons[]" value="{{ s.index }}"
+                                                {% if s.index in selected_seasons %}checked{% endif %}>
+                                            Season {{ s.index }}{% if s.name is defined and s.name %} —
+                                            {{ s.name }}{% endif %}
                                         </label>
                                     </div>
-                                {% else %}
+                                    {% else %}
                                     <div class="column">
                                         <p class="help">No seasons found for this series.</p>
                                     </div>
-                                {% endfor %}
+                                    {% endfor %}
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <div class="field">
-                        <label class="label">Lyrics</label>
-                        <div class="control">
-                            <textarea id="lyricsInput" class="textarea" name="lyrics" rows="12">{{ lyrics }}</textarea>
+                        <div class="field">
+                            <label class="label">Lyrics</label>
+                            <div class="control">
+                                <textarea id="lyricsInput" class="textarea" name="lyrics"
+                                    rows="12">{{ lyrics }}</textarea>
+                            </div>
+                            <p class="help" id="stats">Lines: 0 · Words: 0</p>
                         </div>
-                        <p class="help" id="stats">Lines: 0 · Words: 0</p>
-                    </div>
 
-                    <div class="field is-grouped">
-                        <div class="control">
-                            <button class="button is-primary" type="submit">Save</button>
+                        <div class="field is-grouped">
+                            <div class="control">
+                                <button class="button is-primary" type="submit">Save</button>
+                            </div>
+                            <div class="control">
+                                <button class="button is-light" type="button" id="cancelBtn">Cancel</button>
+                            </div>
+                            <div class="control">
+                                <button class="button is-info" type="button" id="previewToggle">Toggle Live
+                                    Preview</button>
+                            </div>
                         </div>
-                        <div class="control">
-                            <button class="button is-light" type="button" id="cancelBtn">Cancel</button>
-                        </div>
-                        <div class="control">
-                            <button class="button is-info" type="button" id="previewToggle">Toggle Live Preview</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
+                    </form>
+                </div>
 
-            <div class="column">
-                <div class="card">
-                    <div class="card-image">
-                        <figure class="image is-4by3">
-                            <img id="posterImage" src="{{ series.imageUrl }}" alt="{{ series.title }} poster">
-                        </figure>
-                    </div>
-                    <div class="card-content">
-                        <p class="title is-5" id="previewTitle">{{ series.title }}</p>
-                        <p class="subtitle is-6" id="previewMeta">
-                            Episodes: <span id="previewEpisodeRange">{{ first_episode ?: '—' }} — {{ last_episode ?: '—' }}</span>
-                        </p>
-                        <p class="subtitle is-6" id="previewSeasons">
-                            Seasons:
-                            {% if selected_seasons|length > 0 %}
+                <div class="column">
+                    <div class="card">
+                        <div class="card-image">
+                            <figure class="image is-4by3">
+                                <img id="posterImage" src="{{ series.imageUrl }}" alt="{{ series.title }} poster">
+                            </figure>
+                        </div>
+                        <div class="card-content">
+                            <p class="title is-5" id="previewTitle">{{ series.title }}</p>
+                            <p class="subtitle is-6" id="previewMeta">
+                                Episodes: <span id="previewEpisodeRange">{{ first_episode ?: '—' }} —
+                                    {{ last_episode ?: '—' }}</span>
+                            </p>
+                            <p class="subtitle is-6" id="previewSeasons">
+                                Seasons:
+                                {% if selected_seasons|length > 0 %}
                                 {{ selected_seasons|join(', ') }}
-                            {% else %}
+                                {% else %}
                                 All
-                            {% endif %}
-                        </p>
-                        <div id="livePreview" class="content" style="white-space:pre-wrap;">{{ lyrics }}</div>
+                                {% endif %}
+                            </p>
+                            <div id="livePreview" class="content" style="white-space:pre-wrap;">{{ lyrics }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    var lyricsInput = document.getElementById('lyricsInput');
-    var livePreview = document.getElementById('livePreview');
-    var stats = document.getElementById('stats');
-    var cancelBtn = document.getElementById('cancelBtn');
-    var previewToggle = document.getElementById('previewToggle');
-    var previewTitle = document.getElementById('previewTitle');
-    var previewEpisodeRange = document.getElementById('previewEpisodeRange');
-    var previewSeasons = document.getElementById('previewSeasons');
-    var firstSelect = document.getElementById('firstEpisodeSelect');
-    var lastSelect = document.getElementById('lastEpisodeSelect');
-    var originalLyrics = '{{ lyrics|e('js') }}';
-    var form = document.getElementById('lyricsForm');
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var lyricsInput = document.getElementById('lyricsInput');
+            var livePreview = document.getElementById('livePreview');
+            var stats = document.getElementById('stats');
+            var cancelBtn = document.getElementById('cancelBtn');
+            var previewToggle = document.getElementById('previewToggle');
+            var previewTitle = document.getElementById('previewTitle');
+            var previewEpisodeRange = document.getElementById('previewEpisodeRange');
+            var previewSeasons = document.getElementById('previewSeasons');
+            var firstSelect = document.getElementById('firstEpisodeSelect');
+            var lastSelect = document.getElementById('lastEpisodeSelect');
+            var originalLyrics = '{{ lyrics|e('js') }}';
+            var form = document.getElementById('lyricsForm');
 
-    function updatePreview() {
-        livePreview.textContent = lyricsInput.value;
-        var lines = lyricsInput.value.split(/\n/).filter(function (l) { return l.length > 0; }).length;
-        var words = lyricsInput.value.trim().length ? lyricsInput.value.trim().split(/\s+/).length : 0;
-        stats.textContent = 'Lines: ' + lines + ' · Words: ' + words;
-    }
+            function updatePreview() {
+                livePreview.textContent = lyricsInput.value;
+                var lines = lyricsInput.value.split(/\n/).filter(function (l) { return l.length > 0; }).length;
+                var words = lyricsInput.value.trim().length ? lyricsInput.value.trim().split(/\s+/).length : 0;
+                stats.textContent = 'Lines: ' + lines + ' · Words: ' + words;
+            }
 
-    function updateEpisodePreview() {
-        var firstText = firstSelect.options[firstSelect.selectedIndex] ? firstSelect.options[firstSelect.selectedIndex].text : '—';
-        var lastText = lastSelect.options[lastSelect.selectedIndex] ? lastSelect.options[lastSelect.selectedIndex].text : '—';
-        previewEpisodeRange.textContent = firstText + ' — ' + lastText;
-    }
+            function updateEpisodePreview() {
+                var firstText = firstSelect.options[firstSelect.selectedIndex] ? firstSelect.options[firstSelect.selectedIndex].text : '—';
+                var lastText = lastSelect.options[lastSelect.selectedIndex] ? lastSelect.options[lastSelect.selectedIndex].text : '—';
+                previewEpisodeRange.textContent = firstText + ' — ' + lastText;
+            }
 
-    function ensureOrder() {
-        if (firstSelect.selectedIndex > lastSelect.selectedIndex) {
-            lastSelect.selectedIndex = firstSelect.selectedIndex;
+            function ensureOrder() {
+                if (firstSelect.selectedIndex > lastSelect.selectedIndex) {
+                    lastSelect.selectedIndex = firstSelect.selectedIndex;
+                    updateEpisodePreview();
+                }
+            }
+
+            lyricsInput.addEventListener('input', updatePreview);
+            firstSelect.addEventListener('change', function () { updateEpisodePreview(); ensureOrder(); });
+            lastSelect.addEventListener('change', function () { updateEpisodePreview(); ensureOrder(); });
+
+            cancelBtn.addEventListener('click', function () {
+                lyricsInput.value = originalLyrics;
+                updatePreview();
+            });
+
+            previewToggle.addEventListener('click', function () {
+                livePreview.parentElement.parentElement.classList.toggle('is-hidden');
+            });
+
+            document.getElementById('selectAllSeasons').addEventListener('click', function () {
+                document.querySelectorAll('input[name="seasons[]"]').forEach(function (cb) { cb.checked = true; });
+                updateSeasonsPreview();
+            });
+
+            document.getElementById('clearSeasons').addEventListener('click', function () {
+                document.querySelectorAll('input[name="seasons[]"]').forEach(function (cb) { cb.checked = false; });
+                updateSeasonsPreview();
+            });
+
+            document.querySelectorAll('input[name="seasons[]"]').forEach(function (cb) {
+                cb.addEventListener('change', updateSeasonsPreview);
+            });
+
+            function updateSeasonsPreview() {
+                var checked = Array.prototype.slice.call(document.querySelectorAll('input[name="seasons[]"]:checked')).map(function (c) { return c.value; });
+                previewSeasons.textContent = 'Seasons: ' + (checked.length ? checked.join(', ') : 'All');
+            }
+
+            form.addEventListener('submit', function (e) {
+                if (firstSelect.selectedIndex > lastSelect.selectedIndex) {
+                    e.preventDefault();
+                    alert('Last episode must be the same or after the first episode.');
+                }
+            });
+
+            updatePreview();
             updateEpisodePreview();
-        }
-    }
-
-    lyricsInput.addEventListener('input', updatePreview);
-    firstSelect.addEventListener('change', function () { updateEpisodePreview(); ensureOrder(); });
-    lastSelect.addEventListener('change', function () { updateEpisodePreview(); ensureOrder(); });
-
-    cancelBtn.addEventListener('click', function () {
-        lyricsInput.value = originalLyrics;
-        updatePreview();
-    });
-
-    previewToggle.addEventListener('click', function () {
-        livePreview.parentElement.parentElement.classList.toggle('is-hidden');
-    });
-
-    document.getElementById('selectAllSeasons').addEventListener('click', function () {
-        document.querySelectorAll('input[name="seasons[]"]').forEach(function (cb) { cb.checked = true; });
-        updateSeasonsPreview();
-    });
-
-    document.getElementById('clearSeasons').addEventListener('click', function () {
-        document.querySelectorAll('input[name="seasons[]"]').forEach(function (cb) { cb.checked = false; });
-        updateSeasonsPreview();
-    });
-
-    document.querySelectorAll('input[name="seasons[]"]').forEach(function (cb) {
-        cb.addEventListener('change', updateSeasonsPreview);
-    });
-
-    function updateSeasonsPreview() {
-        var checked = Array.prototype.slice.call(document.querySelectorAll('input[name="seasons[]"]:checked')).map(function (c) { return c.value; });
-        previewSeasons.textContent = 'Seasons: ' + (checked.length ? checked.join(', ') : 'All');
-    }
-
-    form.addEventListener('submit', function (e) {
-        if (firstSelect.selectedIndex > lastSelect.selectedIndex) {
-            e.preventDefault();
-            alert('Last episode must be the same or after the first episode.');
-        }
-    });
-
-    updatePreview();
-    updateEpisodePreview();
-    updateSeasonsPreview();
-});
-</script>
+            updateSeasonsPreview();
+        });
+    </script>
 </body>
+
 </html>
