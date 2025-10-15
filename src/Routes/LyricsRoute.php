@@ -83,7 +83,20 @@ class LyricsRoute extends Router implements Route
 
     public static function jellyfinEdit(): string
     {
-        return self::$twig->load('lyrics/jellyfin_edit.twig')->render();
+        $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
+
+        if ($settings->jellyfin_connected) {
+            $address = $settings->jellyfin_server;
+            $token = $settings->jellyfin_token;
+        } else {
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            die();
+        }
+
+        return self::$twig->load('lyrics/jellyfin_edit.twig')->render([
+            "address" => $address,
+            "token" => $token
+        ]);
     }
 
     public static function jellyfinUpdate(): string

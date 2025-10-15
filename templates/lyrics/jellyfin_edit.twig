@@ -28,7 +28,7 @@
                         <div class="field">
                             <label class="label">Series</label>
                             <div class="control">
-                                <input class="input" type="text" disabled name="series_title"
+                                <input class="input" type="text" disabled name="series_title" id="series_title"
                                     value="{{ series.title }}">
                             </div>
                         </div>
@@ -123,7 +123,7 @@
                                 <button class="button is-primary" type="submit">Save</button>
                             </div>
                             <div class="control">
-                                <button class="button is-light" type="button" id="cancelBtn">Cancel</button>
+                                <button class="button is-light" type="button" id="cancelBtn" onclick="history.back()">Cancel</button>
                             </div>
                             <div class="control">
                                 <button class="button is-info" type="button" id="previewToggle">Toggle Live

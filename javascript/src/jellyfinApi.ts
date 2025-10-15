@@ -13,13 +13,27 @@ export class JellyfinApi {
         });
     }
 
-    static async getEpisodeInfo(address: string, token: string, mediaId: string) {
-        let res = await fetch(address + "/Episode/" + mediaId, {
+    static async getEpisodeInfo(address: string, token: string, mediaId: string): Promise<EpisodeInfo> {
+        const res = await fetch(address + "/Episode/" + mediaId, {
             method: "POST",
             body: JSON.stringify({ token: token }),
         });
-        res = await res.json();
-        console.log(res);
-    
+        return res.json();
+    }
+
+    static async getSeasonInfo(address: string, token: string, mediaId: string): Promise<SeasonInfo> {
+        const res = await fetch(address + "/Season/" + mediaId, {
+            method: "POST",
+            body: JSON.stringify({ token: token }),
+        });
+        return res.json();
+    }
+
+    static async getSeriesInfo(address: string, token: string, mediaId: string): Promise<SeriesInfo> {
+        const res = await fetch(address + "/Series/" + mediaId, {
+            method: "POST",
+            body: JSON.stringify({ token: token }),
+        });
+        return res.json();
     }
 }

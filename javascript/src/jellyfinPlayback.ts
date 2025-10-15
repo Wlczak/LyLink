@@ -121,7 +121,7 @@ export class JellyfinPlayback {
         }
         JellyfinApi.getEpisodeWithParents(address, token, mediaId)
             .then((response) => response.json())
-            .then((data: EpisodeInfo | null | undefined) => {
+            .then((data: EpisodeWithParentsInfo | null | undefined) => {
                 if (data === null || data === undefined) {
                     placeholder();
                     return;
@@ -131,7 +131,7 @@ export class JellyfinPlayback {
             });
     }
 
-    updateMediainfo(info: EpisodeInfo) {
+    updateMediainfo(info: EpisodeWithParentsInfo) {
         const fullName =
             info.SeriesName +
             " - " +

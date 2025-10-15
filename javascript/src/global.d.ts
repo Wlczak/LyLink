@@ -1,4 +1,4 @@
-interface EpisodeInfo {
+interface EpisodeWithParentsInfo {
     Id: string;
     Name: string;
     Type: string;
@@ -8,6 +8,29 @@ interface EpisodeInfo {
     ParentId: number;
     SeasonId: string;
     SeriesId: string;
+}
+
+interface EpisodeInfo {
+    Id: string;
+    Name: string;
+    Type: string;
+    SeriesName: string;
+    IndexNumber: number;
+    ParentIndexNumber: number;
+    ParentId: string;
+}
+
+interface SeasonInfo {
+    Id: string;
+    Name: string;
+    Type: string;
+    ParentId: string;
+}
+
+interface SeriesInfo {
+    Id: string;
+    Name: string;
+    Type: string;
 }
 
 interface PlaybackInfo {
