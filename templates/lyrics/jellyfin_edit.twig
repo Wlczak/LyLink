@@ -4,38 +4,80 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Edit Lyrics — Demo</title>
+    <title>Edit Series Lyrics</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css" />
 </head>
 
 <body>
     <section class="section">
         <div class="container">
-            {# {% set song = {
-      name: 'Paper Planes',
-      artist: 'M.I.A.',
-      imageUrl: 'https://via.placeholder.com/300x300.png?text=Cover',
-      duration: 215
-    } %} #}
-            {# {% set lyrics = "I fly like paper, get high like planes\nIf you catch me at the border I got visas in my name\nSometimes I think sittin' quiet's the way to go\nBut I keep trying, singing on the radio" %} #}
-
             <h1 class="title is-3">Edit Lyrics</h1>
 
             <div class="columns">
                 <div class="column is-two-thirds">
-                    <form method="post" action="/edit/save">
-                        <input type="text" name="id" value="{{ song.id }}" hidden>
+                    <form method="post" action="{{ path_save }}">
+                        <input type="hidden" name="series_id" value="{{ series.id }}">
+                        <input type="hidden" name="lyrics_id" value="{{ lyrics_id }}">
+
                         <div class="field">
-                            <label class="label">Song</label>
+                            <label class="label">Series</label>
                             <div class="control">
-                                <input class="input" type="text" disabled name="song_name" value="{{ song.name }}">
+                                <input class="input" type="text" disabled name="series_title"
+                                    value="{{ series.title }}">
+                            </div>
+                        </div>
+
+                        <div class="columns">
+                            <div class="column">
+                                <div class="field">
+                                    <label class="label">First Episode</label>
+                                    <div class="control">
+                                        <input class="input" type="number" min="1" name="first_episode"
+                                            value="{{ first_episode }}">
+                                    </div>
+                                    <p class="help">Episode number to start showing these lyrics.</p>
+                                </div>
+                            </div>
+                            <div class="column">
+                                <div class="field">
+                                    <label class="label">Last Episode</label>
+                                    <div class="control">
+                                        <input class="input" type="number" min="1" name="last_episode"
+                                            value="{{ last_episode }}">
+                                    </div>
+                                    <p class="help">Episode number to stop showing these lyrics (inclusive).</p>
+                                </div>
                             </div>
                         </div>
 
                         <div class="field">
-                            <label class="label">Artist</label>
+                            <label class="label">Seasons</label>
                             <div class="control">
-                                <input class="input" type="text" disabled name="artist" value="{{ song.artist }}">
+                                <div class="tags">
+                                    <button type="button" id="selectAllSeasons" class="button is-small">Select
+                                        all</button>
+                                    <button type="button" id="clearSeasons"
+                                        class="button is-small is-light">Clear</button>
+                                </div>
+                            </div>
+
+                            <div class="control" style="margin-top:0.5rem;">
+                                <div class="columns is-multiline">
+                                    {% for s in series.seasons %}
+                                    <div class="column is-one-quarter">
+                                        <label class="checkbox">
+                                            <input type="checkbox" name="seasons[]" value="{{ s.index }}"
+                                                {% if s.index in selected_seasons %}checked{% endif %}>
+                                            Season {{ s.index }}{% if s.name is defined and s.name %} —
+                                            {{ s.name }}{% endif %}
+                                        </label>
+                                    </div>
+                                    {% else %}
+                                    <div class="column">
+                                        <p class="help">No seasons found for this series.</p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
                             </div>
                         </div>
 
@@ -45,7 +87,7 @@
                                 <textarea id="lyricsInput" class="textarea" name="lyrics"
                                     rows="12">{{ lyrics }}</textarea>
                             </div>
-                            <p class="help" id="stats">Lines: 4 · Words: thirty</p>
+                            <p class="help" id="stats">Lines: 0 · Words: 0</p>
                         </div>
 
                         <div class="field is-grouped">
@@ -53,8 +95,7 @@
                                 <button class="button is-primary" type="submit">Save</button>
                             </div>
                             <div class="control">
-                                <button class="button is-light" type="button" id="cancelBtn"
-                                    onclick="history.back()">Cancel</button>
+                                <button class="button is-light" type="button" id="cancelBtn">Cancel</button>
                             </div>
                             <div class="control">
                                 <button class="button is-info" type="button" id="previewToggle">Toggle Live
@@ -68,12 +109,22 @@
                     <div class="card">
                         <div class="card-image">
                             <figure class="image is-4by3">
-                                <img id="coverImage" src="{{ song.imageUrl }}" alt="{{ song.name }} cover">
+                                <img id="posterImage" src="{{ series.imageUrl }}" alt="{{ series.title }} poster">
                             </figure>
                         </div>
                         <div class="card-content">
-                            <p class="title is-5" id="previewTitle">{{ song.name }}</p>
-                            <p class="subtitle is-6" id="previewArtist">{{ song.artist }}</p>
+                            <p class="title is-5" id="previewTitle">{{ series.title }}</p>
+                            <p class="subtitle is-6" id="previewMeta">
+                                Episodes: {{ first_episode ?: '—' }} — {{ last_episode ?: '—' }}
+                            </p>
+                            <p class="subtitle is-6" id="previewSeasons">
+                                Seasons:
+                                {% if selected_seasons|length > 0 %}
+                                {{ selected_seasons|join(', ') }}
+                                {% else %}
+                                All
+                                {% endif %}
+                            </p>
                             <div id="livePreview" class="content" style="white-space:pre-wrap;">{{ lyrics }}</div>
                         </div>
                     </div>
@@ -90,7 +141,11 @@
             var cancelBtn = document.getElementById('cancelBtn');
             var previewToggle = document.getElementById('previewToggle');
             var previewTitle = document.getElementById('previewTitle');
-            var previewArtist = document.getElementById('previewArtist');
+            var previewMeta = document.getElementById('previewMeta');
+            var previewSeasons = document.getElementById('previewSeasons');
+            var posterImage = document.getElementById('posterImage');
+            var originalLyrics = '{{ lyrics|e('js') }}';
+            var originalPoster = '{{ series.imageUrl|e('js') }}';
 
             function updatePreview() {
                 livePreview.textContent = lyricsInput.value;
@@ -100,20 +155,46 @@
             }
 
             lyricsInput.addEventListener('input', updatePreview);
-            cancelBtn.addEventListener('click', function () { lyricsInput.value = '{{ lyrics|e('js') }}'; updatePreview(); });
-            previewToggle.addEventListener('click', function () { livePreview.parentElement.parentElement.classList.toggle('is-hidden'); });
+
+            cancelBtn.addEventListener('click', function () {
+                lyricsInput.value = originalLyrics;
+                updatePreview();
+            });
+
+            previewToggle.addEventListener('click', function () {
+                livePreview.parentElement.parentElement.classList.toggle('is-hidden');
+            });
 
             previewTitle.addEventListener('click', function () {
-                var v = prompt('Edit title', previewTitle.textContent);
-                if (v !== null) { previewTitle.textContent = v; document.querySelector('input[name="song_name"]').value = v; }
+                var v = prompt('Edit series title', previewTitle.textContent);
+                if (v !== null) {
+                    previewTitle.textContent = v;
+                    var el = document.querySelector('input[name="series_title"]');
+                    if (el) el.value = v;
+                }
             });
 
-            previewArtist.addEventListener('click', function () {
-                var v = prompt('Edit artist', previewArtist.textContent);
-                if (v !== null) { previewArtist.textContent = v; document.querySelector('input[name="artist"]').value = v; }
+            document.getElementById('selectAllSeasons').addEventListener('click', function () {
+                document.querySelectorAll('input[name="seasons[]"]').forEach(function (cb) { cb.checked = true; });
+                updateSeasonsPreview();
             });
+
+            document.getElementById('clearSeasons').addEventListener('click', function () {
+                document.querySelectorAll('input[name="seasons[]"]').forEach(function (cb) { cb.checked = false; });
+                updateSeasonsPreview();
+            });
+
+            document.querySelectorAll('input[name="seasons[]"]').forEach(function (cb) {
+                cb.addEventListener('change', updateSeasonsPreview);
+            });
+
+            function updateSeasonsPreview() {
+                var checked = Array.prototype.slice.call(document.querySelectorAll('input[name="seasons[]"]:checked')).map(function (c) { return c.value; });
+                previewSeasons.textContent = 'Seasons: ' + (checked.length ? checked.join(', ') : 'All');
+            }
 
             updatePreview();
+            updateSeasonsPreview();
         });
     </script>
 </body>
