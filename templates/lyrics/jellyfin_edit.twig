@@ -33,6 +33,18 @@
                             </div>
                         </div>
 
+                        <div class="field">
+                            <label class="label">Seasons</label>
+                            <div class="control">
+                                <div class="select is-fullwidth">
+                                    <select id="last_episode" name="last_episode" id="lastEpisodeSelect">
+                                        <!-- <option disabled>No episodes available</option> -->
+                                    </select>
+                                </div>
+                            </div>
+                            <p class="help">Episode to stop showing these lyrics (inclusive).</p>
+                        </div>
+
                         <div class="columns">
                             <div class="column">
                                 <div class="field">
@@ -78,36 +90,7 @@
                             </div>
                         </div>
 
-                        <div class="field">
-                            <label class="label">Seasons</label>
-                            <div class="control">
-                                <div class="tags">
-                                    <button type="button" id="selectAllSeasons" class="button is-small">Select
-                                        all</button>
-                                    <button type="button" id="clearSeasons"
-                                        class="button is-small is-light">Clear</button>
-                                </div>
-                            </div>
 
-                            <div class="control" style="margin-top:0.5rem;">
-                                <div class="columns is-multiline">
-                                    {% for s in series.seasons %}
-                                    <div class="column is-one-quarter">
-                                        <label class="checkbox">
-                                            <input type="checkbox" name="seasons[]" value="{{ s.index }}"
-                                                {% if s.index in selected_seasons %}checked{% endif %}>
-                                            Season {{ s.index }}{% if s.name is defined and s.name %} —
-                                            {{ s.name }}{% endif %}
-                                        </label>
-                                    </div>
-                                    {% else %}
-                                    <div class="column">
-                                        <p class="help">No seasons found for this series.</p>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        </div>
 
                         <div class="field">
                             <label class="label">Lyrics</label>
@@ -123,7 +106,8 @@
                                 <button class="button is-primary" type="submit">Save</button>
                             </div>
                             <div class="control">
-                                <button class="button is-light" type="button" id="cancelBtn" onclick="history.back()">Cancel</button>
+                                <button class="button is-light" type="button" id="cancelBtn"
+                                    onclick="history.back()">Cancel</button>
                             </div>
                             <div class="control">
                                 <button class="button is-info" type="button" id="previewToggle">Toggle Live
@@ -174,7 +158,6 @@
             var previewSeasons = document.getElementById('previewSeasons');
             var firstSelect = document.getElementById('firstEpisodeSelect');
             var lastSelect = document.getElementById('lastEpisodeSelect');
-            var originalLyrics = '{{ lyrics|e('js') }}';
             var form = document.getElementById('lyricsForm');
 
             function updatePreview() {

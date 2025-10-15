@@ -15,8 +15,6 @@ export class JellyfinEdit {
         console.log(seasonInfo);
         console.log(seriesInfo);
 
-        
-
         this.setMediaInfo(episodeInfo);
     }
 
