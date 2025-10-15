@@ -1,3 +1,5 @@
+import { JellyfinApi } from "./jellyfinApi.js";
+
 export class JellyfinPlayback {
     playbackInterval: number = 0;
     refreshInterval: number = 0;
@@ -19,7 +21,7 @@ export class JellyfinPlayback {
     }
 
     getPlaybackStatus(address: string, token: string) {
-        fetch(address + "/getPlaybackInfo", { method: "POST", body: JSON.stringify({ token: token }) })
+        JellyfinApi.getPlaybackInfo(address, token)
             .then((response) => response.json())
             .then((data: PlaybackInfo[] | null | undefined) => {
                 if (data === null || data === undefined) {
@@ -117,7 +119,7 @@ export class JellyfinPlayback {
             placeholder();
             return;
         }
-        fetch(address + "/Item/" + mediaId, { method: "POST", body: JSON.stringify({ token: token }) })
+        JellyfinApi.getItem(address, token, mediaId)
             .then((response) => response.json())
             .then((data: EpisodeInfo | null | undefined) => {
                 if (data === null || data === undefined) {
@@ -145,7 +147,8 @@ export class JellyfinPlayback {
     enableEdit(epId: string, seasonId: string, showId: string) {
         const editContainer = document.getElementById("edit-container") as HTMLDivElement;
         const editBtn = document.getElementById("edit-btn") as HTMLAnchorElement;
-        editBtn.href = "/lyrics/jellyfin/edit?ep_id=" + epId + "&season_id=" + seasonId + "&show_id=" + showId;
+        editBtn.href =
+            "/lyrics/jellyfin/edit?ep_id=" + epId + "&season_id=" + seasonId + "&show_id=" + showId;
         editContainer.hidden = false;
     }
 }
