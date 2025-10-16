@@ -10,6 +10,11 @@ interface EpisodeWithParentsInfo {
     SeriesId: string;
 }
 
+interface SimpleSeason{
+    Index: number
+    Id: string
+}
+
 interface EpisodeInfo {
     Id: string;
     Name: string;

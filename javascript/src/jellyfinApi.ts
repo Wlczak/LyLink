@@ -36,4 +36,16 @@ export class JellyfinApi {
         });
         return res.json();
     }
+
+    static async getEpisodeList(
+        address: string,
+        token: string,
+        seriesId: string
+    ): Promise<Array<EpisodeInfo>> {
+        const res = await fetch(address + "/Series/" + seriesId + "/ListSeasonsAndEpisodes", {
+            method: "POST",
+            body: JSON.stringify({ token: token }),
+        });
+        return res.json();
+    }
 }
