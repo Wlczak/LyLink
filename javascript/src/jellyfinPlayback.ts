@@ -127,7 +127,7 @@ export class JellyfinPlayback {
                     return;
                 }
                 this.updateMediainfo(data);
-                this.enableEdit(data.Id, data.SeriesId, data.SeriesId);
+                this.enableEdit(data.Id, data.SeasonId, data.SeriesId);
             });
     }
 
