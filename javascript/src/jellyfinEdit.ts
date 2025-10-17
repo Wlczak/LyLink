@@ -74,6 +74,11 @@ export class JellyfinEdit {
         firstEpisodeSelect.innerHTML = "";
         lastEpisodeSelect.innerHTML = "";
 
+        firstEpisodeSelect.removeEventListener("change", this.episodeSelectValidate);
+        firstEpisodeSelect.addEventListener("change", this.episodeSelectValidate);
+        lastEpisodeSelect.removeEventListener("change", this.episodeSelectValidate);
+        lastEpisodeSelect.addEventListener("change", this.episodeSelectValidate);
+
         episodeList.forEach((episode) => {
             if (episode.ParentIndexNumber == seasonIndex) {
                 episodeIndexList.push(episode.IndexNumber);
@@ -100,5 +105,22 @@ export class JellyfinEdit {
             }
             lastEpisodeSelect.add(option);
         });
+    }
+
+    static episodeSelectValidate() {
+        const firstEpisodeSelect = document.getElementById("firstEpisodeSelect") as HTMLSelectElement;
+        const lastEpisodeSelect = document.getElementById("lastEpisodeSelect") as HTMLSelectElement;
+        const lastParent = lastEpisodeSelect.parentNode as HTMLDivElement;
+        const saveButton = document.getElementById("saveBtn") as HTMLButtonElement;
+
+        if (firstEpisodeSelect.selectedIndex > lastEpisodeSelect.selectedIndex) {
+            lastParent.classList.add("is-danger");
+            lastParent.title = "First episode must be before or the same as last episode";
+            saveButton.disabled = true;
+        } else {
+            lastParent.classList.remove("is-danger");
+            lastParent.title = "";
+            saveButton.disabled = false;
+        }
     }
 }
