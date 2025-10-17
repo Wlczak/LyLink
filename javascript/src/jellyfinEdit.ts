@@ -5,6 +5,7 @@ export class JellyfinEdit {
         const mediaId = new URLSearchParams(window.location.search).get("ep_id");
         if (mediaId == null || mediaId == undefined || mediaId == "") {
             console.error("No mediaId found");
+            window.location.replace("/lyrics/jellyfin");
             return;
         }
 
@@ -135,14 +136,17 @@ export class JellyfinEdit {
         const lyricsInput = document.getElementById("lyricsInput") as HTMLInputElement;
 
         const showId = new URLSearchParams(window.location.search).get("show_id");
-        const seasonId = seasonInput.value;
-        const seasonNumber = seasonInput.selectedOptions[0].innerText.replace("S", "");
-        const firstEpisode = firstEpisodeSelect.value;
-        const lastEpisode = lastEpisodeSelect.value;
+        const seasonNumber = Number(seasonInput.selectedOptions[0].innerText.replace("S", ""));
+        const firstEpisode = Number(firstEpisodeSelect.value);
+        const lastEpisode = Number(lastEpisodeSelect.value);
         const lyrics = lyricsInput.value;
 
-        console.log(
-            `showId: ${showId}, seasonId: ${seasonId}, seasonNumber: ${seasonNumber}, firstEpisode: ${firstEpisode}, lastEpisode: ${lastEpisode}, lyrics: ${lyrics}`
-        );
+        if (showId == null || showId == undefined || showId == "") {
+            alert("Invalid URL.");
+            window.location.replace("/lyrics/jellyfin");
+            return;
+        }
+
+        JellyfinApi.saveJellyfinLyrics(showId, seasonNumber, firstEpisode, lastEpisode, lyrics);
     }
 }

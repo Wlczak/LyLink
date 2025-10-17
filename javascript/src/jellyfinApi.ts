@@ -48,4 +48,15 @@ export class JellyfinApi {
         });
         return res.json();
     }
+
+    static async saveJellyfinLyrics(
+        showId: string,
+        seasonNumber: number,
+        firstEpisode: number,
+        lastEpisode: number,
+        lyrics: string
+    ) {
+        console.log(
+            `showId: ${showId}, seasonNumber: ${seasonNumber}, firstEpisode: ${firstEpisode}, lastEpisode: ${lastEpisode}, lyrics: ${lyrics}`)
+    }
 }
