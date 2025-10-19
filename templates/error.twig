@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Error {{ code }} — Exception</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css">
+    <style>
+        body {
+            background: #f5f7fa;
+        }
+
+        .muted {
+            color: #6b7280;
+        }
+
+        details {
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="section">
+        <div class="container">
+            <div class="box">
+                <div class="level">
+                    <div class="level-left">
+                        <div>
+                            <h1 class="title is-4">Unhandled Exception</h1>
+                            <p>
+                                <span class="meta-badge">Code {{ code }}</span>
+                                <strong>{{ message }}</strong>
+                            </p>
+                            <p class="muted">in <code>{{ file }}</code> on line
+                                <strong>{{ line }}</strong></p>
+                        </div>
+                    </div>
+                    <div class="level-right">
+                        <div class="buttons">
+                            <a class="button is-light" href="javascript:window.history.back()">Back</a>
+                            <a class="button is-danger" href="javascript:window.location.reload()">Reload</a>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+
+                <details>
+                    <summary class="muted">Raw exception message and location</summary>
+                    <pre>{{ message }} in {{ file }}:{{ line }}</pre>
+                </details>
+            </div>
+        </div>
+    </section>
+
+</body>
+
+</html>
