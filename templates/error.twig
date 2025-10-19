@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Error {{ code }} — Exception</title>
+    <title>Error {{ code|default('') }} — Exception</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css">
     <style>
         .trace-pre {
@@ -37,30 +37,32 @@
         <div class="container">
             <div class="box">
                 <h1 class="title is-4">Unhandled Exception</h1>
-                <p><strong class="has-text-danger">Code {{ code }}</strong> — <strong>{{ message }}</strong></p>
-                <p class="meta">in <code>{{ file }}</code> on line <strong>{{ line }}</strong></p>
+                <p><strong class="has-text-danger">Code {{ code|default('') }}</strong> —
+                    <strong>{{ message|default('Something has gone wrong') }}</strong>
+                </p>
+                <p class="meta">in <code>{{ file|default('n/a') }}</code> on line
+                    <strong>{{ line|default('?') }}</strong>
+                </p>
 
                 <hr>
 
                 <h2 class="subtitle is-6">Stack trace (most recent first)</h2>
 
                 <ol style="padding-left: 2.5rem;">
-                    {% for frame in trace %}
+                    {% for frame in trace|default([]) %}
                     <li class="frame">
                         <div>
                             <strong>#{{ loop.index0 }}</strong>
-                            <strong>
-                                {{ frame.class|default('') }}{{ frame.type|default('') }}{{ frame.function|default('?') }}()
-                            </strong>
+                            <strong>{{ frame.class|default('') }}{{ frame.type|default('') }}{{ frame.function|default('?') }}()</strong>
                         </div>
                         {% if frame.file is defined %}
                         <div class="small-muted">{{ frame.file }}:{{ frame.line|default('?') }}</div>
                         {% endif %}
-                        {% if frame.args is defined and frame.args|length %}
+                        {% if (frame.args|default([]))|length %}
                         <details>
-                            <summary class="small-muted">Arguments ({{ frame.args|length }})</summary>
+                            <summary class="small-muted">Arguments ({{ (frame.args|default([]))|length }})</summary>
                             <pre
-                                class="trace-pre">{{ frame.args|json_encode(constant('JSON_PRETTY_PRINT'))|e('html') }}</pre>
+                                class="trace-pre">{{ (frame.args|default([]))|json_encode(constant('JSON_PRETTY_PRINT'))|default('[]')|e('html') }}</pre>
                         </details>
                         {% endif %}
                     </li>
@@ -68,7 +70,6 @@
                     <li class="small-muted">No stack trace available.</li>
                     {% endfor %}
                 </ol>
-
             </div>
         </div>
     </section>
