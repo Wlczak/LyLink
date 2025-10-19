@@ -7,10 +7,6 @@
     <title>Error {{ code }} — Exception</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css">
     <style>
-        body {
-            background: #f5f7fa;
-        }
-
         .trace-pre {
             background: #0b1220;
             color: #e6eef8;
@@ -48,7 +44,7 @@
 
                 <h2 class="subtitle is-6">Stack trace (most recent first)</h2>
 
-                <ol>
+                <ol style="padding-left: 2.5rem;">
                     {% for frame in trace %}
                     <li class="frame">
                         <div>
