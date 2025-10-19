@@ -11,12 +11,27 @@
             background: #f5f7fa;
         }
 
-        .muted {
-            color: #6b7280;
+        .trace-pre {
+            background: #0b1220;
+            color: #e6eef8;
+            padding: 0.6rem;
+            border-radius: 6px;
+            font-family: ui-monospace, monospace;
+            font-size: 13px;
+            overflow: auto;
         }
 
-        details {
-            margin-top: 0.25rem;
+        .meta {
+            color: #4b5563;
+        }
+
+        .frame {
+            margin-bottom: 0.75rem;
+        }
+
+        .small-muted {
+            color: #6b7280;
+            font-size: 0.85rem;
         }
     </style>
 </head>
@@ -25,36 +40,42 @@
     <section class="section">
         <div class="container">
             <div class="box">
-                <div class="level">
-                    <div class="level-left">
-                        <div>
-                            <h1 class="title is-4">Unhandled Exception</h1>
-                            <p>
-                                <span class="meta-badge">Code {{ code }}</span>
-                                <strong>{{ message }}</strong>
-                            </p>
-                            <p class="muted">in <code>{{ file }}</code> on line
-                                <strong>{{ line }}</strong></p>
-                        </div>
-                    </div>
-                    <div class="level-right">
-                        <div class="buttons">
-                            <a class="button is-light" href="javascript:window.history.back()">Back</a>
-                            <a class="button is-danger" href="javascript:window.location.reload()">Reload</a>
-                        </div>
-                    </div>
-                </div>
+                <h1 class="title is-4">Unhandled Exception</h1>
+                <p><strong class="has-text-danger">Code {{ code }}</strong> — <strong>{{ message }}</strong></p>
+                <p class="meta">in <code>{{ file }}</code> on line <strong>{{ line }}</strong></p>
 
                 <hr>
 
-                <details>
-                    <summary class="muted">Raw exception message and location</summary>
-                    <pre>{{ message }} in {{ file }}:{{ line }}</pre>
-                </details>
+                <h2 class="subtitle is-6">Stack trace (most recent first)</h2>
+
+                <ol>
+                    {% for frame in trace %}
+                    <li class="frame">
+                        <div>
+                            <strong>#{{ loop.index0 }}</strong>
+                            <strong>
+                                {{ frame.class|default('') }}{{ frame.type|default('') }}{{ frame.function|default('?') }}()
+                            </strong>
+                        </div>
+                        {% if frame.file is defined %}
+                        <div class="small-muted">{{ frame.file }}:{{ frame.line|default('?') }}</div>
+                        {% endif %}
+                        {% if frame.args is defined and frame.args|length %}
+                        <details>
+                            <summary class="small-muted">Arguments ({{ frame.args|length }})</summary>
+                            <pre
+                                class="trace-pre">{{ frame.args|json_encode(constant('JSON_PRETTY_PRINT'))|e('html') }}</pre>
+                        </details>
+                        {% endif %}
+                    </li>
+                    {% else %}
+                    <li class="small-muted">No stack trace available.</li>
+                    {% endfor %}
+                </ol>
+
             </div>
         </div>
     </section>
-
 </body>
 
 </html>
