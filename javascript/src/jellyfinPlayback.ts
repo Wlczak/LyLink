@@ -20,7 +20,7 @@ export class JellyfinPlayback {
         name.innerHTML = title;
     }
 
-    getPlaybackStatus(address: string, token: string) {
+    getPlaybackStatus(address: string, token: string):PlaybackStatus {
         JellyfinApi.getPlaybackInfo(address, token)
             .then((response) => response.json())
             .then((data: PlaybackInfo[] | null | undefined) => {

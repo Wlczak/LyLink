@@ -61,6 +61,8 @@ class LyricsRoute extends Router implements Route
 
         if ($settings->jellyfin_connected) {
             $sources[] = new Source(id: 2, name: "Jellyfin", route: "/lyrics/jellyfin", current_song: new CurrentSong(id: "2", title: "Episode X", progress_ms: 5000, duration_ms: 100000));
+            setcookie("jellyfin_token", $settings->jellyfin_token ?? "");
+            setcookie("jellyfin_server", $settings->jellyfin_server ?? "");
         }
 
         return self::$twig->load('lyrics/lyrics_select.twig')->render(["auth" => $auth, "sources" => $sources]);

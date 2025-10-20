@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>LyLink — Sources</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css" />
+    <script type="module" src="/dist/jellyfinSource.js"></script>
 </head>
 
 <body>
@@ -59,6 +60,7 @@
                                                     src="{{ src.current_song.imageUrl|default('/img/albumPlaceholer.svg') }}"
                                                     alt="cover" style="border-radius:6px">
                                             </figure>
+
                                         </div>
                                         <div class="media-content">
                                             <p id="src-title-{{ src.name|lower }}" class="is-size-6">

@@ -5,7 +5,8 @@
     "outDir": "../public_html/dist",
     "rootDir": "./src",
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "moduleResolution": "bundler"
   },
   "include": [
     "src"
