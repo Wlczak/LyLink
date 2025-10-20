@@ -68,7 +68,7 @@ class LyricsRoute extends Router implements Route
 
     public static function jellyfinLyrics(): string
     {
-        $lyricsData = new LyricsData(name: "Loading...", is_playing: false);
+        $lyricsData = new LyricsData(name: "Loading...", is_playing: false, imageUrl: "/img/albumPlaceholer.svg");
 
         $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
 

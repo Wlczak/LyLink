@@ -68,4 +68,17 @@ export class JellyfinApi {
             }
         });
     }
+
+    static async getItemImage(
+        address: string,
+        token: string,
+        mediaId: string,
+        imageType: string
+    ): Promise<Response> {
+        const res = await fetch(address + "/GetImage/" + mediaId + "/" + imageType, {
+            method: "POST",
+            body: JSON.stringify({ token: token }),
+        });
+        return res;
+    }
 }
