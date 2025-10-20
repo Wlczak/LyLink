@@ -164,12 +164,12 @@ export class JellyfinPlayback {
                     placeholder();
                     return;
                 }
-                this.updateMediainfo(data);
+                this.updateMediainfo(address, token, data);
                 this.enableEdit(data.Id, data.SeasonId, data.SeriesId);
             });
     }
 
-    updateMediainfo(info: EpisodeWithParentsInfo) {
+    updateMediainfo(address: string, token: string, info: EpisodeWithParentsInfo) {
         const fullName =
             info.SeriesName +
             " - " +
@@ -180,6 +180,19 @@ export class JellyfinPlayback {
             " - " +
             info.Name;
         this.changeTitle(fullName);
+
+        JellyfinApi.getItemImage(address, token, info.SeasonId, "Primary").then((response) => {
+            if (response.ok === false) {
+                JellyfinApi.getItemImage(address, token, info.SeriesId, "Primary").then((response) => {
+                    response.bytes().then((binaryData) => {
+                        this.setBlobAsCover(binaryData, response.headers.get("content-type") ?? "image/jpeg");
+                    });
+                });
+            }
+            response.bytes().then((binaryData) => {
+                this.setBlobAsCover(binaryData, response.headers.get("content-type") ?? "image/jpeg");
+            });
+        });
     }
 
     enableEdit(epId: string, seasonId: string, showId: string) {
@@ -188,5 +201,21 @@ export class JellyfinPlayback {
         editBtn.href =
             "/lyrics/jellyfin/edit?ep_id=" + epId + "&season_id=" + seasonId + "&show_id=" + showId;
         editContainer.hidden = false;
+    }
+
+    setBlobAsCover(binaryData: Uint8Array<ArrayBuffer>, contentType: string) {
+        const blob = new Blob([binaryData], {
+            type: contentType,
+        });
+        const img = document.getElementById("cover-image") as HTMLImageElement;
+        img.src = URL.createObjectURL(blob);
+        img.onload = () => {
+            const width = img.naturalWidth;
+            const height = img.naturalHeight;
+            if (width != height) {
+                img.style.width = "100%";
+                img.style.height = "auto";
+            }
+        };
     }
 }
