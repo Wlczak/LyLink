@@ -24,6 +24,9 @@ class Lyrics
     #[ORM\Column(type: 'string', name: 'jellyfin_show_id', nullable: true)]
     public string $jellyfinShowId = '';
 
+    #[ORM\Column(type: 'string', name: 'jellyfin_lyrics_name', nullable: true)]
+    public string $jellyfinLyricsName = "";
+
     #[ORM\Column(type: 'integer', name: 'jellyfin_season_number', nullable: true)]
     public int $jellyfinSeasonNumber = 0;
 

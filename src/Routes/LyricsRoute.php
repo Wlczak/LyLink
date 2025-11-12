@@ -91,15 +91,20 @@ class LyricsRoute extends Router implements Route
                 $qb->andWhere("l.jellyfinStartEpisodeNumber <= :episodeNumber");
                 $qb->andWhere("l.jellyfinEndEpisodeNumber >= :episodeNumber");
                 $qb->setParameters(new ArrayCollection([new Parameter("showId", $showId), new Parameter("seasonNumber", $seasonIndex), new Parameter("episodeNumber", $episodeIndex)]));
-                $qb->setMaxResults(1);
 
                 /**
-                 * @var Lyrics|null $lyrics
+                 * @var array{Lyrics}|array{} $lyricsResults
                  */
-                $lyrics = $qb->getQuery()->getOneOrNullResult();
-                if ($lyrics != null) {
-                    $lyricsData->lyrics = $lyrics->lyrics;
-                    $lyricsData->id = $showId;
+                $lyricsResults = $qb->getQuery()->getResult();
+                if (count($lyricsResults) > 0) {
+                    /**
+                     * @var Lyrics $lyrics
+                     */
+                    foreach ($lyricsResults as $key => $lyrics) {
+
+                        $lyricsData->lyrics[$key] = $lyrics;
+                        $lyricsData->id = $showId;
+                    }
                 }
             }
 
