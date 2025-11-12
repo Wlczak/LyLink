@@ -35,6 +35,7 @@ class LyricsRoute extends Router implements Route
             SimpleRouter::get('/jellyfin/edit', [self::class, 'jellyfinEditList']);
             SimpleRouter::get('/jellyfin/edit/{id}', [self::class, 'jellyfinEditPage']);
             SimpleRouter::post('/jellyfin/save', [self::class, 'jellyfinUpdate']);
+            SimpleRouter::get('/jellyfin/delete/{id}', [self::class, 'jellyfinDelete']);
         };
     }
 
@@ -255,6 +256,34 @@ class LyricsRoute extends Router implements Route
         }
         http_response_code(500);
         return "";
+    }
+
+    public function jellyfinDelete(string $idString): void
+    {
+        $auth = AuthSession::get()?->getUser()?->getId() ?? 0;
+        if ($auth == 0) {
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            die();
+        }
+
+        $id  = intval($idString);
+        if ($id == 0) {
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin');
+            die();
+        }
+        $em = DoctrineRegistry::get();
+        /**
+         * @var Lyrics|null
+         */
+        $lyrics = $em->getRepository(Lyrics::class)->find($id);
+
+        if ($lyrics == null) {
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin');
+            die();
+        }
+        $em->remove($lyrics);
+        $em->flush();
+        header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin');
     }
 
     public function spotifyLyrics(): void
