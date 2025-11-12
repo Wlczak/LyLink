@@ -25,6 +25,13 @@ $devMode = $_ENV['DEV_MODE'] === "true" ? true : false;
 if ($devMode) {
 } else {
     error_reporting(E_ALL & ~E_DEPRECATED);
+
+    set_error_handler(function ($severity, $message, $file, $line) {
+        if (!(error_reporting() & $severity)) {
+            return false;
+        }
+        throw new ErrorException($message, 0, $severity, $file, $line);
+    });
 }
 
 try {
