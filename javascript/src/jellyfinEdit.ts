@@ -112,17 +112,16 @@ export class JellyfinEdit {
         seasonsList.forEach((season) => {
             const option = document.createElement("option");
             option.text = "S" + season.Index.toString();
-            option.value = episodeInfo.ParentId;
+            option.value = season.Index.toString();
             option.id = "s-" + season.Index.toString();
-            
             option.selected = season.Index.toString() === seasonIndex;
             seasonsSelect.add(option);
         });
 
-        const activeSeason = document.getElementById(
-            "s-" + episodeInfo.ParentIndexNumber.toString()
-        ) as HTMLOptionElement;
-        activeSeason.selected = true;
+        // const activeSeason = document.getElementById(
+        //     "s-" + episodeInfo.ParentIndexNumber.toString()
+        // ) as HTMLOptionElement;
+        // activeSeason.selected = true;
 
         this.setEpisodeSelects(
             seasonsSelect.selectedOptions[0].innerText,
