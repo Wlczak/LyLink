@@ -20,6 +20,11 @@ export class JellyfinEdit {
 
         this.setMediaInfo(episodeInfo, episodeList);
 
+        const imageUrl = await this.getImageBlobUrl(address, token, episodeInfo.ParentId);
+        console.log(imageUrl);
+        const posterImage = document.getElementById("posterImage") as HTMLImageElement;
+        posterImage.src = imageUrl;
+
         const form = document.getElementById("lyricsForm") as HTMLFormElement;
         form.addEventListener("submit", this.saveForm);
     }
@@ -57,22 +62,30 @@ export class JellyfinEdit {
             episodeSeasonInfoElement.textContent =
                 "S" + episodeInfo.ParentIndexNumber.toString() + "E" + episodeInfo.IndexNumber.toString();
 
-                document.title = "LyLink — " + episodeInfo.SeriesName + " — S" + episodeInfo.ParentIndexNumber.toString() + "E" + episodeInfo.IndexNumber.toString();
+            document.title =
+                "LyLink — " +
+                episodeInfo.SeriesName +
+                " — S" +
+                episodeInfo.ParentIndexNumber.toString() +
+                "E" +
+                episodeInfo.IndexNumber.toString();
 
-            JellyfinApi.getItemImage(address, token, seasonId, "Primary").then((response) => {
-                response.bytes().then((binaryData) => {
-                    const blob = new Blob([binaryData], {
-                        type: response.headers.get("content-type") ?? "image/jpeg",
-                    });
-                    const episodeImageElement = document.getElementById("episode-poster") as HTMLImageElement;
-                    episodeImageElement.src = URL.createObjectURL(blob);
-                });
-            });
+            const blobUrl = await this.getImageBlobUrl(address, token, seasonId);
+            const episodeImageElement = document.getElementById("episode-poster") as HTMLImageElement;
+            episodeImageElement.src = blobUrl;
         } catch (e) {
             console.error(e);
             window.location.replace("/lyrics/jellyfin");
             return;
         }
+    }
+
+    static async getImageBlobUrl(address: string, token: string, mediaId: string): Promise<string> {
+       const response = await  JellyfinApi.getItemImage(address, token, mediaId, "Primary");
+       if (response.ok) {
+           return URL.createObjectURL(await response.blob());
+       }
+       return "";
     }
 
     static setMediaInfo(episodeInfo: EpisodeInfo, episodeList: Array<EpisodeInfo> = []) {
