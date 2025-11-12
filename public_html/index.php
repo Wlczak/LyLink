@@ -51,7 +51,7 @@ try {
         $errorRay = uniqid();
 
         $log = new Logger('mainLogger');
-        $log->pushHandler(new StreamHandler('../logs.log', Level::Info));
+        $log->pushHandler(new StreamHandler('../logs/logs.log', Level::Info));
         $log->addRecord(Level::Error, $e->getMessage(), ['ray' => $errorRay, 'code' => $e->getCode(), 'message' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine(), 'trace' => $e->getTraceAsString()]);
 
         if ($e->getMessage() == "Check settings on developer.spotify.com/dashboard, the user may not be registered.") {
