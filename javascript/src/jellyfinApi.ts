@@ -18,7 +18,12 @@ export class JellyfinApi {
             method: "POST",
             body: JSON.stringify({ token: token }),
         });
-        return res.json();
+        if (res.ok) {
+            return res.json();
+        }
+        else{
+            throw new Error("Failed to get episode info");
+        }
     }
 
     static async getSeasonInfo(address: string, token: string, mediaId: string): Promise<SeasonInfo> {

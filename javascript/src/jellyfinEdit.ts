@@ -24,6 +24,48 @@ export class JellyfinEdit {
         form.addEventListener("submit", this.saveForm);
     }
 
+    static async setUpList(address: string, token: string) {
+        const episodeId = new URLSearchParams(window.location.search).get("ep_id");
+        const seasonId = new URLSearchParams(window.location.search).get("season_id");
+        if (episodeId == null || episodeId == undefined || episodeId == "" || seasonId == null || seasonId == undefined || seasonId == "") {
+            console.error("No mediaId found");
+            window.location.replace("/lyrics/jellyfin");
+            return;
+        }
+        try {
+            const episodeInfo = await JellyfinApi.getEpisodeInfo(address, token, episodeId);
+
+            const episodeInfoElement = document.getElementById("episode_info") as HTMLSpanElement;
+            const episodeSeasonInfoElement = document.getElementById(
+                "episode-season-info"
+            ) as HTMLSpanElement;
+
+            episodeInfoElement.textContent =
+                episodeInfo.SeriesName +
+                " — S" +
+                episodeInfo.ParentIndexNumber.toString() +
+                "E" +
+                episodeInfo.IndexNumber.toString();
+
+            episodeSeasonInfoElement.textContent =
+                "S" + episodeInfo.ParentIndexNumber.toString() + "E" + episodeInfo.IndexNumber.toString();
+
+            JellyfinApi.getItemImage(address, token, seasonId, "Primary").then((response) => {
+                response.bytes().then((binaryData) => {
+                    const blob = new Blob([binaryData], {
+                        type: response.headers.get("content-type") ?? "image/jpeg",
+                    });
+                    const episodeImageElement = document.getElementById("episode-poster") as HTMLImageElement;
+                    episodeImageElement.src = URL.createObjectURL(blob);
+                });
+            });
+        } catch (e) {
+            console.error(e);
+            window.location.replace("/lyrics/jellyfin");
+            return;
+        }
+    }
+
     static setMediaInfo(episodeInfo: EpisodeInfo, episodeList: Array<EpisodeInfo> = []) {
         const seriesTitle = document.getElementById("series_title") as HTMLInputElement;
         const seasonsSelect = document.getElementById("season") as HTMLSelectElement;
