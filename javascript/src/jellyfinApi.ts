@@ -54,6 +54,7 @@ export class JellyfinApi {
     }
 
     static async saveJellyfinLyrics(
+        lyricsId: number,
         showId: string,
         seasonNumber: number,
         firstEpisode: number,
@@ -63,7 +64,15 @@ export class JellyfinApi {
     ) {
         fetch("/lyrics/jellyfin/save", {
             method: "POST",
-            body: JSON.stringify({ showId, seasonNumber, firstEpisode, lastEpisode, lyrics, lyricsName }),
+            body: JSON.stringify({
+                lyricsId,
+                showId,
+                seasonNumber,
+                firstEpisode,
+                lastEpisode,
+                lyrics,
+                lyricsName,
+            }),
         }).then((res) => {
             if (res.ok) {
                 window.location.replace("/lyrics/jellyfin");

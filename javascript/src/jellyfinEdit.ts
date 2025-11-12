@@ -222,6 +222,9 @@ export class JellyfinEdit {
         const lyricsNameInput = document.getElementById("lyricsName") as HTMLInputElement;
         const lyricsInput = document.getElementById("lyricsInput") as HTMLInputElement;
 
+        let lyricsId = Number.parseInt(new URL(document.documentURI).pathname.split("/").pop() ?? "") ?? 0;
+        lyricsId = isNaN(lyricsId) ? 0 : lyricsId;
+
         const showId = new URLSearchParams(window.location.search).get("show_id");
         const seasonNumber = Number(seasonInput.selectedOptions[0].innerText.replace("S", ""));
         const firstEpisode = Number(firstEpisodeSelect.value);
@@ -235,6 +238,28 @@ export class JellyfinEdit {
             return;
         }
 
-        JellyfinApi.saveJellyfinLyrics(showId, seasonNumber, firstEpisode, lastEpisode,lyricsName, lyrics);
+        if (lyricsName == "") {
+            lyricsNameInput.classList.add("is-danger");
+            function lyricsNameInputListener() {
+                if (lyricsNameInput.value == "") {
+                    lyricsNameInput.classList.add("is-danger");
+                } else {
+                    lyricsNameInput.classList.remove("is-danger");
+                }
+            }
+            lyricsNameInput.removeEventListener("input", lyricsNameInputListener);
+            lyricsNameInput.addEventListener("input", lyricsNameInputListener);
+            return;
+        }
+
+        JellyfinApi.saveJellyfinLyrics(
+            lyricsId,
+            showId,
+            seasonNumber,
+            firstEpisode,
+            lastEpisode,
+            lyricsName,
+            lyrics
+        );
     }
 }

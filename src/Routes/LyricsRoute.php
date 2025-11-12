@@ -219,9 +219,11 @@ class LyricsRoute extends Router implements Route
         }
 
         /**
-         * @var array{showId:string,seasonNumber:int,firstEpisode:int,lastEpisode:int,lyrics:string,lyricsName:string}
+         * @var array{lyricsId:int,showId:string,seasonNumber:int,firstEpisode:int,lastEpisode:int,lyrics:string,lyricsName:string}
          */
         $json = json_decode($input, true);
+
+        $lyricsId = $json['lyricsId'];
 
         $showId = $json['showId'];
         $seasonNumber = $json['seasonNumber'];
@@ -235,12 +237,8 @@ class LyricsRoute extends Router implements Route
             /**
              * @var Lyrics|null
              */
-            $lyrics = $entityManager->getRepository(Lyrics::class)->findOneBy([
-                'jellyfinShowId' => $showId,
-                'jellyfinSeasonNumber' => $seasonNumber,
-                'jellyfinStartEpisodeNumber' => $firstEpisode,
-                'jellyfinEndEpisodeNumber' => $lastEpisode
-            ]);
+            $lyrics = $entityManager->getRepository(Lyrics::class)->findOneBy(['id' => $lyricsId]);
+            var_dump($lyrics);
             if ($lyrics == null) {
                 $lyrics = new Lyrics();
             }
