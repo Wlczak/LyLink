@@ -10,7 +10,10 @@
         import { JellyfinEdit } from '/dist/jellyfinEdit.js';
         let address = "{{ address }}";
         let token = "{{ token }}";
-        JellyfinEdit.setUp(address, token);
+        let seasonIndex = "{{ season_index }}";
+        let firstEpisodeIndex = "{{ first_episode_index }}";
+        let lastEpisodeIndex = "{{ last_episode_index }}";
+        JellyfinEdit.setUp(address, token, seasonIndex, firstEpisodeIndex, lastEpisodeIndex);
     </script>
 </head>
 
@@ -90,7 +93,13 @@
                             </div>
                         </div>
 
-
+                        <div class="field">
+                            <label class="label">Lyrics name</label>
+                            <div class="control">
+                                <input class="input" type="text" name="lyrics_name" id="lyrics_name"
+                                    value="{{ lyrics_name }}">
+                            </div>
+                        </div>
 
                         <div class="field">
                             <label class="label">Lyrics</label>

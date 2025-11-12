@@ -132,7 +132,6 @@ export class JellyfinPlayback {
         this.progress_ticks += this.TICKS_PER_SECOND;
         const progressPercent = Number((this.progress_ticks * BigInt(100)) / this.duration_ticks);
 
-        console.log(progressPercent);
         progressBar.value = progressPercent;
 
         const cur_min = this.progress_ticks / this.TICKS_PER_SECOND / BigInt(60);
@@ -205,7 +204,16 @@ export class JellyfinPlayback {
         const editContainer = document.getElementById("edit-container") as HTMLDivElement;
         const editBtn = document.getElementById("edit-btn") as HTMLAnchorElement;
         editBtn.href =
-            "/lyrics/jellyfin/edit?ep_id=" + epId + "&season_id=" + seasonId + "&show_id=" + showId + "&ep_index=" + episodeIndex + "&season_index=" + seasonIndex;
+            "/lyrics/jellyfin/edit?ep_id=" +
+            epId +
+            "&season_id=" +
+            seasonId +
+            "&show_id=" +
+            showId +
+            "&ep_index=" +
+            episodeIndex +
+            "&season_index=" +
+            seasonIndex;
         editContainer.hidden = false;
     }
 

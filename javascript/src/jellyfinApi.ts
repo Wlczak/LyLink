@@ -60,7 +60,6 @@ export class JellyfinApi {
         lastEpisode: number,
         lyrics: string
     ) {
-        console.log(JSON.stringify({ showId, seasonNumber, firstEpisode, lastEpisode, lyrics }));
         fetch("/lyrics/jellyfin/edit", {
             method: "POST",
             body: JSON.stringify({ showId, seasonNumber, firstEpisode, lastEpisode, lyrics }),

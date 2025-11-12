@@ -152,11 +152,12 @@ class LyricsRoute extends Router implements Route
             "address" => $address,
             "token" => $token,
             "lyrics_list" => $lyricsList,
-            "ep_id" => $episodeId
+            "ep_id" => $episodeId,
+            "show_id" => $showId
         ]);
     }
 
-    public static function jellyfinEditPage(): string
+    public static function jellyfinEditPage(string $idString): string
     {
         $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
 
@@ -164,13 +165,49 @@ class LyricsRoute extends Router implements Route
             $address = $settings->jellyfin_server;
             $token = $settings->jellyfin_token;
         } else {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics');
             die();
         }
 
+        $showId = $_GET["show_id"];
+        if ($showId == null || $showId == "") {
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin');
+            die();
+        }
+        $id = intval($idString);
+
+        $lyrics = "";
+        $lyricsName = "";
+        $seasonIndex = 1;
+        $firstEpisodeIndex = 1;
+        $lastEpisodeIndex = 1;
+        if ($id != 0) {
+            $em = DoctrineRegistry::get();
+            /**
+             * @var Lyrics|null
+             */
+            $lyricsObj = $em->getRepository(Lyrics::class)->find($id);
+            if ($lyricsObj != null) {
+                if ($lyricsObj->jellyfinShowId != $showId) {
+                    header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin');
+                    die();
+                }
+                $lyrics = $lyricsObj->lyrics;
+                $lyricsName = $lyricsObj->jellyfinLyricsName;
+                $seasonIndex = $lyricsObj->jellyfinSeasonNumber;
+                $firstEpisodeIndex = $lyricsObj->jellyfinStartEpisodeNumber;
+                $lastEpisodeIndex = $lyricsObj->jellyfinEndEpisodeNumber;
+            }
+        }
+        var_dump($lyrics);
         return self::$twig->load('lyrics/jellyfin_edit.twig')->render([
             "address" => $address,
-            "token" => $token
+            "token" => $token,
+            "lyrics" => $lyrics,
+            "lyrics_name" => $lyricsName,
+            "season_index" => $seasonIndex,
+            "first_episode_index" => $firstEpisodeIndex,
+            "last_episode_index" => $lastEpisodeIndex
         ]);
     }
 

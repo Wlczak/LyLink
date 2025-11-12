@@ -1,7 +1,13 @@
 import { JellyfinApi } from "./jellyfinApi.js";
 
 export class JellyfinEdit {
-    static async setUp(address: string, token: string) {
+    static async setUp(
+        address: string,
+        token: string,
+        seasonIndex: string,
+        firstEpisodeIndex: string,
+        lastEpisodeIndex: string
+    ) {
         const mediaId = new URLSearchParams(window.location.search).get("ep_id");
         if (mediaId == null || mediaId == undefined || mediaId == "") {
             console.error("No mediaId found");
@@ -11,17 +17,14 @@ export class JellyfinEdit {
 
         const episodeInfo = await JellyfinApi.getEpisodeInfo(address, token, mediaId);
         const seasonInfo = await JellyfinApi.getSeasonInfo(address, token, episodeInfo.ParentId);
-        const seriesInfo = await JellyfinApi.getSeriesInfo(address, token, seasonInfo.ParentId);
+        // const seriesInfo = await JellyfinApi.getSeriesInfo(address, token, seasonInfo.ParentId);
 
         const episodeList = await JellyfinApi.getEpisodeList(address, token, seasonInfo.ParentId);
-        console.log(episodeInfo);
-        console.log(seasonInfo);
-        console.log(seriesInfo);
 
-        this.setMediaInfo(episodeInfo, episodeList);
+        this.setMediaInfo(episodeInfo, episodeList, seasonIndex, firstEpisodeIndex, lastEpisodeIndex);
 
         const imageUrl = await this.getImageBlobUrl(address, token, episodeInfo.ParentId);
-        console.log(imageUrl);
+
         const posterImage = document.getElementById("posterImage") as HTMLImageElement;
         posterImage.src = imageUrl;
 
@@ -81,14 +84,20 @@ export class JellyfinEdit {
     }
 
     static async getImageBlobUrl(address: string, token: string, mediaId: string): Promise<string> {
-       const response = await  JellyfinApi.getItemImage(address, token, mediaId, "Primary");
-       if (response.ok) {
-           return URL.createObjectURL(await response.blob());
-       }
-       return "";
+        const response = await JellyfinApi.getItemImage(address, token, mediaId, "Primary");
+        if (response.ok) {
+            return URL.createObjectURL(await response.blob());
+        }
+        return "";
     }
 
-    static setMediaInfo(episodeInfo: EpisodeInfo, episodeList: Array<EpisodeInfo> = []) {
+    static setMediaInfo(
+        episodeInfo: EpisodeInfo,
+        episodeList: Array<EpisodeInfo> = [],
+        seasonIndex: string,
+        firstEpisodeIndex: string,
+        lastEpisodeIndex: string
+    ) {
         const seriesTitle = document.getElementById("series_title") as HTMLInputElement;
         const seasonsSelect = document.getElementById("season") as HTMLSelectElement;
 
@@ -99,13 +108,14 @@ export class JellyfinEdit {
             }
         });
         seasonsList.sort((a, b) => a.Index - b.Index);
-        console.log(seasonsList);
 
         seasonsList.forEach((season) => {
             const option = document.createElement("option");
             option.text = "S" + season.Index.toString();
             option.value = episodeInfo.ParentId;
             option.id = "s-" + season.Index.toString();
+            
+            option.selected = season.Index.toString() === seasonIndex;
             seasonsSelect.add(option);
         });
 
@@ -128,6 +138,18 @@ export class JellyfinEdit {
         });
 
         seriesTitle.value = episodeInfo.SeriesName;
+
+        const firstEpisodeSelect = document.getElementById("firstEpisodeSelect") as HTMLSelectElement;
+        const lastEpisodeSelect = document.getElementById("lastEpisodeSelect") as HTMLSelectElement;
+
+        Array.from(firstEpisodeSelect.options).forEach((option) => {
+            // option.value is a string, so convert targetValue to string
+            option.selected = option.value === firstEpisodeIndex.toString();
+        });
+        Array.from(lastEpisodeSelect.options).forEach((option) => {
+            // option.value is a string, so convert targetValue to string
+            option.selected = option.value === lastEpisodeIndex.toString();
+        });
     }
 
     static setEpisodeSelects(
@@ -153,7 +175,6 @@ export class JellyfinEdit {
             }
         });
         episodeIndexList.sort((a, b) => a - b);
-        console.log(episodeIndexList);
 
         episodeIndexList.forEach((episodeIndex) => {
             const option = document.createElement("option");
