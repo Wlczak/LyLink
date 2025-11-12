@@ -11,6 +11,7 @@ use Lylink\Data\LyricsData;
 use Lylink\Data\Source;
 use Lylink\DoctrineRegistry;
 use Lylink\Interfaces\Datatypes\PlaybackInfo;
+use Lylink\Interfaces\Datatypes\Track;
 use Lylink\Interfaces\Routing\Route;
 use Lylink\Models\Lyrics;
 use Lylink\Models\Settings;
@@ -27,7 +28,8 @@ class LyricsRoute extends Router implements Route
         return function () {
             SimpleRouter::get('/', [self::class, 'lyricsHome']);
             SimpleRouter::get('/spotify', [self::class, 'spotifyLyrics']);
-            SimpleRouter::post('/spotify', [self::class, 'update']);
+            SimpleRouter::get('/spotify/edit', [self::class, 'spotifyLyricsEdit']);
+            SimpleRouter::post('/spotify/save', [self::class, 'updateSpotifyLyrics']);
 
             SimpleRouter::get('/jellyfin', [self::class, 'jellyfinLyrics']);
             SimpleRouter::get('/jellyfin/edit', [self::class, 'jellyfinEdit']);
@@ -266,5 +268,45 @@ class LyricsRoute extends Router implements Route
                     'progressPercent' => $info->progress_ms / $info->item->duration_ms * 100]
             );
         }
+    }
+
+    public function spotifyLyricsEdit(): void
+    {
+        /**
+         * @var Session
+         */
+        $session = $_SESSION['spotify_session'];
+        $trackId = $_GET['id'];
+
+        $api = new SpotifyWebAPI();
+        $api->setAccessToken($session->getAccessToken());
+
+        /**
+         * @var Track
+         */
+        $track = $api->getTrack($trackId);
+
+        $template = self::$twig->load('lyrics/spotify_edit.twig');
+
+        $em = DoctrineRegistry::get();
+
+        /**
+         * @var Lyrics|null
+         */
+        $lyrics = $em->getRepository(Lyrics::class)->findOneBy(['spotifyId' => $trackId]);
+        if ($lyrics == null) {
+            $lyrics = new Lyrics();
+        }
+
+        echo $template->render([
+            'song' => [
+                'name' => $track->name,
+                'artist' => $track->artists[0]->name,
+                'imageUrl' => $track->album->images[0]->url,
+                'duration' => $track->duration_ms,
+                'id' => $track->id
+            ],
+            'lyrics' => $lyrics->lyrics
+        ]);
     }
 }

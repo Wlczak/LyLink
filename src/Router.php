@@ -62,8 +62,6 @@ class Router
         });
         SimpleRouter::get('/info', [self::class, 'info']);
 
-        // SimpleRouter::post('/edit/save', [self::class, 'update']);
-
         SimpleRouter::start();
     }
 
@@ -195,47 +193,7 @@ class Router
         return self::$twig->load('settings.twig')->render(['user' => $user, 'settings' => Settings::getSettings($id)]);
     }
 
-    // function edit(): void
-    // {
-    //     /**
-    //      * @var Session
-    //      */
-    //     $session = $_SESSION['spotify_session'];
-    //     $trackId = $_GET['id'];
-
-    //     $api = new SpotifyWebAPI();
-    //     $api->setAccessToken($session->getAccessToken());
-
-    //     /**
-    //      * @var Track
-    //      */
-    //     $track = $api->getTrack($trackId);
-
-    //     $template = self::$twig->load('lyrics/spotify_edit.twig');
-
-    //     $em = DoctrineRegistry::get();
-
-    //     /**
-    //      * @var Lyrics|null
-    //      */
-    //     $lyrics = $em->getRepository(Lyrics::class)->findOneBy(['spotifyId' => $trackId]);
-    //     if ($lyrics == null) {
-    //         $lyrics = new Lyrics();
-    //     }
-
-    //     echo $template->render([
-    //         'song' => [
-    //             'name' => $track->name,
-    //             'artist' => $track->artists[0]->name,
-    //             'imageUrl' => $track->album->images[0]->url,
-    //             'duration' => $track->duration_ms,
-    //             'id' => $track->id
-    //         ],
-    //         'lyrics' => $lyrics->lyrics
-    //     ]);
-    // }
-
-    function update(): void
+    function updateSpotifyLyrics(): void
     {
         $entityManager = DoctrineRegistry::get();
         $lyrics = $entityManager->getRepository(Lyrics::class)->findOneBy(['spotifyId' => $_POST['id']]);
