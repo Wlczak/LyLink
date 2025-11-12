@@ -165,7 +165,13 @@ export class JellyfinPlayback {
                     return;
                 }
                 this.updateMediainfo(address, token, data);
-                this.enableEdit(data.Id, data.SeasonId, data.SeriesId);
+                this.enableEdit(
+                    data.Id,
+                    data.SeasonId,
+                    data.SeriesId,
+                    data.IndexNumber,
+                    data.ParentIndexNumber
+                );
             });
     }
 
@@ -195,11 +201,11 @@ export class JellyfinPlayback {
         });
     }
 
-    enableEdit(epId: string, seasonId: string, showId: string) {
+    enableEdit(epId: string, seasonId: string, showId: string, episodeIndex: number, seasonIndex: number) {
         const editContainer = document.getElementById("edit-container") as HTMLDivElement;
         const editBtn = document.getElementById("edit-btn") as HTMLAnchorElement;
         editBtn.href =
-            "/lyrics/jellyfin/edit?ep_id=" + epId + "&season_id=" + seasonId + "&show_id=" + showId;
+            "/lyrics/jellyfin/edit?ep_id=" + epId + "&season_id=" + seasonId + "&show_id=" + showId + "&ep_index=" + episodeIndex + "&season_index=" + seasonIndex;
         editContainer.hidden = false;
     }
 

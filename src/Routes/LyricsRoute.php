@@ -128,9 +128,30 @@ class LyricsRoute extends Router implements Route
             header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
             die();
         }
+
+        $showId = $_GET["show_id"];
+        $seasonIndex = $_GET["season_index"];
+        $episodeIndex = $_GET["ep_index"];
+
+        $em = DoctrineRegistry::get();
+        $qb = $em->getRepository(Lyrics::class)->createQueryBuilder("l");
+
+        $qb->where("l.jellyfinShowId = :showId");
+        $qb->andWhere("l.jellyfinSeasonNumber = :seasonNumber");
+        $qb->andWhere("l.jellyfinStartEpisodeNumber <= :episodeNumber");
+        $qb->andWhere("l.jellyfinEndEpisodeNumber >= :episodeNumber");
+        $qb->setParameters(new ArrayCollection([new Parameter("showId", $showId), new Parameter("seasonNumber", $seasonIndex), new Parameter("episodeNumber", $episodeIndex)]));
+
+        /**
+         * @var array{Lyrics}|array{} $lyricsList
+         */
+        $lyricsList = $qb->getQuery()->getResult();
+
         return self::$twig->load('lyrics/jellyfin_edit_list.twig')->render([
             "address" => $address,
-            "token" => $token
+            "token" => $token,
+            "lyrics_list" => $lyricsList
+
         ]);
     }
 
