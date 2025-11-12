@@ -14,6 +14,12 @@
         jelly.setUp(address, token);
     </script>
     <script type="module" src="/dist/jellyfinPlayback.js"></script>
+
+    <style>
+        .lyrics-set {
+            margin-bottom: 2rem;
+        }
+    </style>
 </head>
 
 <body>
@@ -23,7 +29,8 @@
                 <div class="card-content">
                     <div class="media">
                         <div class="media-left">
-                            <figure style="border-radius: 12px; width: 128px; transition: ease;" class="image has-background-grey-lighter">
+                            <figure style="border-radius: 12px; width: 128px; transition: ease;"
+                                class="image has-background-grey-lighter">
                                 <img id="cover-image" style="border-radius: 12px;" class="image is-128x128"
                                     src="{{ song.imageUrl }}" alt="{{ song.name }} cover">
                             </figure>
@@ -47,10 +54,35 @@
                             </div>
                         </div>
                     </div>
+
                     {% if song.id != 0 %}
                     <div class="content">
                         <h3 class="title is-6">Lyrics</h3>
                         <div class="content">
+                            {% if song.lyrics is iterable %}
+                            {% for lyr in song.lyrics %}
+                            {% set set_name = lyr.jellyfinLyricsName|default('') %}
+                            {% set set_text = lyr.lyrics|default(lyr)|default('') %}
+                            <div class="lyrics-set" data-jellyfin-lyrics-name="{{ set_name }}">
+                                {% if set_name %}
+                                <div class="notification is-dark has-text-weight-semibold has-text-white p-2 mb-2 is-inline-block"
+                                    style="border-radius:6px; font-size:0.9rem;">
+                                    {{ set_name }}
+                                </div>
+                                {% endif %}
+
+                                {% for line in set_text|split("\n") %}
+                                {% if line|trim is empty %}
+                                <line style="display: block; height: 1.33em;"></line>
+                                {% else %}
+                                <line
+                                    style="display: block; color: white; font-size: larger; line-height: 1.33em; overflow-wrap: anywhere;">
+                                    {{ line }}</line>
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% endfor %}
+                            {% else %}
                             {% for line in song.lyrics|split("\n") %}
                             {% if line|trim is empty %}
                             <line style="display: block; height: 1.33em;"></line>
@@ -59,12 +91,12 @@
                                 style="display: block; color: white; font-size: larger; line-height: 1.33em; overflow-wrap: anywhere;">
                                 {{ line }}</line>
                             {% endif %}
-
-
                             {% endfor %}
+                            {% endif %}
                         </div>
                     </div>
                     {% endif %}
+
                     <div id="edit-container" class="content" hidden>
                         <a id="edit-btn" class="button is-link" href="/edit?id={{ song.id }}">Edit</a>
                     </div>

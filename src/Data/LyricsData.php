@@ -2,11 +2,16 @@
 
 namespace Lylink\Data;
 
+use Lylink\Models\Lyrics;
+
 class LyricsData
 {
     public string $name;
     public string $artist;
-    public string $lyrics;
+    /**
+     * @var array<Lyrics>
+     */
+    public array $lyrics;
     public int $duration;
     public int $duration_ms;
     public int $progress_ms;
@@ -14,11 +19,14 @@ class LyricsData
     public ?string $id;
     public bool $is_playing;
 
+    /**
+     * @param array<Lyrics> $lyrics
+     */
     public function __construct(
         string $name,
         bool $is_playing,
         string $artist = "",
-        string $lyrics = "",
+        array $lyrics = [],
         int $duration = 0,
         int $duration_ms = 0,
         int $progress_ms = 0,
