@@ -57,6 +57,8 @@ export class JellyfinEdit {
             episodeSeasonInfoElement.textContent =
                 "S" + episodeInfo.ParentIndexNumber.toString() + "E" + episodeInfo.IndexNumber.toString();
 
+                document.title = "LyLink — " + episodeInfo.SeriesName + " — S" + episodeInfo.ParentIndexNumber.toString() + "E" + episodeInfo.IndexNumber.toString();
+
             JellyfinApi.getItemImage(address, token, seasonId, "Primary").then((response) => {
                 response.bytes().then((binaryData) => {
                     const blob = new Blob([binaryData], {
