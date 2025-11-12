@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Choose Lyrics — {{ series.title }}
+        S{{ episode.seasonIndex|default('?') }}E{{ episode.episodeIndex|default('?') }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/1.0.4/css/bulma.min.css" />
+    <style>
+        .lyrics-title-box {
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .lyrics-item {
+            align-items: center;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.5rem;
+        }
+
+        .lyrics-meta {
+            font-size: 0.85rem;
+            color: #7a7a7a;
+            margin-left: 0.5rem;
+        }
+
+        .lyrics-actions .button {
+            margin-left: 0.4rem;
+        }
+    </style>
+    <script type="module">
+        import { JellyfinEdit } from '/dist/jellyfinEdit.js';
+        let address = "{{ address }}";
+        let token = "{{ token }}";
+        JellyfinEdit.setUpList(address, token);
+    </script>
+</head>
+
+<body>
+    <section class="section">
+        <div class="container">
+            <h1 class="title is-4">Select Lyrics for Episode</h1>
+            <h2 class="subtitle is-6">
+                <span id="episode_info">{{ series.title }} —
+                    S{{ episode.seasonIndex|default('?') }}E{{ episode.episodeIndex|default('?') }}
+                    {% if episode.name %} — {{ episode.name }}{% endif %}
+                </span>
+            </h2>
+
+            <div class="columns">
+                <div class="column is-two-thirds">
+                    <div class="card">
+                        <div class="card-content">
+                            <p class="title is-5">Available Lyrics</p>
+                            <div>
+                                {% if lyrics_list|length > 0 %}
+                                {% for lyr in lyrics_list %}
+                                <div class="box lyrics-item">
+                                    <div>
+                                        <div
+                                            class="notification is-dark has-text-weight-semibold has-text-white p-2 mb-2 is-inline-block lyrics-title-box">
+                                            {{ lyr.jellyfinLyricsName }}
+                                        </div>
+                                        <div class="lyrics-meta">
+                                            {% if lyr.jellyfinStartEpisodeNumber and lyr.jellyfinEndEpisodeNumber %}
+                                            Applies:
+                                            S{{ lyr.jellyfinSeasonNumber|default('?') }}E{{ lyr.jellyfinStartEpisodeNumber|default('?') }}
+                                            —
+                                            S{{ lyr.jellyfinSeasonNumber|default('?') }}E{{ lyr.jellyfinEndEpisodeNumber|default('?') }}
+                                            {% else %}
+                                            Applies: All episodes
+                                            {% endif %}
+                                        </div>
+
+                                    </div>
+                                    <div class="lyrics-actions">
+                                        <a class="button is-small is-primary"
+                                            href="/lyrics/jellyfin/edit/{{ lyr.id }}?ep_id={{ ep_id }}&show_id={{ show_id}}">Edit</a>
+                                        <a class="button is-small is-danger"
+                                            href="/lyrics/jellyfin/delete/{{ lyr.id }}">Delete</a>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                {% else %}
+                                <div class="content">
+                                    <p>No named lyrics available for this episode.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="column">
+                    <div class="card">
+                        <div class="card-content">
+                            <p class="title is-5">Episode</p>
+                            <p class="subtitle is-6">
+                                <span
+                                    id="episode-season-info">S{{ episode.seasonIndex|default('?') }}E{{ episode.episodeIndex|default('?') }}</span>
+                            </p>
+                            <figure class="image">
+                                <img id="episode-poster" src="{{ series.imageUrl }}" alt="{{ series.title }} poster"
+                                    style="border-radius: 12px; width: 100%; height: auto;">
+                            </figure>
+                            <div class="mt-4">
+                                <a class="button is-fullwidth is-success" id="new-lyrics"
+                                    href="/lyrics/jellyfin/edit/new?ep_id={{ ep_id }}&show_id={{ show_id }}">Create
+                                    new lyrics</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+</body>
+
+</html>
