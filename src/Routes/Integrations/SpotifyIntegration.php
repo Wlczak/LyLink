@@ -2,15 +2,25 @@
 
 namespace Lylink\Routes\Integrations;
 
+use Closure;
 use Lylink\Interfaces\Integration\IntegrationRoute;
 use Lylink\Router;
 use Lylink\Traits\IntegrationRoutingSetup;
+use Pecee\SimpleRouter\SimpleRouter;
 use SpotifyWebAPI\Session;
 use SpotifyWebAPI\SpotifyWebAPI;
 
 class SpotifyIntegration extends Router implements IntegrationRoute
 {
     use IntegrationRoutingSetup;
+
+    public static function setup(): Closure
+    {
+        return function () {
+            SimpleRouter::get('/callback', [self::class, 'callback']);
+            IntegrationRoutingSetup::setup();
+        };
+    }
 
     public static function callback(): string
     {
