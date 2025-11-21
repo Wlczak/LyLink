@@ -5,11 +5,12 @@ namespace Lylink\Routes\Integrations;
 use Lylink\Auth\AuthSession;
 use Lylink\Interfaces\Integration\IntegrationRoute;
 use Lylink\Models\Settings;
-use Lylink\Traits\IntegrationSetup;
+use Lylink\Router;
+use Lylink\Traits\IntegrationRoutingSetup;
 
-class Jellyfin extends \Lylink\Router implements IntegrationRoute
+class JellyfinIntegration extends Router implements IntegrationRoute
 {
-    use IntegrationSetup;
+    use IntegrationRoutingSetup;
 
     public static function connect(): string
     {
