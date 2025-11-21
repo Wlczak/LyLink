@@ -295,7 +295,7 @@ class LyricsRoute extends Router implements Route
         /**
          * @var Session|null
          */
-        $session = $_SESSION['spotify_session'];
+        $session = array_key_exists('spotify_session', $_SESSION) ? $_SESSION['spotify_session'] : null;
 
         if ($session == null) {
             header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
