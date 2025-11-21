@@ -298,12 +298,12 @@ class LyricsRoute extends Router implements Route
         $session = array_key_exists('spotify_session', $_SESSION) ? $_SESSION['spotify_session'] : null;
 
         if ($session == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
             die();
         }
 
         if ($session->getTokenExpiration() < time()) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
             die();
         }
 
