@@ -12,7 +12,8 @@ use Lylink\Models\Lyrics;
 use Lylink\Models\Settings;
 use Lylink\Models\User;
 use Lylink\Routes\Integrations\Api\IntegrationApi;
-use Lylink\Routes\Integrations\Jellyfin;
+use Lylink\Routes\Integrations\JellyfinIntegration;
+use Lylink\Routes\Integrations\SpotifyIntegration;
 use Lylink\Routes\LyricsRoute;
 use Pecee\SimpleRouter\SimpleRouter;
 use SpotifyWebAPI\Session;
@@ -39,7 +40,8 @@ class Router
             // SimpleRouter::get('/edit', [self::class, 'edit']);
             SimpleRouter::get('/settings', [self::class, 'settings']);
             SimpleRouter::partialGroup('/integrations', function () {
-                SimpleRouter::partialGroup('/jellyfin', Jellyfin::setup());
+                SimpleRouter::partialGroup('/jellyfin', JellyfinIntegration::setup());
+                SimpleRouter::partialGroup('/spotify', SpotifyIntegration::setup());
                 SimpleRouter::partialGroup('/api', IntegrationApi::setup());
             });
         });
@@ -56,7 +58,7 @@ class Router
         });
 
         ## Technical / api routes ##
-        SimpleRouter::get('/callback', [self::class, 'spotify']);
+        // SimpleRouter::get('/callback', [self::class, 'spotify']);
         SimpleRouter::get('/ping', function () {
             return "pong";
         });
@@ -207,66 +209,10 @@ class Router
         header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/spotify');
     }
 
-    function spotify(): string
-    {
-        if (isset($_SESSION['spotify_session'])) {
-            /**
-             * @var Session
-             */
-            $session = $_SESSION['spotify_session'];
-            $session->refreshAccessToken();
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics');
-        }
-
-        if (!isset($_SESSION['spotify_session'])) {
-            $clientID = $_ENV['CLIENT_ID'];
-            $clientSecret = $_ENV['CLIENT_SECRET'];
-
-            $session = new Session(
-                $clientID,
-                $clientSecret,
-                $_ENV['BASE_DOMAIN'] . '/callback'
-            );
-
-            if (!isset($_GET['code'])) {
-                $options = [
-                    'scope' => ['user-read-currently-playing', "user-read-playback-state"]
-                ];
-
-                header('Location: ' . $session->getAuthorizeUrl($options));
-                die();
-            }
-
-            if ($session->requestAccessToken($_GET['code'])) {
-
-                $_SESSION['spotify_session'] = $session;
-
-                header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics');
-
-                return "nice";
-
-            } else {
-                return "frick";
-            }
-        } else {
-            /**
-             * @var Session
-             */
-            $session = $_SESSION['spotify_session'];
-            $api = new SpotifyWebAPI();
-            $api->setAccessToken($session->getAccessToken());
-            $api->me();
-        }
-
-        $api = new SpotifyWebAPI();
-
-        return "";
-    }
-
     function info(): string
     {
         if (!isset($_SESSION['spotify_session'])) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
             die();
         }
         /**
@@ -275,7 +221,7 @@ class Router
         $session = $_SESSION['spotify_session'];
 
         if ($session == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
             die();
         }
 
@@ -288,11 +234,11 @@ class Router
         $info = $api->getMyCurrentPlaybackInfo();
 
         if ($info == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
             die();
         }
         if ($info->item == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
             die();
         }
 

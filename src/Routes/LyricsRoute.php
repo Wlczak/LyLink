@@ -266,7 +266,7 @@ class LyricsRoute extends Router implements Route
             die();
         }
 
-        $id  = intval($idString);
+        $id = intval($idString);
         if ($id == 0) {
             header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin');
             die();
@@ -289,21 +289,21 @@ class LyricsRoute extends Router implements Route
     public function spotifyLyrics(): void
     {
         if (!isset($_SESSION['spotify_session'])) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
         }
 
         /**
          * @var Session|null
          */
-        $session = $_SESSION['spotify_session'];
+        $session = array_key_exists('spotify_session', $_SESSION) ? $_SESSION['spotify_session'] : null;
 
         if ($session == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
             die();
         }
 
         if ($session->getTokenExpiration() < time()) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
             die();
         }
 
