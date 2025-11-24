@@ -5,7 +5,8 @@ services:
     webserver:
         build:
             context: .
-            dockerfile: Dockerfile-nginx
+            target: lylink-nginx
+        image: lylink-nginx
         working_dir: /var/www/html
         volumes:
             # - '.:/var/www/html'
@@ -16,7 +17,8 @@ services:
     php-fpm:
         build:
             context: .
-            dockerfile: Dockerfile-php-fpm
+            target: lylink
+        image: lylink
         working_dir: /var/www/html
         volumes:
             # - '.:/var/www/html'

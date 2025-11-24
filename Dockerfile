@@ -8,7 +8,23 @@ RUN rm -r ./javascript
 
 RUN composer install
 
-FROM php:8.4-fpm-alpine
+FROM node:latest AS npm
+
+WORKDIR /build/npm
+
+COPY ./javascript/ /build/npm/
+
+RUN npm install
+
+RUN npm run build
+
+FROM nginx:alpine AS lylink-nginx 
+
+COPY ./public_html /var/www/html/public_html
+
+COPY --from=npm /build/npm/dist /var/www/html/public_html/dist
+
+FROM php:8.4-fpm-alpine AS lylink
 
 WORKDIR /var/www/html
 
