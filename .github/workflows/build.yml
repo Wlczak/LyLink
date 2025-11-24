@@ -4,7 +4,8 @@ permissions:
 
 on:
     push:
-        branches: ["main"]
+        # branches: ["main"]
+        branches: ["*"]
 
 jobs:
     build-and-push:
@@ -20,12 +21,24 @@ jobs:
                   username: ${{ secrets.DOCKERHUB_USERNAME }}
                   password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-            - name: Build and push
+            - name: Build and push lylink
               uses: docker/build-push-action@v6
               with:
                   context: .
                   file: ./Dockerfile
+                  target: lylink
                   push: true
                   tags: ${{ secrets.DOCKERHUB_USERNAME }}/lylink:latest
+                  cache-from: type=gha
+                  cache-to: type=gha,mode=max
+
+            - name: Build and push lylink-nginx
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  file: ./Dockerfile
+                  target: lylink-nginx
+                  push: true
+                  tags: ${{ secrets.DOCKERHUB_USERNAME }}/lylink-nginx:latest
                   cache-from: type=gha
                   cache-to: type=gha,mode=max
