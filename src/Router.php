@@ -105,15 +105,14 @@ class Router
         $passCheck = $_POST['password_confirm'] ?? '';
 
         $auth = new DefaultAuth();
+
+        $code = random_int(100000, 999999);
+        $_SESSION['email_verify'] = ['email' => $email, 'username' => $username, 'code' => $code, "exp" => time() + 30 * 60];
+
+        Mailer::send($email, $username, 'Email verification', self::$twig->load('email/verify_code.twig')->render(['code' => $code]));
+        header('Location: ' . $_ENV['BASE_DOMAIN'] . '/email/verify');
+
         $data = $auth->register($email, $username, $pass, $passCheck);
-
-        if ($data['success']) {
-            $code = random_int(100000, 999999);
-            $_SESSION['email_verify'] = ['email' => $email, 'username' => $username, 'code' => $code, "exp" => time() + 30 * 60];
-
-            Mailer::send($email, $username, 'Email verification', self::$twig->load('email/verify_code.twig')->render(['code' => $code]));
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/email/verify');
-        }
 
         return self::$twig->load('register.twig')->render($data);
     }
