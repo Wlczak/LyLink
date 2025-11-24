@@ -36,4 +36,8 @@ WORKDIR /var/www/html
 
 COPY --from=composer /build/composer /var/www/html
 
-# CMD ["sh", "-c", "php-fpm8 -F & nginx -g 'daemon off;'"]
+COPY ./phpdocker/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
+
+# COPY --chown=0:0 ./phpdocker/php-fpm/php-fpm.conf /usr/local/etc/php-fpm.conf
+
+CMD ["php-fpm", "-R"]
