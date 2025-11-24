@@ -3,18 +3,25 @@
 ###############################################################################
 services:
     webserver:
-        image: 'nginx:alpine'
+        build:
+            context: .
+            dockerfile: Dockerfile-nginx
         working_dir: /var/www/html
         volumes:
-            - '.:/var/www/html'
+            # - '.:/var/www/html'
             - './phpdocker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf'
         ports:
             - '1592:80'
 
     php-fpm:
-        build: phpdocker/php-fpm
+        build:
+            context: .
+            dockerfile: Dockerfile-php-fpm
         working_dir: /var/www/html
         volumes:
-            - '.:/var/www/html'
+            # - '.:/var/www/html'
             - './phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/8.4/fpm/conf.d/99-overrides.ini'
             - './phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/8.4/cli/conf.d/99-overrides.ini'
+            - ./db:/var/www/html/db
+            - ./config/:/var/www/html/config/
+            - ./logs/:/var/www/html/logs/

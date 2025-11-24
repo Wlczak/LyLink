@@ -8,17 +8,7 @@ RUN rm -r ./javascript
 
 RUN composer install
 
-FROM node:latest AS npm
-
-WORKDIR /build/npm
-
-COPY ./javascript/ /build/npm/
-
-RUN npm install
-
-RUN npm run build
-
-FROM php:8.4-alpine
+FROM php:8.4-fpm-alpine
 
 WORKDIR /var/www/html
 
@@ -29,7 +19,5 @@ WORKDIR /var/www/html
 # php-pdo_sqlite
 
 COPY --from=composer /build/composer /var/www/html
-
-COPY --from=npm /build/npm/dist /var/www/html/public_html/dist
 
 # CMD ["sh", "-c", "php-fpm8 -F & nginx -g 'daemon off;'"]
