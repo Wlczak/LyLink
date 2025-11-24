@@ -1,0 +1,29 @@
+###############################################################################
+#                          Generated on phpdocker.io                          #
+###############################################################################
+services:
+    webserver:
+        build:
+            context: .
+            target: lylink-nginx
+        image: lylink-nginx
+        working_dir: /var/www/html
+        volumes:
+            # - '.:/var/www/html'
+            - './phpdocker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf'
+        ports:
+            - '1592:80'
+
+    php-fpm:
+        build:
+            context: .
+            target: lylink
+        image: lylink
+        working_dir: /var/www/html
+        volumes:
+            # - '.:/var/www/html'
+            - './phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/8.4/fpm/conf.d/99-overrides.ini'
+            - './phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/8.4/cli/conf.d/99-overrides.ini'
+            - ./db:/var/www/html/db
+            - ./config/:/var/www/html/config/
+            - ./logs/:/var/www/html/logs/
