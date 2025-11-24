@@ -4,7 +4,7 @@
   "description": "Typescript scripts for lylink project",
   "main": "main.js",
   "scripts": {
-    "build": "tsc --outDir ./dist"
+    "build": "tsc --outDir ../public_html/dist"
   },
   "author": "",
   "license": "ISC",
