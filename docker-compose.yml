@@ -3,10 +3,7 @@
 ###############################################################################
 services:
     webserver:
-        build:
-            context: .
-            target: lylink-nginx
-        image: lylink-nginx
+        image: wlczak/lylink-nginx
         working_dir: /var/www/html
         volumes:
             # - '.:/var/www/html'
@@ -15,10 +12,7 @@ services:
             - '1592:80'
 
     php-fpm:
-        build:
-            context: .
-            target: lylink
-        image: lylink
+        image: wlczak/lylink
         working_dir: /var/www/html
         volumes:
             # - '.:/var/www/html'
