@@ -14,10 +14,7 @@ services:
             - '1592:80'
 
     php-fpm:
-        build:
-            context: .
-            dockerfile: Dockerfile
-            target: lylink
+        image: wlczak/lylink
         working_dir: /var/www/html
         labels:
             - com.centurylinklabs.watchtower.enable=true
