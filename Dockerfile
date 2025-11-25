@@ -18,7 +18,13 @@ RUN npm install
 
 RUN npm run build
 
-FROM php:8.4-alpine
+FROM nginx:alpine AS lylink-nginx 
+
+COPY ./public_html /var/www/html/public_html
+
+COPY --from=npm /build/npm/dist /var/www/html/public_html/dist
+
+FROM php:8.4-fpm-alpine AS lylink
 
 WORKDIR /var/www/html
 
@@ -30,6 +36,8 @@ WORKDIR /var/www/html
 
 COPY --from=composer /build/composer /var/www/html
 
-COPY --from=npm /build/npm/dist /var/www/html/public_html/dist
+COPY ./phpdocker/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 
-# CMD ["sh", "-c", "php-fpm8 -F & nginx -g 'daemon off;'"]
+# COPY --chown=0:0 ./phpdocker/php-fpm/php-fpm.conf /usr/local/etc/php-fpm.conf
+
+CMD ["php-fpm", "-R"]

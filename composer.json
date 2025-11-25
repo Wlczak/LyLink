@@ -23,7 +23,7 @@
         "doctrine/orm": "^3.5",
         "symfony/cache": "^7.3",
         "twig/twig": "^3.21",
-        "phpmailer/phpmailer": "^6.10",
+        "phpmailer/phpmailer": "^7.0",
         "monolog/monolog": "^3.9"
     }
 }
