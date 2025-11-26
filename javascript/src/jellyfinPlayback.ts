@@ -122,6 +122,26 @@ export class JellyfinPlayback {
                     this.progress_ticks = POSITION_TICKS;
                     this.duration_ticks = RUN_TIME_TICKS;
                 }
+            })
+            .catch(() => {
+                this.changeTitle(
+                    "Failed to connect to <a href='https://github.com/Wlczak/lylink-jellyfin'target='_blank'>lylink-jellyfin</a> server"
+                );
+                const params = new URLSearchParams(window.location.search);
+                if (
+                    params.get("ep_id") == null &&
+                    params.get("ep_index") == null &&
+                    params.get("season_index") == null &&
+                    params.get("show_id") == null
+                ) {
+                    return;
+                } else {
+                    params.delete("ep_id");
+                    params.delete("ep_index");
+                    params.delete("season_index");
+                    params.delete("show_id");
+                    window.location.search = params.toString();
+                }
             });
     }
 
