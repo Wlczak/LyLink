@@ -194,20 +194,6 @@ class Router
         return self::$twig->load('settings.twig')->render(['user' => $user, 'settings' => Settings::getSettings($id)]);
     }
 
-    function updateSpotifyLyrics(): void
-    {
-        $entityManager = DoctrineRegistry::get();
-        $lyrics = $entityManager->getRepository(Lyrics::class)->findOneBy(['spotifyId' => $_POST['id']]);
-        if ($lyrics == null) {
-            $lyrics = new Lyrics();
-            $lyrics->spotifyId = $_POST['id'];
-        }
-        $lyrics->lyrics = $_POST['lyrics'];
-        $entityManager->persist($lyrics);
-        $entityManager->flush();
-        header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/spotify');
-    }
-
     function info(): string
     {
         if (!isset($_SESSION['spotify_session'])) {

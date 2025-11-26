@@ -61,9 +61,11 @@
                             {% endfor %}
                         </div>
                     </div>
+                    {% if allowEdit %}
                     <div class="content">
                         <a class="button is-link" href="/lyrics/spotify/edit?id={{ song.id }}">Edit</a>
                     </div>
+                    {% endif %}
                     {% endif %}
                 </div>
             </div>

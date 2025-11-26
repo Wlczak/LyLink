@@ -323,6 +323,9 @@ class LyricsRoute extends Router implements Route
                 throw $e;
             }
         }
+
+        $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
+
         if ($info == null) {
             $song = [
                 'name' => "No song is currently playing",
@@ -336,7 +339,8 @@ class LyricsRoute extends Router implements Route
             ];
 
             echo $template = self::$twig->load('lyrics/spotify.twig')->render([
-                'song' => $song
+                'song' => $song,
+                'allowEdit' => $settings->allow_edit
             ]);
 
         } else {
@@ -375,13 +379,21 @@ class LyricsRoute extends Router implements Route
                 [
                     'lyrics' => $lyrics->lyrics,
                     'song' => $song,
-                    'progressPercent' => $info->progress_ms / $info->item->duration_ms * 100]
+                    'progressPercent' => $info->progress_ms / $info->item->duration_ms * 100,
+                    'allowEdit' => $settings->allow_edit
+                ]
             );
         }
     }
 
     public function spotifyLyricsEdit(): void
     {
+        $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
+        if (!$settings->allow_edit) {
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/spotify', );
+            die();
+        }
+
         /**
          * @var Session
          */
@@ -418,5 +430,24 @@ class LyricsRoute extends Router implements Route
             ],
             'lyrics' => $lyrics->lyrics
         ]);
+    }
+
+    public function updateSpotifyLyrics(): void
+    {
+        $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
+        if (!$settings->allow_edit) {
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/spotify', );
+            die();
+        }
+        $entityManager = DoctrineRegistry::get();
+        $lyrics = $entityManager->getRepository(Lyrics::class)->findOneBy(['spotifyId' => $_POST['id']]);
+        if ($lyrics == null) {
+            $lyrics = new Lyrics();
+            $lyrics->spotifyId = $_POST['id'];
+        }
+        $lyrics->lyrics = $_POST['lyrics'];
+        $entityManager->persist($lyrics);
+        $entityManager->flush();
+        header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/spotify');
     }
 }
