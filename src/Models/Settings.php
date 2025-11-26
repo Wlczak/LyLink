@@ -59,6 +59,9 @@ class Settings
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     public ?string $jellyfin_token = null;
 
+    #[ORM\Column(type: 'boolean', nullable: false, options: ['default' => false])]
+    public bool $allow_edit = false;
+
     public function __construct(int $userId)
     {
         $this->user_id = $userId;

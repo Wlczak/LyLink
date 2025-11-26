@@ -115,7 +115,10 @@ class LyricsRoute extends Router implements Route
             die();
         }
 
-        return self::$twig->load('lyrics/jellyfin.twig')->render(["song" => $lyricsData, "address" => $address, "token" => $token]);
+        return self::$twig->load('lyrics/jellyfin.twig')->render(["song" => $lyricsData,
+            "address" => $address,
+            "token" => $token,
+            "allowEdit" => $settings->allow_edit]);
     }
 
     public static function jellyfinEditList(): string
@@ -127,6 +130,11 @@ class LyricsRoute extends Router implements Route
             $token = $settings->jellyfin_token;
         } else {
             header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            die();
+        }
+
+        if (!$settings->allow_edit) {
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin', );
             die();
         }
 
@@ -171,7 +179,7 @@ class LyricsRoute extends Router implements Route
         }
 
         $showId = $_GET["show_id"];
-        if ($showId == null || $showId == "") {
+        if ($showId == null || $showId == "" || $settings->allow_edit == false) {
             header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin');
             die();
         }
@@ -233,7 +241,9 @@ class LyricsRoute extends Router implements Route
         $lyricsText = $json['lyrics'];
         $lyricsName = $json['lyricsName'];
 
-        if (AuthSession::get()?->isAuthorized()) {
+        $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
+
+        if (AuthSession::get()?->isAuthorized() && $settings->allow_edit) {
             $entityManager = DoctrineRegistry::get();
             /**
              * @var Lyrics|null
@@ -266,7 +276,7 @@ class LyricsRoute extends Router implements Route
             die();
         }
 
-        $id  = intval($idString);
+        $id = intval($idString);
         if ($id == 0) {
             header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin');
             die();
@@ -276,8 +286,9 @@ class LyricsRoute extends Router implements Route
          * @var Lyrics|null
          */
         $lyrics = $em->getRepository(Lyrics::class)->find($id);
+        $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
 
-        if ($lyrics == null) {
+        if ($lyrics == null || $settings->allow_edit == false) {
             header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin');
             die();
         }
@@ -289,21 +300,21 @@ class LyricsRoute extends Router implements Route
     public function spotifyLyrics(): void
     {
         if (!isset($_SESSION['spotify_session'])) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
         }
 
         /**
          * @var Session|null
          */
-        $session = $_SESSION['spotify_session'];
+        $session = array_key_exists('spotify_session', $_SESSION) ? $_SESSION['spotify_session'] : null;
 
         if ($session == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
             die();
         }
 
         if ($session->getTokenExpiration() < time()) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
             die();
         }
 
@@ -323,6 +334,9 @@ class LyricsRoute extends Router implements Route
                 throw $e;
             }
         }
+
+        $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
+
         if ($info == null) {
             $song = [
                 'name' => "No song is currently playing",
@@ -336,7 +350,8 @@ class LyricsRoute extends Router implements Route
             ];
 
             echo $template = self::$twig->load('lyrics/spotify.twig')->render([
-                'song' => $song
+                'song' => $song,
+                'allowEdit' => $settings->allow_edit
             ]);
 
         } else {
@@ -375,13 +390,21 @@ class LyricsRoute extends Router implements Route
                 [
                     'lyrics' => $lyrics->lyrics,
                     'song' => $song,
-                    'progressPercent' => $info->progress_ms / $info->item->duration_ms * 100]
+                    'progressPercent' => $info->progress_ms / $info->item->duration_ms * 100,
+                    'allowEdit' => $settings->allow_edit
+                ]
             );
         }
     }
 
     public function spotifyLyricsEdit(): void
     {
+        $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
+        if (!$settings->allow_edit) {
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/spotify', );
+            die();
+        }
+
         /**
          * @var Session
          */
@@ -418,5 +441,24 @@ class LyricsRoute extends Router implements Route
             ],
             'lyrics' => $lyrics->lyrics
         ]);
+    }
+
+    public function updateSpotifyLyrics(): void
+    {
+        $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
+        if (!$settings->allow_edit) {
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/spotify', );
+            die();
+        }
+        $entityManager = DoctrineRegistry::get();
+        $lyrics = $entityManager->getRepository(Lyrics::class)->findOneBy(['spotifyId' => $_POST['id']]);
+        if ($lyrics == null) {
+            $lyrics = new Lyrics();
+            $lyrics->spotifyId = $_POST['id'];
+        }
+        $lyrics->lyrics = $_POST['lyrics'];
+        $entityManager->persist($lyrics);
+        $entityManager->flush();
+        header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/spotify');
     }
 }

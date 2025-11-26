@@ -5,7 +5,7 @@ namespace Lylink\Traits;
 use Closure;
 use Pecee\SimpleRouter\SimpleRouter;
 
-trait IntegrationSetup
+trait IntegrationRoutingSetup
 {
     public static function setup(): Closure
     {

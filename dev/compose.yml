@@ -3,6 +3,7 @@ services:
     build:
       context: ../
       dockerfile: Dockerfile
+      target: lylink
     labels:
       - com.centurylinklabs.watchtower.enable=true
     volumes:
