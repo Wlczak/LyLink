@@ -115,7 +115,10 @@ class LyricsRoute extends Router implements Route
             die();
         }
 
-        return self::$twig->load('lyrics/jellyfin.twig')->render(["song" => $lyricsData, "address" => $address, "token" => $token]);
+        return self::$twig->load('lyrics/jellyfin.twig')->render(["song" => $lyricsData,
+            "address" => $address,
+            "token" => $token,
+            "allowEdit" => $settings->allow_edit]);
     }
 
     public static function jellyfinEditList(): string
@@ -127,6 +130,11 @@ class LyricsRoute extends Router implements Route
             $token = $settings->jellyfin_token;
         } else {
             header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            die();
+        }
+
+        if (!$settings->allow_edit) {
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin', );
             die();
         }
 
@@ -171,7 +179,7 @@ class LyricsRoute extends Router implements Route
         }
 
         $showId = $_GET["show_id"];
-        if ($showId == null || $showId == "") {
+        if ($showId == null || $showId == "" || $settings->allow_edit == false) {
             header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin');
             die();
         }
@@ -233,7 +241,9 @@ class LyricsRoute extends Router implements Route
         $lyricsText = $json['lyrics'];
         $lyricsName = $json['lyricsName'];
 
-        if (AuthSession::get()?->isAuthorized()) {
+        $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
+
+        if (AuthSession::get()?->isAuthorized() && $settings->allow_edit) {
             $entityManager = DoctrineRegistry::get();
             /**
              * @var Lyrics|null
@@ -276,8 +286,9 @@ class LyricsRoute extends Router implements Route
          * @var Lyrics|null
          */
         $lyrics = $em->getRepository(Lyrics::class)->find($id);
+        $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
 
-        if ($lyrics == null) {
+        if ($lyrics == null || $settings->allow_edit == false) {
             header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin');
             die();
         }
