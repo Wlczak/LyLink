@@ -17,8 +17,8 @@ class SpotifyIntegration extends Router implements IntegrationRoute
     public static function setup(): Closure
     {
         return function () {
+            self::traitSetup()();
             SimpleRouter::get('/callback', [self::class, 'callback']);
-            IntegrationRoutingSetup::setup();
         };
     }
 
