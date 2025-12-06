@@ -40,3 +40,6 @@ jobs:
               run:
                   ./vendor/bin/phpstan analyse --memory-limit 4G -c phpstan.neon --autoload-file
                   vendor/autoload.php src bin
+
+            - name: Run PHPUnit
+              run: ./vendor/bin/phpunit tests

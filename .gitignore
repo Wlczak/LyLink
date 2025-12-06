@@ -6,3 +6,4 @@ lyrics.db
 /javascript/dist
 /public_html/dist
 logs.log
+/coverage
