@@ -42,4 +42,4 @@ jobs:
                   vendor/autoload.php src bin
 
             - name: Run PHPUnit
-              run: ./vendor/bin/phpunit tests
+              run: ./vendor/bin/phpunit tests/
