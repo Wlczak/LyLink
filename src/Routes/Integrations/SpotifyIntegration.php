@@ -30,7 +30,7 @@ class SpotifyIntegration extends Router implements IntegrationRoute
              */
             $session = $_SESSION['spotify_session'];
             $session->refreshAccessToken();
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/spotify');
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics');
         }
 
         if (!isset($_SESSION['spotify_session'])) {
@@ -56,7 +56,7 @@ class SpotifyIntegration extends Router implements IntegrationRoute
 
                 $_SESSION['spotify_session'] = $session;
 
-                header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/spotify');
+                header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics');
 
                 return "";
 
@@ -81,7 +81,8 @@ class SpotifyIntegration extends Router implements IntegrationRoute
 
     public static function connect(): string
     {
-        throw new \Exception('Not implemented');
+        header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
+        return "";
     }
 
     public static function connectPost(): string
