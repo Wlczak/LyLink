@@ -1,15 +1,16 @@
 <?php
 
 use Lylink\Data\LyricsData;
+use Lylink\Models\Lyrics;
 
 class LyricsDataTest extends PHPUnit\Framework\TestCase
 {
-    public function testConstructor()
+    public function testConstructor(): void
     {
         $name = "test";
         $is_playing = true;
         $artist = "test";
-        $lyrics = ["test", "test", "test"];
+        $lyrics = [new Lyrics(), new Lyrics(), new Lyrics()];
         $duration = 0;
         $duration_ms = 0;
         $progress_ms = 0;
@@ -29,7 +30,7 @@ class LyricsDataTest extends PHPUnit\Framework\TestCase
         $this->assertSame($id, $lyricsData->id);
     }
 
-    public function testDefaultConstructorValues()
+    public function testDefaultConstructorValues():void
     {
         $name = "test";
         $is_playing = true;
@@ -44,6 +45,6 @@ class LyricsDataTest extends PHPUnit\Framework\TestCase
         $this->assertSame(0, $lyrics->progress_ms);
         $this->assertSame(null, $lyrics->imageUrl);
         $this->assertSame(null, $lyrics->id);
-        
+
     }
 }

@@ -5,7 +5,7 @@ use PHPUnit\Framework\TestCase;
 
 final class CurrentSongTest extends TestCase
 {
-    public function testDefaultConstructorValues()
+    public function testDefaultConstructorValues(): void
     {
         $currentSong = new CurrentSong();
         $this->assertNull($currentSong->id);
@@ -16,7 +16,7 @@ final class CurrentSongTest extends TestCase
         $this->assertEquals(0, $currentSong->duration_ms);
     }
 
-    public function testSetConstructionValues()
+    public function testSetConstructionValues(): void
     {
         $currentSong = new CurrentSong(
             "id",
@@ -34,7 +34,7 @@ final class CurrentSongTest extends TestCase
         $this->assertEquals(2, $currentSong->duration_ms);
     }
 
-    public function testGetProgressPercent()
+    public function testGetProgressPercent(): void
     {
         for ($baseTime = 0; $baseTime < 100; $baseTime++) {
             $currentSong = new CurrentSong(
