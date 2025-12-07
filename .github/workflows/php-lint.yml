@@ -12,14 +12,14 @@ jobs:
     phpstan:
         runs-on: ubuntu-latest
         container:
-            image: php:8.4-fpm-alpine
+            image: php:8.4-alpine
         steps:
             - uses: actions/checkout@v4
 
             - name: Setup PHP dependencies
               run: |
                   docker-php-ext-install mbstring
-                  apk add --update linux-headers oniguruma
+                  apk add --update linux-headers oniguruma-dev
                   pecl install xdebug-3.4.7
                   docker-php-ext-enable xdebug
 
