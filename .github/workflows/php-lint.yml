@@ -17,7 +17,9 @@ jobs:
             - uses: actions/checkout@v4
 
             - name: Setup PHP dependencies
-              run: apk add php84-xdebug php84-mbstring
+              run: |
+                  apk add php84-xdebug php84-mbstring php84-xml
+                  echo "zend_extension=xdebug.so" >> /etc/php84/conf.d/xdebug.ini
 
             - name: Install Composer
               run:
@@ -45,4 +47,6 @@ jobs:
                   vendor/autoload.php src bin
 
             - name: Run PHPUnit
-              run: ./vendor/bin/phpunit tests --testdox --colors=always --coverage-text --display-deprecations --display-phpunit-deprecations --fail-on-deprecation --fail-on-phpunit-deprecation
+              run:
+                  ./vendor/bin/phpunit tests --testdox --colors=always --coverage-text --display-deprecations
+                  --display-phpunit-deprecations --fail-on-deprecation --fail-on-phpunit-deprecation
