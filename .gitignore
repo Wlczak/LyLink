@@ -7,3 +7,4 @@ lyrics.db
 /public_html/dist
 logs.log
 /coverage
+.phpunit.result.cache
