@@ -17,7 +17,7 @@ jobs:
             - uses: actions/checkout@v4
 
             - name: Setup PHP dependencies
-              run: apk add php84-xdebug
+              run: apk add php84-xdebug php84-mbstring
 
             - name: Install Composer
               run:
