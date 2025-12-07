@@ -18,8 +18,8 @@ jobs:
 
             - name: Setup PHP dependencies
               run: |
-                  docker-php-ext-install mbstring
-                  apk add --update linux-headers oniguruma-dev
+                  docker-php-ext-install
+                  apk add --update linux-headers
                   pecl install xdebug-3.4.7
                   docker-php-ext-enable xdebug
 
