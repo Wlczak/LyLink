@@ -20,6 +20,7 @@ jobs:
               run: |
                   docker-php-ext-install xml
                   apk add --update linux-headers
+                  apk add libxml-2.0
                   pecl install xdebug-3.4.7
                   docker-php-ext-enable xdebug
 
