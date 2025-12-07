@@ -20,8 +20,8 @@ services:
             - com.centurylinklabs.watchtower.enable=true
         volumes:
             # - '.:/var/www/html'
-            - './phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/8.4/fpm/conf.d/99-overrides.ini'
-            - './phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/8.4/cli/conf.d/99-overrides.ini'
+            - './phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/8.5/fpm/conf.d/99-overrides.ini'
+            - './phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/8.5/cli/conf.d/99-overrides.ini'
             - ./db:/var/www/html/db
             - ./config/:/var/www/html/config/
             - ./logs/:/var/www/html/logs/
