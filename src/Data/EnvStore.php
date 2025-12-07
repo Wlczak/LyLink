@@ -14,7 +14,7 @@ class EnvStore
 
     public function __construct(string $stmp_host = "", string $stmp_username = "", string $stmp_password = "")
     {
-        if (filter_var($stmp_host, FILTER_VALIDATE_URL)) {
+        if (filter_var("stmp://" . $stmp_host, FILTER_VALIDATE_URL)) {
             $this->SMTP_HOST = $stmp_host;
         } else {
             $this->SMTP_HOST = "";
@@ -28,7 +28,7 @@ class EnvStore
         }
         if ($stmp_password != "") {
             $this->SMTP_PASSWORD = $stmp_password;
-        }else{
+        } else {
             $this->SMTP_PASSWORD = "";
             throw new Exception("Invalid SMTP_PASSWORD environment variable");
         }
