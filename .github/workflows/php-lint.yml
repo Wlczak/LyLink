@@ -18,7 +18,7 @@ jobs:
 
             - name: Setup PHP dependencies
               run: |
-                  # docker-php-ext-install
+                  docker-php-ext-install xml
                   apk add --update linux-headers
                   pecl install xdebug-3.4.7
                   docker-php-ext-enable xdebug
