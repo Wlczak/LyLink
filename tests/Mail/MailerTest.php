@@ -22,6 +22,9 @@ class MailerTest extends TestCase
         $this->assertSame([[$targetMail, $targetUsername]], $mail->getToAddresses());
         $this->assertSame("LyLink - " . $subject, $mail->Subject);
         $this->assertSame($body, $mail->Body);
-        $this->assertSame('stmp.test.test', $mail->Host);
+        $this->assertSame($env->SMTP_HOST, $mail->Host);
+        
+        $this->assertSame($env->SMTP_PASSWORD, $mail->Password);
+        $this->assertSame($env->SMTP_USERNAME, $mail->Username);
     }
 }
