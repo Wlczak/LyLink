@@ -33,4 +33,23 @@ final class CurrentSongTest extends TestCase
         $this->assertEquals(1, $currentSong->progress_ms);
         $this->assertEquals(2, $currentSong->duration_ms);
     }
+
+    public function testGetProgressPercent()
+    {
+        for ($baseTime = 0; $baseTime < 100; $baseTime++) {
+            $currentSong = new CurrentSong(
+                "id",
+                "title",
+                "artist",
+                "imageUrl",
+                $baseTime,
+                $baseTime * 2
+            );
+            if ($baseTime == 0) {
+                $this->assertEquals(0, $currentSong->getProgressPercent());
+                continue;
+            }
+            $this->assertEquals(50, $currentSong->getProgressPercent());
+        }
+    }
 }
