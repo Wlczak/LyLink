@@ -20,6 +20,7 @@ jobs:
               run: |
                   apk add php84-xdebug php84-mbstring php84-xml
                   echo "zend_extension=xdebug.so" >> /etc/php84/conf.d/xdebug.ini
+                  php -m | grep xdebug
 
             - name: Install Composer
               run:
