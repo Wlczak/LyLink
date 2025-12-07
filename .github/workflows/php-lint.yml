@@ -18,11 +18,10 @@ jobs:
 
             - name: Setup PHP dependencies
               run: |
-                  docker-php-ext-install xml
-                  apk add --update linux-headers
-                  apk add libxml-2.0
-                  pecl install xdebug-3.4.7
-                  docker-php-ext-enable xdebug
+                  apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
+                  && pecl install xdebug \
+                  && docker-php-ext-enable xdebug \
+                  && apk del .build-deps
 
             - name: Install Composer
               run:
