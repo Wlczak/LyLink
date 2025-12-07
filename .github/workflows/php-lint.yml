@@ -16,6 +16,9 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
+            - name: Setup PHP dependencies
+              run: apk add php84-xdebug
+
             - name: Install Composer
               run:
                   curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin
