@@ -2,23 +2,24 @@
 
 namespace Lylink\Mail;
 
+use Lylink\Data\EnvStore;
 use PHPMailer\PHPMailer\PHPMailer;
 
 class Mailer
 {
-    public static function send(string $targetMail, string $targetUsername, string $subject, string $body):void
+    public static function prepareMail(string $targetMail, string $targetUsername, string $subject, string $body, EnvStore $env): PHPMailer
     {
         $mail = new PHPMailer(true);
 
         $mail->isSMTP();
-        $mail->Host = $_ENV['SMTP_HOST'];
+        $mail->Host = $env->SMTP_HOST;
         $mail->SMTPAuth = true;
-        $mail->Username = $_ENV['SMTP_USERNAME'];
-        $mail->Password = $_ENV['SMTP_PASSWORD'];
+        $mail->Username = $env->SMTP_USERNAME;
+        $mail->Password = $env->SMTP_PASSWORD;
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
         $mail->Port = 465;
 
-        $mail->setFrom($_ENV['SMTP_USERNAME'], 'LyLink');
+        $mail->setFrom($env->SMTP_USERNAME, 'LyLink');
         $mail->addAddress($targetMail, $targetUsername); //Add a recipient
 
                              //Content
@@ -30,6 +31,6 @@ class Mailer
         $plain = html_entity_decode($plain, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $mail->AltBody = $plain;
 
-        $mail->send();
+        return $mail;
     }
 }

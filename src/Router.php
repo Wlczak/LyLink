@@ -6,9 +6,9 @@ namespace Lylink;
 use Exception;
 use Lylink\Auth\AuthSession;
 use Lylink\Auth\DefaultAuth;
+use Lylink\Data\EnvStore;
 use Lylink\Interfaces\Datatypes\PlaybackInfo;
 use Lylink\Mail\Mailer;
-use Lylink\Models\Lyrics;
 use Lylink\Models\Settings;
 use Lylink\Models\User;
 use Lylink\Routes\Integrations\Api\IntegrationApi;
@@ -109,7 +109,9 @@ class Router
         $code = random_int(100000, 999999);
         $_SESSION['email_verify'] = ['email' => $email, 'username' => $username, 'code' => $code, "exp" => time() + 30 * 60];
 
-        Mailer::send($email, $username, 'Email verification', self::$twig->load('email/verify_code.twig')->render(['code' => $code]));
+        $env = new EnvStore(stmp_host: $_ENV['SMTP_HOST'], stmp_username: $_ENV['SMTP_USERNAME'], stmp_password: $_ENV['SMTP_PASSWORD']);
+
+        Mailer::prepareMail($email, $username, 'Email verification', self::$twig->load('email/verify_code.twig')->render(['code' => $code]), $env)->send();
         header('Location: ' . $_ENV['BASE_DOMAIN'] . '/email/verify');
 
         $data = $auth->register($email, $username, $pass, $passCheck);

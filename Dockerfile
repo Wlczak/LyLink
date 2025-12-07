@@ -24,7 +24,7 @@ COPY ./public_html /var/www/html/public_html
 
 COPY --from=npm /build/npm/dist /var/www/html/public_html/dist
 
-FROM php:8.4-fpm-alpine AS lylink
+FROM php:8.5-fpm-alpine AS lylink
 
 WORKDIR /var/www/html
 
