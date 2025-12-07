@@ -18,7 +18,8 @@ jobs:
 
             - name: Setup PHP dependencies
               run: |
-                  docker-php-ext-install xdebug mbstring xml
+                  pecl install xdebug
+                  docker-php-ext-enable xdebug
 
             - name: Install Composer
               run:
