@@ -9,7 +9,7 @@ class MailerTest extends TestCase
 {
     public function testPrepareMail(): void
     {
-        $env = new EnvStore(stmp_host: 'stmp.test.test', stmp_username: 'test@test.test', stmp_password: 'test');
+        $env = new EnvStore(stmp_host: 'stmp.test.test', stmp_username: 'test@test.test', stmp_password: 'test', client_id: 'test', client_secret: 'test', base_domain: 'test');
 
         $targetMail = 'test@test.test';
         $targetUsername = 'test';

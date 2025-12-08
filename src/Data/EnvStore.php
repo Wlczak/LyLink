@@ -15,42 +15,35 @@ class EnvStore
     public readonly string $CLIENT_SECRET;
     public readonly string $BASE_DOMAIN;
 
-    public function __construct(string $stmp_host = "", string $stmp_username = "", string $stmp_password = "", string $client_id = "", string $client_secret = "", string $base_domain = "")
+    public function __construct(string $stmp_host, string $stmp_username, string $stmp_password, string $client_id, string $client_secret, string $base_domain)
     {
-        if (filter_var("stmp://" . $stmp_host, FILTER_VALIDATE_URL)) {
-            $this->SMTP_HOST = $stmp_host;
-        } else {
-            $this->SMTP_HOST = "";
+        $this->SMTP_HOST = $stmp_host;
+        $this->SMTP_USERNAME = $stmp_username;
+        $this->SMTP_PASSWORD = $stmp_password;
+        $this->CLIENT_ID = $client_id;
+        $this->CLIENT_SECRET = $client_secret;
+        $this->BASE_DOMAIN = $base_domain;
+        $this->validate();
+    }
+
+    private function validate(): void
+    {
+        if ($this->SMTP_HOST === "" || !filter_var("stmp://" . $this->SMTP_HOST, FILTER_VALIDATE_URL)) {
             throw new InvalidUriException("Invalid SMTP_HOST environment variable");
         }
-        if (filter_var($stmp_username, FILTER_VALIDATE_EMAIL)) {
-            $this->SMTP_USERNAME = $stmp_username;
-        } else {
-            $this->SMTP_USERNAME = "";
+        if ($this->SMTP_USERNAME === "" || !filter_var($this->SMTP_USERNAME, FILTER_VALIDATE_EMAIL)) {
             throw new InvalidEmailException("Invalid SMTP_USERNAME environment variable");
         }
-        if ($stmp_password != "") {
-            $this->SMTP_PASSWORD = $stmp_password;
-        } else {
-            $this->SMTP_PASSWORD = "";
+        if ($this->SMTP_PASSWORD === "") {
             throw new Exception("Invalid SMTP_PASSWORD environment variable");
         }
-        if ($client_id != "") {
-            $this->CLIENT_ID = $client_id;
-        } else {
-            $this->CLIENT_ID = "";
+        if ($this->CLIENT_ID === "") {
             throw new Exception("Invalid CLIENT_ID environment variable");
         }
-        if ($client_secret != "") {
-            $this->CLIENT_SECRET = $client_secret;
-        } else {
-            $this->CLIENT_SECRET = "";
+        if ($this->CLIENT_SECRET === "") {
             throw new Exception("Invalid CLIENT_SECRET environment variable");
         }
-        if (filter_var($base_domain, FILTER_VALIDATE_URL)) {
-            $this->BASE_DOMAIN = $base_domain;
-        } else {
-            $this->BASE_DOMAIN = "";
+        if ($this->BASE_DOMAIN === "" || !filter_var("http://" . $this->BASE_DOMAIN, FILTER_VALIDATE_URL)) {
             throw new InvalidUriException("Invalid BASE_DOMAIN environment variable");
         }
     }
