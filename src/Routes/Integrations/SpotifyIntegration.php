@@ -3,7 +3,6 @@
 namespace Lylink\Routes\Integrations;
 
 use Closure;
-use Lylink\Auth\AuthSession;
 use Lylink\Interfaces\Integration\IntegrationRoute;
 use Lylink\Models\Settings;
 use Lylink\Router;
@@ -26,6 +25,7 @@ class SpotifyIntegration extends Router implements IntegrationRoute
 
     public static function callback(): string
     {
+        $env = EnvStore::load();
         if (isset($_SESSION['spotify_session'])) {
             /**
              * @var Session
@@ -51,13 +51,13 @@ class SpotifyIntegration extends Router implements IntegrationRoute
         }
 
         if (!isset($_SESSION['spotify_session'])) {
-            $clientID = $_ENV['CLIENT_ID'];
-            $clientSecret = $_ENV['CLIENT_SECRET'];
+            $clientID = $env->CLIENT_ID;
+            $clientSecret = $env->CLIENT_SECRET;
 
             $session = new Session(
                 $clientID,
                 $clientSecret,
-                $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback'
+                $env->BASE_DOMAIN . '/integrations/spotify/callback'
             );
 
             if (!isset($_GET['code'])) {
@@ -68,8 +68,12 @@ class SpotifyIntegration extends Router implements IntegrationRoute
                 header('Location: ' . $session->getAuthorizeUrl($options));
                 die();
             }
-
-            if ($session->requestAccessToken($_GET['code'])) {
+            /**
+             * @var string|float|int|bool|null
+             */
+            $code = $_GET['code'];
+            $code = strval($code);
+            if ($session->requestAccessToken($code)) {
 
                 $_SESSION['spotify_session'] = $session;
 

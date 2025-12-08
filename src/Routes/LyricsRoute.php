@@ -5,8 +5,10 @@ namespace Lylink\Routes;
 use Closure;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Query\Parameter;
+use function Symfony\Component\String\s;
 use Lylink\Auth\AuthSession;
 use Lylink\Data\CurrentSong;
+use Lylink\Data\EnvStore;
 use Lylink\Data\LyricsData;
 use Lylink\Data\Source;
 use Lylink\DoctrineRegistry;
@@ -41,20 +43,21 @@ class LyricsRoute extends Router implements Route
 
     public static function lyricsHome(): string
     {
+        $env = EnvStore::load();
         $auth = AuthSession::get();
         $sources = [];
         if ($auth == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            header('Location: ' . $env->BASE_DOMAIN . '/login');
             die();
         }
         $user = $auth->getUser();
         if ($user == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            header('Location: ' . $env->BASE_DOMAIN . '/login');
             die();
         }
         $id = $user->getId();
         if ($id === null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            header('Location: ' . $env->BASE_DOMAIN . '/login');
             die();
         }
         $settings = Settings::getSettings($id);
@@ -72,6 +75,7 @@ class LyricsRoute extends Router implements Route
 
     public static function jellyfinLyrics(): string
     {
+        $env = EnvStore::load();
         $lyricsData = new LyricsData(name: "Loading...", is_playing: false, imageUrl: "/img/albumPlaceholer.svg");
 
         $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
@@ -81,7 +85,11 @@ class LyricsRoute extends Router implements Route
             $token = $settings->jellyfin_token;
 
             if (isset($_GET["show_id"]) && isset($_GET["season_index"]) && isset($_GET["ep_index"])) {
+                /**
+                 * @var string|float|int|bool|null
+                 */
                 $showId = $_GET["show_id"];
+                $showId = strval($showId);
                 $seasonIndex = $_GET["season_index"];
                 $episodeIndex = $_GET["ep_index"];
 
@@ -111,7 +119,7 @@ class LyricsRoute extends Router implements Route
             }
 
         } else {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            header('Location: ' . $env->BASE_DOMAIN . '/login');
             die();
         }
 
@@ -123,18 +131,19 @@ class LyricsRoute extends Router implements Route
 
     public static function jellyfinEditList(): string
     {
+        $env = EnvStore::load();
         $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
 
         if ($settings->jellyfin_connected) {
             $address = $settings->jellyfin_server;
             $token = $settings->jellyfin_token;
         } else {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            header('Location: ' . $env->BASE_DOMAIN . '/login');
             die();
         }
 
         if (!$settings->allow_edit) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin', );
+            header('Location: ' . $env->BASE_DOMAIN . '/lyrics/jellyfin', );
             die();
         }
 
@@ -168,19 +177,20 @@ class LyricsRoute extends Router implements Route
 
     public static function jellyfinEditPage(string $idString): string
     {
+        $env = EnvStore::load();
         $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
 
         if ($settings->jellyfin_connected) {
             $address = $settings->jellyfin_server;
             $token = $settings->jellyfin_token;
         } else {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics');
+            header('Location: ' . $env->BASE_DOMAIN . '/lyrics');
             die();
         }
 
         $showId = $_GET["show_id"];
         if ($showId == null || $showId == "" || $settings->allow_edit == false) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin');
+            header('Location: ' . $env->BASE_DOMAIN . '/lyrics/jellyfin');
             die();
         }
         $id = intval($idString);
@@ -198,7 +208,7 @@ class LyricsRoute extends Router implements Route
             $lyricsObj = $em->getRepository(Lyrics::class)->find($id);
             if ($lyricsObj != null) {
                 if ($lyricsObj->jellyfinShowId != $showId) {
-                    header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin');
+                    header('Location: ' . $env->BASE_DOMAIN . '/lyrics/jellyfin');
                     die();
                 }
                 $lyrics = $lyricsObj->lyrics;
@@ -270,15 +280,16 @@ class LyricsRoute extends Router implements Route
 
     public function jellyfinDelete(string $idString): void
     {
+        $env = EnvStore::load();
         $auth = AuthSession::get()?->getUser()?->getId() ?? 0;
         if ($auth == 0) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            header('Location: ' . $env->BASE_DOMAIN . '/login');
             die();
         }
 
         $id = intval($idString);
         if ($id == 0) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin');
+            header('Location: ' . $env->BASE_DOMAIN . '/lyrics/jellyfin');
             die();
         }
         $em = DoctrineRegistry::get();
@@ -289,18 +300,19 @@ class LyricsRoute extends Router implements Route
         $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
 
         if ($lyrics == null || $settings->allow_edit == false) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin');
+            header('Location: ' . $env->BASE_DOMAIN . '/lyrics/jellyfin');
             die();
         }
         $em->remove($lyrics);
         $em->flush();
-        header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/jellyfin');
+        header('Location: ' . $env->BASE_DOMAIN . '/lyrics/jellyfin');
     }
 
     public function spotifyLyrics(): void
     {
+        $env = EnvStore::load();
         if (!isset($_SESSION['spotify_session'])) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
+            header('Location: ' . $env->BASE_DOMAIN . '/integrations/spotify/callback');
         }
 
         /**
@@ -309,12 +321,12 @@ class LyricsRoute extends Router implements Route
         $session = array_key_exists('spotify_session', $_SESSION) ? $_SESSION['spotify_session'] : null;
 
         if ($session == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
+            header('Location: ' . $env->BASE_DOMAIN . '/integrations/spotify/callback');
             die();
         }
 
         if ($session->getTokenExpiration() < time()) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
+            header('Location: ' . $env->BASE_DOMAIN . '/integrations/spotify/callback');
             die();
         }
 
@@ -344,7 +356,7 @@ class LyricsRoute extends Router implements Route
                 'duration' => 0,
                 'duration_ms' => 0,
                 'progress_ms' => 0,
-                'imageUrl' => $_ENV['BASE_DOMAIN'] . '/img/albumPlaceholer.svg',
+                'imageUrl' => $env->BASE_DOMAIN . '/img/albumPlaceholer.svg',
                 'id' => 0,
                 'is_playing' => "false"
             ];
@@ -399,9 +411,10 @@ class LyricsRoute extends Router implements Route
 
     public function spotifyLyricsEdit(): void
     {
+        $env = EnvStore::load();
         $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
         if (!$settings->allow_edit) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/spotify', );
+            header('Location: ' . $env->BASE_DOMAIN . '/lyrics/spotify', );
             die();
         }
 
@@ -409,7 +422,11 @@ class LyricsRoute extends Router implements Route
          * @var Session
          */
         $session = $_SESSION['spotify_session'];
+        /**
+         * @var string|float|int|bool|null
+         */
         $trackId = $_GET['id'];
+        $trackId = strval($trackId);
 
         $api = new SpotifyWebAPI();
         $api->setAccessToken($session->getAccessToken());
@@ -445,20 +462,29 @@ class LyricsRoute extends Router implements Route
 
     public function updateSpotifyLyrics(): void
     {
+        $env = EnvStore::load();
         $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
         if (!$settings->allow_edit) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/spotify', );
+            header('Location: ' . $env->BASE_DOMAIN . '/lyrics/spotify', );
             die();
         }
         $entityManager = DoctrineRegistry::get();
         $lyrics = $entityManager->getRepository(Lyrics::class)->findOneBy(['spotifyId' => $_POST['id']]);
         if ($lyrics == null) {
             $lyrics = new Lyrics();
-            $lyrics->spotifyId = $_POST['id'];
+            /**
+             * @var string|float|int|bool|null
+             */
+            $spotifyId = $_POST['id'];
+            $lyrics->spotifyId = strval($spotifyId);
         }
-        $lyrics->lyrics = $_POST['lyrics'];
+        /**
+         * @var string|float|int|bool|null
+         */
+        $lyricsString = $_POST['lyrics'];
+        $lyrics->lyrics = strval($lyricsString);
         $entityManager->persist($lyrics);
         $entityManager->flush();
-        header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/spotify');
+        header('Location: ' . $env->BASE_DOMAIN . '/lyrics/spotify');
     }
 }
