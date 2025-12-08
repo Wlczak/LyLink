@@ -61,9 +61,11 @@
                             {% endfor %}
                         </div>
                     </div>
+                    {% if allowEdit %}
                     <div class="content">
-                        <a class="button is-link" href="/edit?id={{ song.id }}">Edit</a>
+                        <a class="button is-link" href="/lyrics/spotify/edit?id={{ song.id }}">Edit</a>
                     </div>
+                    {% endif %}
                     {% endif %}
                 </div>
             </div>
@@ -100,7 +102,7 @@
     }
     setInterval(() => {
         fetch('/info', { method: 'GET' }).then(response => response.json()).then(data => {
-            console.log(data);
+
             if (data.id != song_id) {
                 window.location.reload();
             }

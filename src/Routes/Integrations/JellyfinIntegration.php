@@ -3,13 +3,15 @@
 namespace Lylink\Routes\Integrations;
 
 use Lylink\Auth\AuthSession;
+use Lylink\Data\EnvStore;
 use Lylink\Interfaces\Integration\IntegrationRoute;
 use Lylink\Models\Settings;
-use Lylink\Traits\IntegrationSetup;
+use Lylink\Router;
+use Lylink\Traits\IntegrationRoutingSetup;
 
-class Jellyfin extends \Lylink\Router implements IntegrationRoute
+class JellyfinIntegration extends Router implements IntegrationRoute
 {
-    use IntegrationSetup;
+    use IntegrationRoutingSetup;
 
     public static function connect(): string
     {
@@ -27,21 +29,22 @@ class Jellyfin extends \Lylink\Router implements IntegrationRoute
 
     public static function disconnect(): string
     {
+        $env = EnvStore::load();
         $auth = AuthSession::get();
         if ($auth === null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            header('Location: ' . $env->BASE_DOMAIN . '/login');
             die();
         }
 
         $user = $auth->getUser();
         if ($user === null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            header('Location: ' . $env->BASE_DOMAIN . '/login');
             die();
         }
 
         $id = $user->getId();
         if ($id === null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            header('Location: ' . $env->BASE_DOMAIN . '/login');
             die();
         }
 
@@ -49,7 +52,7 @@ class Jellyfin extends \Lylink\Router implements IntegrationRoute
 
         $settings->disconnectJellyfin();
 
-        header('Location: ' . $_ENV['BASE_DOMAIN'] . '/settings');
+        header('Location: ' . $env->BASE_DOMAIN . '/settings');
 
         return "";
     }

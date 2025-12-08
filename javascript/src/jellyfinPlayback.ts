@@ -122,6 +122,26 @@ export class JellyfinPlayback {
                     this.progress_ticks = POSITION_TICKS;
                     this.duration_ticks = RUN_TIME_TICKS;
                 }
+            })
+            .catch(() => {
+                this.changeTitle(
+                    "Failed to connect to <a href='https://github.com/Wlczak/lylink-jellyfin'target='_blank'>lylink-jellyfin</a> server"
+                );
+                const params = new URLSearchParams(window.location.search);
+                if (
+                    params.get("ep_id") == null &&
+                    params.get("ep_index") == null &&
+                    params.get("season_index") == null &&
+                    params.get("show_id") == null
+                ) {
+                    return;
+                } else {
+                    params.delete("ep_id");
+                    params.delete("ep_index");
+                    params.delete("season_index");
+                    params.delete("show_id");
+                    window.location.search = params.toString();
+                }
             });
     }
 
@@ -132,7 +152,6 @@ export class JellyfinPlayback {
         this.progress_ticks += this.TICKS_PER_SECOND;
         const progressPercent = Number((this.progress_ticks * BigInt(100)) / this.duration_ticks);
 
-        console.log(progressPercent);
         progressBar.value = progressPercent;
 
         const cur_min = this.progress_ticks / this.TICKS_PER_SECOND / BigInt(60);
@@ -165,7 +184,13 @@ export class JellyfinPlayback {
                     return;
                 }
                 this.updateMediainfo(address, token, data);
-                this.enableEdit(data.Id, data.SeasonId, data.SeriesId);
+                this.enableEdit(
+                    data.Id,
+                    data.SeasonId,
+                    data.SeriesId,
+                    data.IndexNumber,
+                    data.ParentIndexNumber
+                );
             });
     }
 
@@ -195,11 +220,20 @@ export class JellyfinPlayback {
         });
     }
 
-    enableEdit(epId: string, seasonId: string, showId: string) {
+    enableEdit(epId: string, seasonId: string, showId: string, episodeIndex: number, seasonIndex: number) {
         const editContainer = document.getElementById("edit-container") as HTMLDivElement;
         const editBtn = document.getElementById("edit-btn") as HTMLAnchorElement;
         editBtn.href =
-            "/lyrics/jellyfin/edit?ep_id=" + epId + "&season_id=" + seasonId + "&show_id=" + showId;
+            "/lyrics/jellyfin/edit?ep_id=" +
+            epId +
+            "&season_id=" +
+            seasonId +
+            "&show_id=" +
+            showId +
+            "&ep_index=" +
+            episodeIndex +
+            "&season_index=" +
+            seasonIndex;
         editContainer.hidden = false;
     }
 

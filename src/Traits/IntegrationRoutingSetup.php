@@ -5,9 +5,17 @@ namespace Lylink\Traits;
 use Closure;
 use Pecee\SimpleRouter\SimpleRouter;
 
-trait IntegrationSetup
+trait IntegrationRoutingSetup
 {
+    /**
+     * @overwritable
+     */
     public static function setup(): Closure
+    {
+        return self::traitSetup();
+    }
+
+    public static function traitSetup():Closure
     {
         return function () {
             SimpleRouter::get('/connect', [self::class, 'connect']);

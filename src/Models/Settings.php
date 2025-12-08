@@ -43,6 +43,9 @@ class Settings
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     public ?string $spotify_user_display_name = null;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    public ?string $spotify_token = null;
+
     ## Jellyfin ##
     #[ORM\Column(type: 'boolean')]
     public bool $jellyfin_connected = false;
@@ -58,6 +61,9 @@ class Settings
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     public ?string $jellyfin_token = null;
+
+    #[ORM\Column(type: 'boolean', nullable: false, options: ['default' => false])]
+    public bool $allow_edit = false;
 
     public function __construct(int $userId)
     {
@@ -94,6 +100,28 @@ class Settings
         $this->jellyfin_server = null;
         $this->jellyfin_user_id = null;
         $this->jellyfin_token = null;
+        $em = DoctrineRegistry::get();
+        $em->persist($this);
+        $em->flush();
+    }
+
+    public function connectSpotify(string $token, string $username): void
+    {
+        $this->spotify_connected = true;
+        $this->spotify_token = $token;
+        $this->spotify_user_display_name = $username;
+        $em = DoctrineRegistry::get();
+        $em->persist($this);
+        $em->flush();
+    }
+
+    public function disconnectSpotify(): void
+    {
+        $this->allow_spotify_login = false;
+        $this->spotify_connected = false;
+        $this->spotify_user_id = null;
+        $this->spotify_user_display_name = null;
+        $this->spotify_token = null;
         $em = DoctrineRegistry::get();
         $em->persist($this);
         $em->flush();

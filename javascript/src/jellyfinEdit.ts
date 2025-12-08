@@ -1,7 +1,13 @@
 import { JellyfinApi } from "./jellyfinApi.js";
 
 export class JellyfinEdit {
-    static async setUp(address: string, token: string) {
+    static async setUp(
+        address: string,
+        token: string,
+        seasonIndex: string,
+        firstEpisodeIndex: string,
+        lastEpisodeIndex: string
+    ) {
         const mediaId = new URLSearchParams(window.location.search).get("ep_id");
         if (mediaId == null || mediaId == undefined || mediaId == "") {
             console.error("No mediaId found");
@@ -11,20 +17,87 @@ export class JellyfinEdit {
 
         const episodeInfo = await JellyfinApi.getEpisodeInfo(address, token, mediaId);
         const seasonInfo = await JellyfinApi.getSeasonInfo(address, token, episodeInfo.ParentId);
-        const seriesInfo = await JellyfinApi.getSeriesInfo(address, token, seasonInfo.ParentId);
+        // const seriesInfo = await JellyfinApi.getSeriesInfo(address, token, seasonInfo.ParentId);
 
         const episodeList = await JellyfinApi.getEpisodeList(address, token, seasonInfo.ParentId);
-        console.log(episodeInfo);
-        console.log(seasonInfo);
-        console.log(seriesInfo);
 
-        this.setMediaInfo(episodeInfo, episodeList);
+        this.setMediaInfo(episodeInfo, episodeList, seasonIndex, firstEpisodeIndex, lastEpisodeIndex);
+
+        const imageUrl = await this.getImageBlobUrl(address, token, episodeInfo.ParentId);
+
+        const posterImage = document.getElementById("posterImage") as HTMLImageElement;
+        posterImage.src = imageUrl;
 
         const form = document.getElementById("lyricsForm") as HTMLFormElement;
         form.addEventListener("submit", this.saveForm);
     }
 
-    static setMediaInfo(episodeInfo: EpisodeInfo, episodeList: Array<EpisodeInfo> = []) {
+    static async setUpList(address: string, token: string) {
+        const episodeId = new URLSearchParams(window.location.search).get("ep_id");
+        const seasonId = new URLSearchParams(window.location.search).get("season_id");
+        if (
+            episodeId == null ||
+            episodeId == undefined ||
+            episodeId == "" ||
+            seasonId == null ||
+            seasonId == undefined ||
+            seasonId == ""
+        ) {
+            console.error("No mediaId found");
+            window.location.replace("/lyrics/jellyfin");
+            return;
+        }
+        try {
+            const episodeInfo = await JellyfinApi.getEpisodeInfo(address, token, episodeId);
+
+            const episodeInfoElement = document.getElementById("episode_info") as HTMLSpanElement;
+            const episodeSeasonInfoElement = document.getElementById(
+                "episode-season-info"
+            ) as HTMLSpanElement;
+
+            episodeInfoElement.textContent =
+                episodeInfo.SeriesName +
+                " — S" +
+                episodeInfo.ParentIndexNumber.toString() +
+                "E" +
+                episodeInfo.IndexNumber.toString();
+
+            episodeSeasonInfoElement.textContent =
+                "S" + episodeInfo.ParentIndexNumber.toString() + "E" + episodeInfo.IndexNumber.toString();
+
+            document.title =
+                "LyLink — " +
+                episodeInfo.SeriesName +
+                " — S" +
+                episodeInfo.ParentIndexNumber.toString() +
+                "E" +
+                episodeInfo.IndexNumber.toString();
+
+            const blobUrl = await this.getImageBlobUrl(address, token, seasonId);
+            const episodeImageElement = document.getElementById("episode-poster") as HTMLImageElement;
+            episodeImageElement.src = blobUrl;
+        } catch (e) {
+            console.error(e);
+            window.location.replace("/lyrics/jellyfin");
+            return;
+        }
+    }
+
+    static async getImageBlobUrl(address: string, token: string, mediaId: string): Promise<string> {
+        const response = await JellyfinApi.getItemImage(address, token, mediaId, "Primary");
+        if (response.ok) {
+            return URL.createObjectURL(await response.blob());
+        }
+        return "";
+    }
+
+    static setMediaInfo(
+        episodeInfo: EpisodeInfo,
+        episodeList: Array<EpisodeInfo> = [],
+        seasonIndex: string,
+        firstEpisodeIndex: string,
+        lastEpisodeIndex: string
+    ) {
         const seriesTitle = document.getElementById("series_title") as HTMLInputElement;
         const seasonsSelect = document.getElementById("season") as HTMLSelectElement;
 
@@ -35,20 +108,22 @@ export class JellyfinEdit {
             }
         });
         seasonsList.sort((a, b) => a.Index - b.Index);
-        console.log(seasonsList);
 
         seasonsList.forEach((season) => {
             const option = document.createElement("option");
             option.text = "S" + season.Index.toString();
-            option.value = episodeInfo.ParentId;
+            option.value = season.Index.toString();
             option.id = "s-" + season.Index.toString();
+            option.selected = season.Index.toString() === seasonIndex;
             seasonsSelect.add(option);
         });
 
-        const activeSeason = document.getElementById(
-            "s-" + episodeInfo.ParentIndexNumber.toString()
-        ) as HTMLOptionElement;
-        activeSeason.selected = true;
+        if (seasonIndex == null || seasonIndex == "") {
+            const activeSeason = document.getElementById(
+                "s-" + episodeInfo.ParentIndexNumber.toString()
+            ) as HTMLOptionElement;
+            activeSeason.selected = true;
+        }
 
         this.setEpisodeSelects(
             seasonsSelect.selectedOptions[0].innerText,
@@ -64,6 +139,18 @@ export class JellyfinEdit {
         });
 
         seriesTitle.value = episodeInfo.SeriesName;
+
+        const firstEpisodeSelect = document.getElementById("firstEpisodeSelect") as HTMLSelectElement;
+        const lastEpisodeSelect = document.getElementById("lastEpisodeSelect") as HTMLSelectElement;
+
+        Array.from(firstEpisodeSelect.options).forEach((option) => {
+            // option.value is a string, so convert targetValue to string
+            option.selected = option.value === firstEpisodeIndex.toString();
+        });
+        Array.from(lastEpisodeSelect.options).forEach((option) => {
+            // option.value is a string, so convert targetValue to string
+            option.selected = option.value === lastEpisodeIndex.toString();
+        });
     }
 
     static setEpisodeSelects(
@@ -89,7 +176,6 @@ export class JellyfinEdit {
             }
         });
         episodeIndexList.sort((a, b) => a - b);
-        console.log(episodeIndexList);
 
         episodeIndexList.forEach((episodeIndex) => {
             const option = document.createElement("option");
@@ -133,12 +219,17 @@ export class JellyfinEdit {
         const seasonInput = document.getElementById("season") as HTMLSelectElement;
         const firstEpisodeSelect = document.getElementById("firstEpisodeSelect") as HTMLSelectElement;
         const lastEpisodeSelect = document.getElementById("lastEpisodeSelect") as HTMLSelectElement;
+        const lyricsNameInput = document.getElementById("lyricsName") as HTMLInputElement;
         const lyricsInput = document.getElementById("lyricsInput") as HTMLInputElement;
+
+        let lyricsId = Number.parseInt(new URL(document.documentURI).pathname.split("/").pop() ?? "") ?? 0;
+        lyricsId = isNaN(lyricsId) ? 0 : lyricsId;
 
         const showId = new URLSearchParams(window.location.search).get("show_id");
         const seasonNumber = Number(seasonInput.selectedOptions[0].innerText.replace("S", ""));
         const firstEpisode = Number(firstEpisodeSelect.value);
         const lastEpisode = Number(lastEpisodeSelect.value);
+        const lyricsName = lyricsNameInput.value;
         const lyrics = lyricsInput.value;
 
         if (showId == null || showId == undefined || showId == "") {
@@ -147,6 +238,28 @@ export class JellyfinEdit {
             return;
         }
 
-        JellyfinApi.saveJellyfinLyrics(showId, seasonNumber, firstEpisode, lastEpisode, lyrics);
+        if (lyricsName == "") {
+            lyricsNameInput.classList.add("is-danger");
+            function lyricsNameInputListener() {
+                if (lyricsNameInput.value == "") {
+                    lyricsNameInput.classList.add("is-danger");
+                } else {
+                    lyricsNameInput.classList.remove("is-danger");
+                }
+            }
+            lyricsNameInput.removeEventListener("input", lyricsNameInputListener);
+            lyricsNameInput.addEventListener("input", lyricsNameInputListener);
+            return;
+        }
+
+        JellyfinApi.saveJellyfinLyrics(
+            lyricsId,
+            showId,
+            seasonNumber,
+            firstEpisode,
+            lastEpisode,
+            lyricsName,
+            lyrics
+        );
     }
 }

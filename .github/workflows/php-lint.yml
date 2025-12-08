@@ -1,4 +1,4 @@
-name: Go Lint
+name: PHP Lint
 
 on:
     push:
@@ -12,7 +12,7 @@ jobs:
     phpstan:
         runs-on: ubuntu-latest
         container:
-            image: php:8.4-alpine
+            image: php:8.5-alpine
         steps:
             - uses: actions/checkout@v4
 

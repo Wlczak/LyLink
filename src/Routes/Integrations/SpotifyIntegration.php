@@ -1,0 +1,139 @@
+<?php
+
+namespace Lylink\Routes\Integrations;
+
+use Closure;
+use Lylink\Auth\AuthSession;
+use Lylink\Data\EnvStore;
+use Lylink\Interfaces\Integration\IntegrationRoute;
+use Lylink\Models\Settings;
+use Lylink\Router;
+use Lylink\Traits\IntegrationRoutingSetup;
+use Pecee\SimpleRouter\SimpleRouter;
+use SpotifyWebAPI\Session;
+use SpotifyWebAPI\SpotifyWebAPI;
+
+class SpotifyIntegration extends Router implements IntegrationRoute
+{
+    use IntegrationRoutingSetup;
+
+    public static function setup(): Closure
+    {
+        return function () {
+            self::traitSetup()();
+            SimpleRouter::get('/callback', [self::class, 'callback']);
+        };
+    }
+
+    public static function callback(): string
+    {
+        $env = EnvStore::load();
+        if (isset($_SESSION['spotify_session'])) {
+            /**
+             * @var Session
+             */
+            $session = $_SESSION['spotify_session'];
+            $session->refreshAccessToken();
+
+            $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
+            $token = $session->getAccessToken();
+
+            $api = new SpotifyWebAPI();
+            $api->setAccessToken($session->getAccessToken());
+            /**
+             * @var array{display_name:string}
+             */
+            $spotifyUser = (array) $api->me();
+
+            $spotifyUsername = $spotifyUser['display_name'];
+            $settings->connectSpotify($token, $spotifyUsername);
+
+            header('Location: ' . $env->BASE_DOMAIN . '/settings');
+        }
+
+        if (!isset($_SESSION['spotify_session'])) {
+            $clientID = $env->CLIENT_ID;
+            $clientSecret = $env->CLIENT_SECRET;
+
+            $session = new Session(
+                $clientID,
+                $clientSecret,
+                $env->BASE_DOMAIN . '/integrations/spotify/callback'
+            );
+
+            if (!isset($_GET['code'])) {
+                $options = [
+                    'scope' => ['user-read-currently-playing', "user-read-playback-state"]
+                ];
+
+                header('Location: ' . $session->getAuthorizeUrl($options));
+                die();
+            }
+            /**
+             * @var string|float|int|bool|null
+             */
+            $code = $_GET['code'];
+            $code = strval($code);
+            if ($session->requestAccessToken($code)) {
+
+                $_SESSION['spotify_session'] = $session;
+
+                $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
+                $token = $session->getAccessToken();
+
+                $session = $_SESSION['spotify_session'];
+                $api = new SpotifyWebAPI();
+                $api->setAccessToken($session->getAccessToken());
+                /**
+                 * @var array{display_name:string}
+                 */
+                $spotifyUser = $api->me();
+
+                $spotifyUsername = $spotifyUser['display_name'];
+
+                $settings->connectSpotify($token, $spotifyUsername);
+
+                header('Location: ' . $env->BASE_DOMAIN . '/settings');
+
+                return "";
+
+            } else {
+                return "";
+            }
+        } else {
+            /**
+             * @var Session
+             */
+            $session = $_SESSION['spotify_session'];
+            $api = new SpotifyWebAPI();
+            $api->setAccessToken($session->getAccessToken());
+            $api->me();
+        }
+
+        $api = new SpotifyWebAPI();
+
+        return "";
+
+    }
+
+    public static function connect(): string
+    {
+        $env = EnvStore::load();
+        header('Location: ' . $env->BASE_DOMAIN . '/integrations/spotify/callback');
+        return "";
+    }
+
+    public static function connectPost(): string
+    {
+        throw new \Exception('Not implemented');
+    }
+
+    public static function disconnect(): string
+    {
+        $env = EnvStore::load();
+        $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
+        $settings->disconnectSpotify();
+        header('Location: ' . $env->BASE_DOMAIN . '/settings');
+        return "";
+    }
+}

@@ -14,7 +14,8 @@
         }
     ],
     "require-dev": {
-        "phpstan/phpstan": "^2.1"
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^12"
     },
     "require": {
         "pecee/simple-router": "^5.4",
@@ -23,7 +24,7 @@
         "doctrine/orm": "^3.5",
         "symfony/cache": "^7.3",
         "twig/twig": "^3.21",
-        "phpmailer/phpmailer": "^6.10",
+        "phpmailer/phpmailer": "^7.0",
         "monolog/monolog": "^3.9"
     }
 }
