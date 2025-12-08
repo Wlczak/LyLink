@@ -9,35 +9,18 @@ use Doctrine\ORM\Tools\SchemaTool;
 use Lylink\DoctrineRegistry;
 use Lylink\Models\User;
 use PHPUnit\Framework\TestCase;
+use Tests\Helpers\TestDatabaseHelper;
 
 class DefaultAuthTest extends TestCase
 {
     protected function setUp(): void
     {
-        $config = ORMSetup::createAttributeMetadataConfiguration( // on PHP < 8.4, use ORMSetup::createAttributeMetadataConfiguration()
-            paths: [__DIR__ . '/../../src/Models'],
-            isDevMode: true,
-        );
-
-        // configuring the database connection
-        $connection = DriverManager::getConnection([
-            'driver' => 'pdo_sqlite',
-            'path' => __DIR__ . '/lyrics.db'
-        ], $config);
-        // obtaining the entity manager
-        $entityManager = new EntityManager($connection, $config);
-
-        DoctrineRegistry::set($entityManager);
-        $schemaTool = new SchemaTool($entityManager);
-        $metadata = $entityManager->getMetadataFactory()->getAllMetadata();
-
-        $schemaTool->dropDatabase();
-        $schemaTool->createSchema($metadata);
+        TestDatabaseHelper::createTestDatabase();
     }
 
     protected function tearDown(): void
     {
-        unlink(__DIR__ . '/lyrics.db');
+        TestDatabaseHelper::dropTestDatabase();
     }
 
     public function testDatabaseConnection(): void
