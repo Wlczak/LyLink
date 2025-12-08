@@ -5,3 +5,5 @@ parameters:
         - src
         - bin
         - tests
+includes:
+  - vendor/phpstan/phpstan-strict-rules/rules.neon
