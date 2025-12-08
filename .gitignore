@@ -3,5 +3,8 @@
 lyrics.db
 /cache
 /javascript/node_modules
+/javascript/dist
 /public_html/dist
 logs.log
+/coverage
+.phpunit.result.cache

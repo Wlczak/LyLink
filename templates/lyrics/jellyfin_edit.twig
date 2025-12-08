@@ -10,7 +10,10 @@
         import { JellyfinEdit } from '/dist/jellyfinEdit.js';
         let address = "{{ address }}";
         let token = "{{ token }}";
-        JellyfinEdit.setUp(address, token);
+        let seasonIndex = "{{ season_index }}";
+        let firstEpisodeIndex = "{{ first_episode_index }}";
+        let lastEpisodeIndex = "{{ last_episode_index }}";
+        JellyfinEdit.setUp(address, token, seasonIndex, firstEpisodeIndex, lastEpisodeIndex);
     </script>
 </head>
 
@@ -90,7 +93,13 @@
                             </div>
                         </div>
 
-
+                        <div class="field">
+                            <label class="label">Lyrics name</label>
+                            <div class="control">
+                                <input class="input" type="text" name="lyrics_name" id="lyricsName"
+                                    value="{{ lyrics_name }}">
+                            </div>
+                        </div>
 
                         <div class="field">
                             <label class="label">Lyrics</label>
@@ -120,7 +129,7 @@
                 <div class="column">
                     <div class="card">
                         <div class="card-image">
-                            <figure class="image is-4by3">
+                            <figure class="image">
                                 <img id="posterImage" src="{{ series.imageUrl }}" alt="{{ series.title }} poster">
                             </figure>
                         </div>
@@ -138,7 +147,6 @@
                                 All
                                 {% endif %}
                             </p>
-                            <div id="livePreview" class="content" style="white-space:pre-wrap;">{{ lyrics }}</div>
                         </div>
                     </div>
                 </div>

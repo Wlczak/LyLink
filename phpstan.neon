@@ -1,6 +1,7 @@
 parameters:
     ignoreErrors:
-    level: 8
+    level: 10
     paths:
         - src
         - bin
+        - tests

@@ -18,7 +18,11 @@ export class JellyfinApi {
             method: "POST",
             body: JSON.stringify({ token: token }),
         });
-        return res.json();
+        if (res.ok) {
+            return res.json();
+        } else {
+            throw new Error("Failed to get episode info");
+        }
     }
 
     static async getSeasonInfo(address: string, token: string, mediaId: string): Promise<SeasonInfo> {
@@ -50,16 +54,25 @@ export class JellyfinApi {
     }
 
     static async saveJellyfinLyrics(
+        lyricsId: number,
         showId: string,
         seasonNumber: number,
         firstEpisode: number,
         lastEpisode: number,
+        lyricsName: string,
         lyrics: string
     ) {
-        console.log(JSON.stringify({ showId, seasonNumber, firstEpisode, lastEpisode, lyrics }));
-        fetch("/lyrics/jellyfin/edit", {
+        fetch("/lyrics/jellyfin/save", {
             method: "POST",
-            body: JSON.stringify({ showId, seasonNumber, firstEpisode, lastEpisode, lyrics }),
+            body: JSON.stringify({
+                lyricsId,
+                showId,
+                seasonNumber,
+                firstEpisode,
+                lastEpisode,
+                lyrics,
+                lyricsName,
+            }),
         }).then((res) => {
             if (res.ok) {
                 window.location.replace("/lyrics/jellyfin");

@@ -6,13 +6,14 @@ namespace Lylink;
 use Exception;
 use Lylink\Auth\AuthSession;
 use Lylink\Auth\DefaultAuth;
+use Lylink\Data\EnvStore;
 use Lylink\Interfaces\Datatypes\PlaybackInfo;
 use Lylink\Mail\Mailer;
-use Lylink\Models\Lyrics;
 use Lylink\Models\Settings;
 use Lylink\Models\User;
 use Lylink\Routes\Integrations\Api\IntegrationApi;
-use Lylink\Routes\Integrations\Jellyfin;
+use Lylink\Routes\Integrations\JellyfinIntegration;
+use Lylink\Routes\Integrations\SpotifyIntegration;
 use Lylink\Routes\LyricsRoute;
 use Pecee\SimpleRouter\SimpleRouter;
 use SpotifyWebAPI\Session;
@@ -31,7 +32,7 @@ class Router
 
         ## User facing routes ##
         SimpleRouter::get('/', [self::class, 'home']);
-        // SimpleRouter::redirect('/', $_ENV['BASE_DOMAIN'] . '/login', 307);
+        // SimpleRouter::redirect('/', $env->BASE_DOMAIN . '/login', 307);
 
         ## Authenticated routes ##
         SimpleRouter::group(['middleware' => \Lylink\Middleware\AuthMiddleware::class], function () {
@@ -39,7 +40,8 @@ class Router
             // SimpleRouter::get('/edit', [self::class, 'edit']);
             SimpleRouter::get('/settings', [self::class, 'settings']);
             SimpleRouter::partialGroup('/integrations', function () {
-                SimpleRouter::partialGroup('/jellyfin', Jellyfin::setup());
+                SimpleRouter::partialGroup('/jellyfin', JellyfinIntegration::setup());
+                SimpleRouter::partialGroup('/spotify', SpotifyIntegration::setup());
                 SimpleRouter::partialGroup('/api', IntegrationApi::setup());
             });
         });
@@ -52,17 +54,16 @@ class Router
         SimpleRouter::post('/email/verify', [self::class, 'emailVerifyPost']);
         SimpleRouter::get('/logout', function () {
             AuthSession::logout();
-            header('Location: ' . $_ENV['BASE_DOMAIN']);
+            $env = EnvStore::load();
+            header('Location: ' . $env->BASE_DOMAIN);
         });
 
         ## Technical / api routes ##
-        SimpleRouter::get('/callback', [self::class, 'spotify']);
+        // SimpleRouter::get('/callback', [self::class, 'spotify']);
         SimpleRouter::get('/ping', function () {
             return "pong";
         });
         SimpleRouter::get('/info', [self::class, 'info']);
-
-        // SimpleRouter::post('/edit/save', [self::class, 'update']);
 
         SimpleRouter::start();
     }
@@ -81,8 +82,15 @@ class Router
 
     public static function loginPost(): string
     {
-        $username = trim($_POST['username'] ?? '');
+        $postUsername = $_POST['username'] ?? '';
+        if ($postUsername == null || !is_string($postUsername)) {
+            throw new Exception("Invalid username");
+        }
+        $username = trim($postUsername);
         $pass = $_POST['password'] ?? '';
+        if ($pass == null || !is_string($pass)) {
+            throw new Exception("Invalid password");
+        }
 
         $auth = new DefaultAuth();
         $data = $auth->login($username, $pass);
@@ -99,29 +107,46 @@ class Router
 
     public static function registerPost(): string
     {
-        $email = trim($_POST['email'] ?? '');
-        $username = trim($_POST['username'] ?? '');
+        $env = EnvStore::load();
+
+        $email = $_POST['email'] ?? '';
+        if ($email == null || !is_string($email)) {
+            throw new Exception("Invalid email");
+        }
+        $username = $_POST['username'] ?? '';
+        if ($username == null || !is_string($username)) {
+            throw new Exception("Invalid username");
+        }
+
+        $email = trim($email);
+        $username = trim($username);
         $pass = $_POST['password'] ?? '';
+        if ($pass == null || !is_string($pass)) {
+            throw new Exception("Invalid password");
+        }
         $passCheck = $_POST['password_confirm'] ?? '';
+        if ($passCheck == null || !is_string($passCheck)) {
+            throw new Exception("Invalid password");
+        }
 
         $auth = new DefaultAuth();
+
+        $code = random_int(100000, 999999);
+        $_SESSION['email_verify'] = ['email' => $email, 'username' => $username, 'code' => $code, "exp" => time() + 30 * 60];
+
+        Mailer::prepareMail($email, $username, 'Email verification', self::$twig->load('email/verify_code.twig')->render(['code' => $code]), $env)->send();
+        header('Location: ' . $env->BASE_DOMAIN . '/email/verify');
+
         $data = $auth->register($email, $username, $pass, $passCheck);
-
-        if ($data['success']) {
-            $code = random_int(100000, 999999);
-            $_SESSION['email_verify'] = ['email' => $email, 'username' => $username, 'code' => $code, "exp" => time() + 30 * 60];
-
-            Mailer::send($email, $username, 'Email verification', self::$twig->load('email/verify_code.twig')->render(['code' => $code]));
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/email/verify');
-        }
 
         return self::$twig->load('register.twig')->render($data);
     }
 
     function emailVerify(): string
     {
+        $env = EnvStore::load();
         if (!isset($_SESSION['email_verify'])) {
-            header('Location: ' . $_ENV['BASE_DOMAIN']);
+            header('Location: ' . $env->BASE_DOMAIN);
             die();
         }
         /**
@@ -133,8 +158,9 @@ class Router
 
     function emailVerifyPost(): string
     {
+        $env = EnvStore::load();
         if (!isset($_SESSION['email_verify'])) {
-            header('Location: ' . $_ENV['BASE_DOMAIN']);
+            header('Location: ' . $env->BASE_DOMAIN);
             die();
         }
         /**
@@ -148,7 +174,7 @@ class Router
         $code = $_POST['code'];
 
         if ($code == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN']);
+            header('Location: ' . $env->BASE_DOMAIN);
             die();
         }
 
@@ -160,14 +186,14 @@ class Router
             $user = $em->getRepository(User::class)->findOneBy(['email' => $verify['email']]);
 
             if ($user == null) {
-                header('Location: ' . $_ENV['BASE_DOMAIN']);
+                header('Location: ' . $env->BASE_DOMAIN);
                 die();
             }
 
             $user->verifyEmail();
 
             unset($_SESSION['email_verify']);
-            // header('Location: ' . $_ENV['BASE_DOMAIN']);
+            // header('Location: ' . $env->BASE_DOMAIN);
             return self::$twig->load("verify.twig")->render(["success" => true]);
         } else {
             $errors = ["Incorrect verification code"];
@@ -178,14 +204,15 @@ class Router
 
     function settings(): string
     {
+        $env = EnvStore::load();
         $auth = AuthSession::get();
         if ($auth == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            header('Location: ' . $env->BASE_DOMAIN . '/login');
             die();
         }
         $user = $auth->getUser();
         if ($user == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            header('Location: ' . $env->BASE_DOMAIN . '/login');
             die();
         }
         $id = $user->getId();
@@ -195,120 +222,11 @@ class Router
         return self::$twig->load('settings.twig')->render(['user' => $user, 'settings' => Settings::getSettings($id)]);
     }
 
-    // function edit(): void
-    // {
-    //     /**
-    //      * @var Session
-    //      */
-    //     $session = $_SESSION['spotify_session'];
-    //     $trackId = $_GET['id'];
-
-    //     $api = new SpotifyWebAPI();
-    //     $api->setAccessToken($session->getAccessToken());
-
-    //     /**
-    //      * @var Track
-    //      */
-    //     $track = $api->getTrack($trackId);
-
-    //     $template = self::$twig->load('lyrics/spotify_edit.twig');
-
-    //     $em = DoctrineRegistry::get();
-
-    //     /**
-    //      * @var Lyrics|null
-    //      */
-    //     $lyrics = $em->getRepository(Lyrics::class)->findOneBy(['spotifyId' => $trackId]);
-    //     if ($lyrics == null) {
-    //         $lyrics = new Lyrics();
-    //     }
-
-    //     echo $template->render([
-    //         'song' => [
-    //             'name' => $track->name,
-    //             'artist' => $track->artists[0]->name,
-    //             'imageUrl' => $track->album->images[0]->url,
-    //             'duration' => $track->duration_ms,
-    //             'id' => $track->id
-    //         ],
-    //         'lyrics' => $lyrics->lyrics
-    //     ]);
-    // }
-
-    function update(): void
-    {
-        $entityManager = DoctrineRegistry::get();
-        $lyrics = $entityManager->getRepository(Lyrics::class)->findOneBy(['spotifyId' => $_POST['id']]);
-        if ($lyrics == null) {
-            $lyrics = new Lyrics();
-            $lyrics->spotifyId = $_POST['id'];
-        }
-        $lyrics->lyrics = $_POST['lyrics'];
-        $entityManager->persist($lyrics);
-        $entityManager->flush();
-        header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics/spotify');
-    }
-
-    function spotify(): string
-    {
-        if (isset($_SESSION['spotify_session'])) {
-            /**
-             * @var Session
-             */
-            $session = $_SESSION['spotify_session'];
-            $session->refreshAccessToken();
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics');
-        }
-
-        if (!isset($_SESSION['spotify_session'])) {
-            $clientID = $_ENV['CLIENT_ID'];
-            $clientSecret = $_ENV['CLIENT_SECRET'];
-
-            $session = new Session(
-                $clientID,
-                $clientSecret,
-                $_ENV['BASE_DOMAIN'] . '/callback'
-            );
-
-            if (!isset($_GET['code'])) {
-                $options = [
-                    'scope' => ['user-read-currently-playing', "user-read-playback-state"]
-                ];
-
-                header('Location: ' . $session->getAuthorizeUrl($options));
-                die();
-            }
-
-            if ($session->requestAccessToken($_GET['code'])) {
-
-                $_SESSION['spotify_session'] = $session;
-
-                header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics');
-
-                return "nice";
-
-            } else {
-                return "frick";
-            }
-        } else {
-            /**
-             * @var Session
-             */
-            $session = $_SESSION['spotify_session'];
-            $api = new SpotifyWebAPI();
-            $api->setAccessToken($session->getAccessToken());
-            $api->me();
-        }
-
-        $api = new SpotifyWebAPI();
-
-        return "";
-    }
-
     function info(): string
     {
+        $env = EnvStore::load();
         if (!isset($_SESSION['spotify_session'])) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
+            header('Location: ' . $env->BASE_DOMAIN . '/integrations/spotify/callback');
             die();
         }
         /**
@@ -317,7 +235,7 @@ class Router
         $session = $_SESSION['spotify_session'];
 
         if ($session == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
+            header('Location: ' . $env->BASE_DOMAIN . '/integrations/spotify/callback');
             die();
         }
 
@@ -330,11 +248,11 @@ class Router
         $info = $api->getMyCurrentPlaybackInfo();
 
         if ($info == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
+            header('Location: ' . $env->BASE_DOMAIN . '/integrations/spotify/callback');
             die();
         }
         if ($info->item == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/callback');
+            header('Location: ' . $env->BASE_DOMAIN . '/integrations/spotify/callback');
             die();
         }
 
