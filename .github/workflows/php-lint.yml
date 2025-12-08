@@ -16,17 +16,6 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
-            - name: Setup PHP dependencies
-              run: |
-                  curl -sSL https://github.com/php/pie/releases/latest/download/pie.phar >> pie.phar
-                  apk add --update linux-headers
-                  apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
-                  # && pecl install xdebug \
-                  php pie.phar install xdebug/xdebug \
-                  && docker-php-ext-enable xdebug \
-                  && apk del .build-deps \
-                  && echo "xdebug.mode=debug,coverage" >> /usr/local/etc/php/conf.d/99-xdebug.ini
-
             - name: Install Composer
               run:
                   curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin
@@ -51,6 +40,41 @@ jobs:
               run:
                   ./vendor/bin/phpstan analyse --memory-limit 4G -c phpstan.neon --autoload-file
                   vendor/autoload.php src bin
+
+    phpunit:
+        runs-on: ubuntu-latest
+        container:
+            image: php:8.5-alpine
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup PHP dependencies
+              run: |
+                  curl -sSL https://github.com/php/pie/releases/latest/download/pie.phar >> pie.phar
+                  apk add --update linux-headers
+                  apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
+                  # && pecl install xdebug \
+                  php pie.phar install xdebug/xdebug \
+                  && docker-php-ext-enable xdebug \
+                  && apk del .build-deps \
+                  && echo "xdebug.mode=debug,coverage" >> /usr/local/etc/php/conf.d/99-xdebug.ini
+
+            - name: Install Composer
+              run:
+                  curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin
+                  --filename=composer
+
+            - name: Cache Composer packages
+              id: composer-cache
+              uses: actions/cache@v3
+              with:
+                  path: vendor
+                  key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+
+            - name: Install dependencies
+              run: composer install --prefer-dist --no-interaction
 
             - name: Run PHPUnit
               run:
