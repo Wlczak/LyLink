@@ -10,17 +10,17 @@ updates:
       schedule:
           interval: "weekly"
       cooldown:
-          default-days: 30
-          semver-major-days: 30
-          semver-minor-days: 14
-          semver-patch-days: 7
+          default-days: 60
+          semver-major-days: 60
+          semver-minor-days: 30
+          semver-patch-days: 21
 
     - package-ecosystem: "npm" # See documentation for possible values
       directory: "/javascript/" # Location of package manifests
       schedule:
           interval: "weekly"
       cooldown:
-          default-days: 30
-          semver-major-days: 30
-          semver-minor-days: 14
-          semver-patch-days: 7
+          default-days: 60
+          semver-major-days: 60
+          semver-minor-days: 30
+          semver-patch-days: 21
