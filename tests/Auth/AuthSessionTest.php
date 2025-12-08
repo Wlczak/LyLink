@@ -53,7 +53,7 @@ class AuthSessionTest extends TestCase
         $auth = new DefaultAuth();
         $_SESSION["auth"] = $auth;
         $auth->logout();
-        $this::assertNull(AuthSession::get());
+        $this::assertFalse($auth->isAuthorized());
         $this::assertNull($_SESSION["authType"]);
     }
 }
