@@ -3,6 +3,8 @@
 namespace Lylink\Routes\Integrations;
 
 use Closure;
+use Lylink\Auth\AuthSession;
+use Lylink\Data\EnvStore;
 use Lylink\Interfaces\Integration\IntegrationRoute;
 use Lylink\Models\Settings;
 use Lylink\Router;
@@ -36,18 +38,17 @@ class SpotifyIntegration extends Router implements IntegrationRoute
             $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
             $token = $session->getAccessToken();
 
-            $session = $_SESSION['spotify_session'];
             $api = new SpotifyWebAPI();
             $api->setAccessToken($session->getAccessToken());
             /**
              * @var array{display_name:string}
              */
-            $spotifyUser = (array)$api->me();
+            $spotifyUser = (array) $api->me();
 
             $spotifyUsername = $spotifyUser['display_name'];
             $settings->connectSpotify($token, $spotifyUsername);
 
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/settings');
+            header('Location: ' . $env->BASE_DOMAIN . '/settings');
         }
 
         if (!isset($_SESSION['spotify_session'])) {
@@ -92,7 +93,7 @@ class SpotifyIntegration extends Router implements IntegrationRoute
 
                 $settings->connectSpotify($token, $spotifyUsername);
 
-                header('Location: ' . $_ENV['BASE_DOMAIN'] . '/settings');
+                header('Location: ' . $env->BASE_DOMAIN . '/settings');
 
                 return "";
 
@@ -117,7 +118,8 @@ class SpotifyIntegration extends Router implements IntegrationRoute
 
     public static function connect(): string
     {
-        header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
+        $env = EnvStore::load();
+        header('Location: ' . $env->BASE_DOMAIN . '/integrations/spotify/callback');
         return "";
     }
 
@@ -128,9 +130,10 @@ class SpotifyIntegration extends Router implements IntegrationRoute
 
     public static function disconnect(): string
     {
+        $env = EnvStore::load();
         $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
         $settings->disconnectSpotify();
-        header('Location: ' . $_ENV['BASE_DOMAIN'] . '/settings');
+        header('Location: ' . $env->BASE_DOMAIN . '/settings');
         return "";
     }
 }
