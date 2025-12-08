@@ -32,7 +32,7 @@ class Router
 
         ## User facing routes ##
         SimpleRouter::get('/', [self::class, 'home']);
-        // SimpleRouter::redirect('/', $_ENV['BASE_DOMAIN'] . '/login', 307);
+        // SimpleRouter::redirect('/', $env->BASE_DOMAIN . '/login', 307);
 
         ## Authenticated routes ##
         SimpleRouter::group(['middleware' => \Lylink\Middleware\AuthMiddleware::class], function () {
@@ -54,7 +54,8 @@ class Router
         SimpleRouter::post('/email/verify', [self::class, 'emailVerifyPost']);
         SimpleRouter::get('/logout', function () {
             AuthSession::logout();
-            header('Location: ' . $_ENV['BASE_DOMAIN']);
+            $env = EnvStore::load();
+            header('Location: ' . $env->BASE_DOMAIN);
         });
 
         ## Technical / api routes ##
@@ -81,8 +82,15 @@ class Router
 
     public static function loginPost(): string
     {
-        $username = trim($_POST['username'] ?? '');
+        $postUsername = $_POST['username'] ?? '';
+        if ($postUsername == null || !is_string($postUsername)) {
+            throw new Exception("Invalid username");
+        }
+        $username = trim($postUsername);
         $pass = $_POST['password'] ?? '';
+        if ($pass == null || !is_string($pass)) {
+            throw new Exception("Invalid password");
+        }
 
         $auth = new DefaultAuth();
         $data = $auth->login($username, $pass);
@@ -99,20 +107,35 @@ class Router
 
     public static function registerPost(): string
     {
-        $email = trim($_POST['email'] ?? '');
-        $username = trim($_POST['username'] ?? '');
+        $env = EnvStore::load();
+
+        $email = $_POST['email'] ?? '';
+        if ($email == null || !is_string($email)) {
+            throw new Exception("Invalid email");
+        }
+        $username = $_POST['username'] ?? '';
+        if ($username == null || !is_string($username)) {
+            throw new Exception("Invalid username");
+        }
+
+        $email = trim($email);
+        $username = trim($username);
         $pass = $_POST['password'] ?? '';
+        if ($pass == null || !is_string($pass)) {
+            throw new Exception("Invalid password");
+        }
         $passCheck = $_POST['password_confirm'] ?? '';
+        if ($passCheck == null || !is_string($passCheck)) {
+            throw new Exception("Invalid password");
+        }
 
         $auth = new DefaultAuth();
 
         $code = random_int(100000, 999999);
         $_SESSION['email_verify'] = ['email' => $email, 'username' => $username, 'code' => $code, "exp" => time() + 30 * 60];
 
-        $env = new EnvStore(stmp_host: $_ENV['SMTP_HOST'], stmp_username: $_ENV['SMTP_USERNAME'], stmp_password: $_ENV['SMTP_PASSWORD']);
-
         Mailer::prepareMail($email, $username, 'Email verification', self::$twig->load('email/verify_code.twig')->render(['code' => $code]), $env)->send();
-        header('Location: ' . $_ENV['BASE_DOMAIN'] . '/email/verify');
+        header('Location: ' . $env->BASE_DOMAIN . '/email/verify');
 
         $data = $auth->register($email, $username, $pass, $passCheck);
 
@@ -121,8 +144,9 @@ class Router
 
     function emailVerify(): string
     {
+        $env = EnvStore::load();
         if (!isset($_SESSION['email_verify'])) {
-            header('Location: ' . $_ENV['BASE_DOMAIN']);
+            header('Location: ' . $env->BASE_DOMAIN);
             die();
         }
         /**
@@ -134,8 +158,9 @@ class Router
 
     function emailVerifyPost(): string
     {
+        $env = EnvStore::load();
         if (!isset($_SESSION['email_verify'])) {
-            header('Location: ' . $_ENV['BASE_DOMAIN']);
+            header('Location: ' . $env->BASE_DOMAIN);
             die();
         }
         /**
@@ -149,7 +174,7 @@ class Router
         $code = $_POST['code'];
 
         if ($code == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN']);
+            header('Location: ' . $env->BASE_DOMAIN);
             die();
         }
 
@@ -161,14 +186,14 @@ class Router
             $user = $em->getRepository(User::class)->findOneBy(['email' => $verify['email']]);
 
             if ($user == null) {
-                header('Location: ' . $_ENV['BASE_DOMAIN']);
+                header('Location: ' . $env->BASE_DOMAIN);
                 die();
             }
 
             $user->verifyEmail();
 
             unset($_SESSION['email_verify']);
-            // header('Location: ' . $_ENV['BASE_DOMAIN']);
+            // header('Location: ' . $env->BASE_DOMAIN);
             return self::$twig->load("verify.twig")->render(["success" => true]);
         } else {
             $errors = ["Incorrect verification code"];
@@ -179,14 +204,15 @@ class Router
 
     function settings(): string
     {
+        $env = EnvStore::load();
         $auth = AuthSession::get();
         if ($auth == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            header('Location: ' . $env->BASE_DOMAIN . '/login');
             die();
         }
         $user = $auth->getUser();
         if ($user == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/login');
+            header('Location: ' . $env->BASE_DOMAIN . '/login');
             die();
         }
         $id = $user->getId();
@@ -198,8 +224,9 @@ class Router
 
     function info(): string
     {
+        $env = EnvStore::load();
         if (!isset($_SESSION['spotify_session'])) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
+            header('Location: ' . $env->BASE_DOMAIN . '/integrations/spotify/callback');
             die();
         }
         /**
@@ -208,7 +235,7 @@ class Router
         $session = $_SESSION['spotify_session'];
 
         if ($session == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
+            header('Location: ' . $env->BASE_DOMAIN . '/integrations/spotify/callback');
             die();
         }
 
@@ -221,11 +248,11 @@ class Router
         $info = $api->getMyCurrentPlaybackInfo();
 
         if ($info == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
+            header('Location: ' . $env->BASE_DOMAIN . '/integrations/spotify/callback');
             die();
         }
         if ($info->item == null) {
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/integrations/spotify/callback');
+            header('Location: ' . $env->BASE_DOMAIN . '/integrations/spotify/callback');
             die();
         }
 
