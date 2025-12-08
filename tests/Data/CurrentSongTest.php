@@ -8,12 +8,12 @@ final class CurrentSongTest extends TestCase
     public function testDefaultConstructorValues(): void
     {
         $currentSong = new CurrentSong();
-        $this->assertNull($currentSong->id);
-        $this->assertNull($currentSong->title);
-        $this->assertNull($currentSong->artist);
-        $this->assertNull($currentSong->imageUrl);
-        $this->assertEquals(0, $currentSong->progress_ms);
-        $this->assertEquals(0, $currentSong->duration_ms);
+        $this::assertNull($currentSong->id);
+        $this::assertNull($currentSong->title);
+        $this::assertNull($currentSong->artist);
+        $this::assertNull($currentSong->imageUrl);
+        $this::assertEquals(0, $currentSong->progress_ms);
+        $this::assertEquals(0, $currentSong->duration_ms);
     }
 
     public function testSetConstructionValues(): void
@@ -26,12 +26,12 @@ final class CurrentSongTest extends TestCase
             1,
             2
         );
-        $this->assertEquals("id", $currentSong->id);
-        $this->assertEquals("title", $currentSong->title);
-        $this->assertEquals("artist", $currentSong->artist);
-        $this->assertEquals("imageUrl", $currentSong->imageUrl);
-        $this->assertEquals(1, $currentSong->progress_ms);
-        $this->assertEquals(2, $currentSong->duration_ms);
+        $this::assertEquals("id", $currentSong->id);
+        $this::assertEquals("title", $currentSong->title);
+        $this::assertEquals("artist", $currentSong->artist);
+        $this::assertEquals("imageUrl", $currentSong->imageUrl);
+        $this::assertEquals(1, $currentSong->progress_ms);
+        $this::assertEquals(2, $currentSong->duration_ms);
     }
 
     public function testGetProgressPercent(): void
@@ -45,11 +45,11 @@ final class CurrentSongTest extends TestCase
                 $baseTime,
                 $baseTime * 2
             );
-            if ($baseTime == 0) {
-                $this->assertEquals(0, $currentSong->getProgressPercent());
+            if ($baseTime === 0) {
+                $this::assertEquals(0, $currentSong->getProgressPercent());
                 continue;
             }
-            $this->assertEquals(50, $currentSong->getProgressPercent());
+            $this::assertEquals(50, $currentSong->getProgressPercent());
         }
     }
 }

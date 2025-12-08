@@ -18,13 +18,13 @@ class MailerTest extends TestCase
 
         $mail = Mailer::prepareMail($targetMail, $targetUsername, $subject, $body, $env);
 
-        $this->assertInstanceOf(PHPMailer::class, $mail);
-        $this->assertSame([[$targetMail, $targetUsername]], $mail->getToAddresses());
-        $this->assertSame("LyLink - " . $subject, $mail->Subject);
-        $this->assertSame($body, $mail->Body);
-        $this->assertSame($env->SMTP_HOST, $mail->Host);
-        
-        $this->assertSame($env->SMTP_PASSWORD, $mail->Password);
-        $this->assertSame($env->SMTP_USERNAME, $mail->Username);
+        $this::assertInstanceOf(PHPMailer::class, $mail);
+        $this::assertSame([[$targetMail, $targetUsername]], $mail->getToAddresses());
+        $this::assertSame("LyLink - " . $subject, $mail->Subject);
+        $this::assertSame($body, $mail->Body);
+        $this::assertSame($env->SMTP_HOST, $mail->Host);
+
+        $this::assertSame($env->SMTP_PASSWORD, $mail->Password);
+        $this::assertSame($env->SMTP_USERNAME, $mail->Username);
     }
 }

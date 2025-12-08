@@ -14,7 +14,7 @@ class AuthMiddleware implements IMiddleware
     {
         $env = EnvStore::load();
         $auth = AuthSession::get();
-        if ($auth == null) {
+        if ($auth === null) {
             header('Location: ' . $env->BASE_DOMAIN . '/login');
             return;
         }

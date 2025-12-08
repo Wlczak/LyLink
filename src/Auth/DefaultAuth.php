@@ -27,7 +27,7 @@ class DefaultAuth implements Authorizator, AccountHandler
         ];
         $em = DoctrineRegistry::get();
 
-        if (filter_var($usernamemail, FILTER_VALIDATE_EMAIL)) {
+        if (filter_var($usernamemail, FILTER_VALIDATE_EMAIL) !== false) {
             /**
              * @var User|null
              */
@@ -40,7 +40,7 @@ class DefaultAuth implements Authorizator, AccountHandler
             $user = $em->getRepository(User::class)->findOneBy(['username' => $usernamemail]);
         }
 
-        if ($user == null) {
+        if ($user === null) {
             $data["errors"][] = 'User not found';
         } else {
             if (!$user->checkPassword($password)) {
@@ -70,7 +70,7 @@ class DefaultAuth implements Authorizator, AccountHandler
             $errors[] = 'All fields are required';
         }
 
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if (!(filter_var($email, FILTER_VALIDATE_EMAIL) !== false)) {
             $errors[] = 'Invalid email address';
         }
 
@@ -82,7 +82,7 @@ class DefaultAuth implements Authorizator, AccountHandler
             $errors[] = 'Password must be at least 8 characters long';
         }
 
-        if (!preg_match('/[A-Z]/', $pass) || !preg_match('/[a-z]/', $pass) || !preg_match('/[0-9]/', $pass)) {
+        if (!(bool) preg_match('/[A-Z]/', $pass) || !(bool) preg_match('/[a-z]/', $pass) || !(bool) preg_match('/[0-9]/', $pass)) {
             $errors[] = 'Password must contain at least one uppercase letter one lowercase letter and one digit';
         }
 
@@ -93,19 +93,19 @@ class DefaultAuth implements Authorizator, AccountHandler
         $em = DoctrineRegistry::get();
         $userRepo = $em->getRepository(User::class);
 
-        if (empty($errors)) {
+        if (count($errors) > 0) {
             $existingByEmail = $userRepo->findOneBy(['email' => $email]);
-            if ($existingByEmail) {
+            if ($existingByEmail !== null) {
                 $errors[] = 'Email is already registered';
             }
 
             $existingByUsername = $userRepo->findOneBy(['username' => $username]);
-            if ($existingByUsername) {
+            if ($existingByUsername !== null) {
                 $errors[] = 'Username is already taken';
             }
         }
 
-        if (empty($errors)) {
+        if (count($errors) > 0) {
             $hash = password_hash($pass, PASSWORD_BCRYPT);
             $user = new User($email, $username, $hash);
 

@@ -30,7 +30,7 @@ class IntegrationApi
 
         $auth = AuthSession::get();
 
-        if (!$auth) {
+        if ($auth === null) {
             http_response_code(401);
             return '';
         }
@@ -49,6 +49,6 @@ class IntegrationApi
 
         $user->updateJellyfin($json['address'], $json['token'], true);
 
-        return json_encode(["success" => true]) ?: '';
+        return json_encode(["success" => true]) !== false ? json_encode(["success" => true]) : '';
     }
 }
