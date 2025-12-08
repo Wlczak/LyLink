@@ -3,7 +3,9 @@
 namespace Lylink\Routes\Integrations;
 
 use Closure;
+use Lylink\Auth\AuthSession;
 use Lylink\Interfaces\Integration\IntegrationRoute;
+use Lylink\Models\Settings;
 use Lylink\Router;
 use Lylink\Traits\IntegrationRoutingSetup;
 use Pecee\SimpleRouter\SimpleRouter;
@@ -30,7 +32,22 @@ class SpotifyIntegration extends Router implements IntegrationRoute
              */
             $session = $_SESSION['spotify_session'];
             $session->refreshAccessToken();
-            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics');
+
+            $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
+            $token = $session->getAccessToken();
+
+            $session = $_SESSION['spotify_session'];
+            $api = new SpotifyWebAPI();
+            $api->setAccessToken($session->getAccessToken());
+            /**
+             * @var array{display_name:string}
+             */
+            $spotifyUser = (array)$api->me();
+
+            $spotifyUsername = $spotifyUser['display_name'];
+            $settings->connectSpotify($token, $spotifyUsername);
+
+            header('Location: ' . $_ENV['BASE_DOMAIN'] . '/settings');
         }
 
         if (!isset($_SESSION['spotify_session'])) {
@@ -56,7 +73,22 @@ class SpotifyIntegration extends Router implements IntegrationRoute
 
                 $_SESSION['spotify_session'] = $session;
 
-                header('Location: ' . $_ENV['BASE_DOMAIN'] . '/lyrics');
+                $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
+                $token = $session->getAccessToken();
+
+                $session = $_SESSION['spotify_session'];
+                $api = new SpotifyWebAPI();
+                $api->setAccessToken($session->getAccessToken());
+                /**
+                 * @var array{display_name:string}
+                 */
+                $spotifyUser = $api->me();
+
+                $spotifyUsername = $spotifyUser['display_name'];
+
+                $settings->connectSpotify($token, $spotifyUsername);
+
+                header('Location: ' . $_ENV['BASE_DOMAIN'] . '/settings');
 
                 return "";
 
@@ -92,6 +124,9 @@ class SpotifyIntegration extends Router implements IntegrationRoute
 
     public static function disconnect(): string
     {
-        throw new \Exception('Not implemented');
+        $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
+        $settings->disconnectSpotify();
+        header('Location: ' . $_ENV['BASE_DOMAIN'] . '/settings');
+        return "";
     }
 }
