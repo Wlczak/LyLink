@@ -79,9 +79,6 @@ class User
 
         $settings = Settings::getSettings($id);
 
-        if ($settings == null) {
-            $settings = new Settings($id);
-        }
         $settings->jellyfin_server = $address;
         $settings->jellyfin_token = $token;
         $settings->jellyfin_user_id = null;

@@ -28,10 +28,10 @@ class EnvStore
 
     private function validate(): void
     {
-        if ($this->SMTP_HOST === "" || !filter_var("stmp://" . $this->SMTP_HOST, FILTER_VALIDATE_URL)) {
+        if ($this->SMTP_HOST === "" || !(filter_var("stmp://" . $this->SMTP_HOST, FILTER_VALIDATE_URL) !== false)) {
             throw new InvalidUriException("Invalid SMTP_HOST environment variable");
         }
-        if ($this->SMTP_USERNAME === "" || !filter_var($this->SMTP_USERNAME, FILTER_VALIDATE_EMAIL)) {
+        if ($this->SMTP_USERNAME === "" || !(filter_var($this->SMTP_USERNAME, FILTER_VALIDATE_EMAIL) !== false)) {
             throw new InvalidEmailException("Invalid SMTP_USERNAME environment variable");
         }
         if ($this->SMTP_PASSWORD === "") {
@@ -43,7 +43,7 @@ class EnvStore
         if ($this->CLIENT_SECRET === "") {
             throw new Exception("Invalid CLIENT_SECRET environment variable");
         }
-        if ($this->BASE_DOMAIN === "" || !filter_var("http://" . $this->BASE_DOMAIN, FILTER_VALIDATE_URL)) {
+        if ($this->BASE_DOMAIN === "" || !(filter_var("http://" . $this->BASE_DOMAIN, FILTER_VALIDATE_URL) !== false)) {
             throw new InvalidUriException("Invalid BASE_DOMAIN environment variable");
         }
     }

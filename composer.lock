@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2de1b8062c84524892b736517fac7f3f",
+    "content-hash": "0cb6006f1d8f0bba09b92e6b6046549f",
     "packages": [
         {
             "name": "doctrine/collections",
@@ -2899,6 +2899,54 @@
             "time": "2025-10-02T16:07:52+00:00"
         },
         {
+            "name": "phpstan/phpstan-strict-rules",
+            "version": "2.0.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phpstan/phpstan-strict-rules.git",
+                "reference": "d6211c46213d4181054b3d77b10a5c5cb0d59538"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phpstan/phpstan-strict-rules/zipball/d6211c46213d4181054b3d77b10a5c5cb0d59538",
+                "reference": "d6211c46213d4181054b3d77b10a5c5cb0d59538",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.4 || ^8.0",
+                "phpstan/phpstan": "^2.1.29"
+            },
+            "require-dev": {
+                "php-parallel-lint/php-parallel-lint": "^1.2",
+                "phpstan/phpstan-deprecation-rules": "^2.0",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpunit/phpunit": "^9.6"
+            },
+            "type": "phpstan-extension",
+            "extra": {
+                "phpstan": {
+                    "includes": [
+                        "rules.neon"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "PHPStan\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Extra strict and opinionated rules for PHPStan",
+            "support": {
+                "issues": "https://github.com/phpstan/phpstan-strict-rules/issues",
+                "source": "https://github.com/phpstan/phpstan-strict-rules/tree/2.0.7"
+            },
+            "time": "2025-09-26T11:19:08+00:00"
+        },
+        {
             "name": "phpunit/php-code-coverage",
             "version": "12.5.0",
             "source": {
@@ -4344,5 +4392,5 @@
     "prefer-lowest": false,
     "platform": {},
     "platform-dev": {},
-    "plugin-api-version": "2.6.0"
+    "plugin-api-version": "2.9.0"
 }

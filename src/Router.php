@@ -83,12 +83,14 @@ class Router
     public static function loginPost(): string
     {
         $postUsername = $_POST['username'] ?? '';
-        if ($postUsername == null || !is_string($postUsername)) {
+        if (!is_string($postUsername)) {
             throw new Exception("Invalid username");
         }
+
         $username = trim($postUsername);
+
         $pass = $_POST['password'] ?? '';
-        if ($pass == null || !is_string($pass)) {
+        if (!is_string($pass)) {
             throw new Exception("Invalid password");
         }
 
@@ -110,22 +112,22 @@ class Router
         $env = EnvStore::load();
 
         $email = $_POST['email'] ?? '';
-        if ($email == null || !is_string($email)) {
+        if (!is_string($email)) {
             throw new Exception("Invalid email");
         }
         $username = $_POST['username'] ?? '';
-        if ($username == null || !is_string($username)) {
+        if (!is_string($username)) {
             throw new Exception("Invalid username");
         }
 
         $email = trim($email);
         $username = trim($username);
         $pass = $_POST['password'] ?? '';
-        if ($pass == null || !is_string($pass)) {
+        if (!is_string($pass)) {
             throw new Exception("Invalid password");
         }
         $passCheck = $_POST['password_confirm'] ?? '';
-        if ($passCheck == null || !is_string($passCheck)) {
+        if (!is_string($passCheck)) {
             throw new Exception("Invalid password");
         }
 
@@ -173,19 +175,19 @@ class Router
          */
         $code = $_POST['code'];
 
-        if ($code == null) {
+        if ($code === null) {
             header('Location: ' . $env->BASE_DOMAIN);
             die();
         }
 
-        if ($verify['code'] == $_POST['code']) {
+        if ($verify['code'] === $_POST['code']) {
             $em = DoctrineRegistry::get();
             /**
              * @var User|null
              */
             $user = $em->getRepository(User::class)->findOneBy(['email' => $verify['email']]);
 
-            if ($user == null) {
+            if ($user === null) {
                 header('Location: ' . $env->BASE_DOMAIN);
                 die();
             }
@@ -206,12 +208,12 @@ class Router
     {
         $env = EnvStore::load();
         $auth = AuthSession::get();
-        if ($auth == null) {
+        if ($auth === null) {
             header('Location: ' . $env->BASE_DOMAIN . '/login');
             die();
         }
         $user = $auth->getUser();
-        if ($user == null) {
+        if ($user === null) {
             header('Location: ' . $env->BASE_DOMAIN . '/login');
             die();
         }
@@ -234,7 +236,7 @@ class Router
          */
         $session = $_SESSION['spotify_session'];
 
-        if ($session == null) {
+        if ($session === null) {
             header('Location: ' . $env->BASE_DOMAIN . '/integrations/spotify/callback');
             die();
         }
@@ -247,11 +249,11 @@ class Router
          */
         $info = $api->getMyCurrentPlaybackInfo();
 
-        if ($info == null) {
+        if ($info === null) {
             header('Location: ' . $env->BASE_DOMAIN . '/integrations/spotify/callback');
             die();
         }
-        if ($info->item == null) {
+        if ($info->item === null) {
             header('Location: ' . $env->BASE_DOMAIN . '/integrations/spotify/callback');
             die();
         }
@@ -267,6 +269,6 @@ class Router
             'is_playing' => $info->is_playing
         ];
 
-        return json_encode($song) ?: "{}";
+        return json_encode($song) !== false ? json_encode($song) : "{}";
     }
 }

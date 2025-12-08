@@ -85,7 +85,7 @@ class Settings
         $em = DoctrineRegistry::get();
 
         $settings = $em->getRepository(Settings::class)->findOneBy(["user_id" => $userId]);
-        if ($settings == null) {
+        if ($settings === null) {
             $settings = new Settings($userId);
             $em->persist($settings);
             $em->flush();
