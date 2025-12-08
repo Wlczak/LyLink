@@ -63,7 +63,7 @@ class LyricsRoute extends Router implements Route
         $settings = Settings::getSettings($id);
 
         if ($settings->spotify_connected) {
-            $sources[] = new Source(id: 1, name: "Spotify", route: "/lyrics/spotify", current_song: new CurrentSong(id: "1", title: "Test song", artist: "Test artist", progress_ms: 5000, duration_ms: 100000));
+            $sources[] = new Source(id: 1, name: "Spotify", route: "/lyrics/spotify", current_song: new CurrentSong(id: "1", title: "Song", artist: "Artist", progress_ms: 5000, duration_ms: 100000));
         }
 
         if ($settings->jellyfin_connected) {
