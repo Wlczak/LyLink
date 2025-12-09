@@ -52,16 +52,16 @@ jobs:
 
             - name: Check minimal code coverage
               run: |
-                  COVERAGE=$(grep -o 'line-rate="[^"]*' coverage.xml | sed 's/line-rate="//')
-                  PERCENT=$(awk "BEGIN {print $COVERAGE * 100}")
-                          
-                  echo "Code coverage: $PERCENT%"
-                          
-                  REQUIRED=80
-                  if (( $(echo "$PERCENT < $REQUIRED" | bc -l) )); then
-                      echo "❌ Code coverage too low (required: $REQUIRED%)"
-                      exit 1
-                  fi
-                          
-                  echo "✅ Code coverage OK"
-              shell: bash
+                    COVERAGE=$(grep -o 'line-rate="[^"]*' coverage.xml | sed 's/line-rate="//')
+                    PERCENT=$(echo "$COVERAGE * 100" | bc -l)
+
+                    echo "Code coverage: $PERCENT%"
+
+                    REQUIRED=80
+                    COMP=$(echo "$PERCENT < $REQUIRED" | bc -l)
+                    if [ "$COMP" -eq 1 ]; then
+                        echo "❌ Code coverage too low (required: $REQUIRED%)"
+                        exit 1
+                    fi
+
+                    echo "✅ Code coverage OK"
