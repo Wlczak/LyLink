@@ -1,4 +1,4 @@
-FROM composer:latest AS composer
+FROM composer:2.9 AS composer
 
 WORKDIR /build/composer
 
@@ -8,7 +8,7 @@ RUN rm -r ./javascript
 
 RUN composer install
 
-FROM node:latest AS npm
+FROM node:24-alpine AS npm
 
 WORKDIR /build/npm
 
@@ -18,7 +18,7 @@ RUN npm install
 
 RUN npm run build
 
-FROM nginx:alpine-slim AS lylink-nginx 
+FROM nginx:1.29-alpine-slim AS lylink-nginx 
 
 COPY ./public_html /var/www/html/public_html
 
