@@ -60,7 +60,7 @@ class DefaultAuthTest extends TestCase
         $result = $auth->login($this->username, $this->password);
 
         $this::assertTrue($result["success"]);
-        $this::assertSame($this->email, $result["usermail"]);
+        $this::assertSame($this->username, $result["usermail"]);
         $this::assertSame([], $result["errors"]);
     }
 }
