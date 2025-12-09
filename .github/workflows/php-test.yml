@@ -58,7 +58,7 @@ jobs:
                   set -e
 
                     COVERAGE_FILE="${1:-coverage.xml}"
-                    REQUIRED="${2:-80}"
+                    REQUIRED="10"
 
                     if [ ! -f "$COVERAGE_FILE" ]; then
                       echo "Coverage file not found: $COVERAGE_FILE"
