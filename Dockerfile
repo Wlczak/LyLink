@@ -22,6 +22,8 @@ FROM nginx:alpine AS lylink-nginx
 
 COPY ./public_html /var/www/html/public_html
 
+COPY ./phpdocker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
+
 COPY --from=npm /build/npm/dist /var/www/html/public_html/dist
 
 FROM php:8.5-fpm-alpine AS lylink
@@ -37,6 +39,8 @@ WORKDIR /var/www/html
 COPY --from=composer /build/composer /var/www/html
 
 COPY ./phpdocker/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
+COPY ./phpdocker/php-fpm/php-ini-overrides.ini /etc/php/8.5/fpm/conf.d/99-overrides.ini
+COPY ./phpdocker/php-fpm/php-ini-overrides.ini /etc/php/8.5/cli/conf.d/99-overrides.ini
 
 # COPY --chown=0:0 ./phpdocker/php-fpm/php-fpm.conf /usr/local/etc/php-fpm.conf
 
