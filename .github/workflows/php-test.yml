@@ -52,16 +52,43 @@ jobs:
 
             - name: Check minimal code coverage
               run: |
-                  # extract line-rate and remove whitespace
-                  COVERAGE=$(grep -o 'line-rate="[^"]*"' coverage.xml | sed 's/line-rate="//' | tr -d '\n' | tr -d ' ')
-                  PERCENT=$(echo "$COVERAGE * 100" | bc -l)         
-                  echo "Code coverage: $PERCENT%"
-                          
-                  REQUIRED=80
-                  IS_LOW=$(echo "$PERCENT < $REQUIRED" | bc -l)
-                  if [ "$IS_LOW" -eq 1 ]; then
+                  # Magic ChatGPT script ???
+                  set -e
+
+                    COVERAGE_FILE="${1:-coverage.xml}"
+                    REQUIRED="${2:-80}"
+
+                    if [ ! -f "$COVERAGE_FILE" ]; then
+                      echo "Coverage file not found: $COVERAGE_FILE"
+                      exit 1
+                    fi
+
+                    if command -v xmlstarlet >/dev/null 2>&1; then
+                      COVERED=$(xmlstarlet sel -t -v "/coverage/project/metrics/@coveredstatements" -n "$COVERAGE_FILE" | tr -d '[:space:]')
+                      TOTAL=$(xmlstarlet sel -t -v "/coverage/project/metrics/@statements" -n "$COVERAGE_FILE" | tr -d '[:space:]')
+                    elif command -v xmllint >/dev/null 2>&1; then
+                      COVERED=$(xmllint --xpath 'string(/coverage/project/metrics/@coveredstatements)' "$COVERAGE_FILE" | tr -d '[:space:]')
+                      TOTAL=$(xmllint --xpath 'string(/coverage/project/metrics/@statements)' "$COVERAGE_FILE" | tr -d '[:space:]')
+                    else
+                      echo "xmlstarlet or xmllint is required"
+                      exit 1
+                    fi
+
+                    if [ -z "$COVERED" ] || [ -z "$TOTAL" ] || [ "$TOTAL" -eq 0 ] 2>/dev/null; then
+                      echo "Could not extract coverage values from $COVERAGE_FILE"
+                      exit 1
+                    fi
+
+                    JSON=$(printf '{"covered":%s,"total":%s}' "$COVERED" "$TOTAL")
+                    PERCENT_RAW=$(printf '%s' "$JSON" | jq -r '.covered / .total * 100')
+                    PERCENT=$(printf "%.2f" "$PERCENT_RAW")
+
+                    echo "Code coverage: $PERCENT% ($COVERED/$TOTAL)"
+
+                    if printf '%s' "$JSON" | jq -e --arg req "$REQUIRED" '(.covered / .total * 100) >= ($req|tonumber)' >/dev/null; then
+                      echo "✅ Code coverage OK (required: $REQUIRED%)"
+                      exit 0
+                    else
                       echo "❌ Code coverage too low (required: $REQUIRED%)"
                       exit 1
-                  fi
-                          
-                  echo "✅ Code coverage OK"
+                    fi
