@@ -48,3 +48,19 @@ jobs:
               run:
                   ./vendor/bin/phpunit tests --testdox --colors=always --coverage-text --display-deprecations
                   --display-phpunit-deprecations --fail-on-deprecation --fail-on-phpunit-deprecation
+                  --coverage-xml coverage
+
+            - name: Check minimal code coverage
+              run: |
+                  COVERAGE=$(grep -o 'line-rate="[^"]*' coverage.xml | sed 's/line-rate="//')
+                  PERCENT=$(awk "BEGIN {print $COVERAGE * 100}")
+                          
+                  echo "Code coverage: $PERCENT%"
+                          
+                  REQUIRED=80
+                  if (( $(echo "$PERCENT < $REQUIRED" | bc -l) )); then
+                      echo "❌ Code coverage too low (required: $REQUIRED%)"
+                      exit 1
+                  fi
+                          
+                  echo "✅ Code coverage OK"
