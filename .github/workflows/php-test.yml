@@ -27,7 +27,7 @@ jobs:
                   && apk del .build-deps \
                   && echo "xdebug.mode=debug,coverage" >> /usr/local/etc/php/conf.d/99-xdebug.ini
                   # install xml tools
-                  apk add --no-cache xmllint
+                  apk add --no-cache libxml2-utils
 
             - name: Install Composer
               run:
