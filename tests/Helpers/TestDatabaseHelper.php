@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\Tools\SchemaTool;
 use Lylink\DoctrineRegistry;
+use SQLite3;
 
 class TestDatabaseHelper
 {
@@ -41,5 +42,29 @@ class TestDatabaseHelper
     public static function dropTestDatabase(): void
     {
         unlink(self::getDatabasePath());
+    }
+
+    /**
+     * @return array<string,mixed>|false
+     */
+    public static function queryDatabase(string $query): array | false
+    {
+        $db = new SQLite3(self::getDatabasePath());
+        $results = $db->query($query);
+
+        if ($results !== false) {
+
+            /**
+             * @var array<string,mixed>|false
+             */
+            $assoc = $results->fetchArray(SQLITE3_ASSOC);
+            if ($assoc === false) {
+                return [];
+            } else {
+                return $assoc;
+            }
+        } else {
+            return false;
+        }
     }
 }
