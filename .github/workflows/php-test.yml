@@ -26,6 +26,8 @@ jobs:
                   && docker-php-ext-enable xdebug \
                   && apk del .build-deps \
                   && echo "xdebug.mode=debug,coverage" >> /usr/local/etc/php/conf.d/99-xdebug.ini
+                  # install xml tools
+                  apk add --no-cache xmllint
 
             - name: Install Composer
               run:
