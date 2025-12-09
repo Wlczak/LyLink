@@ -85,13 +85,13 @@ jobs:
                     PERCENT_RAW=$(printf '%s' "$JSON" | jq -r '.covered / .total * 100')
                     PERCENT=$(printf "%.2f" "$PERCENT_RAW")
 
-                    echo "Code coverage: $PERCENT% ($COVERED/$TOTAL)"
-
+                    # echo "Code coverage: $PERCENT% ($COVERED/$TOTAL)"
+                    
                     if printf '%s' "$JSON" | jq -e --arg req "$REQUIRED" '(.covered / .total * 100) >= ($req|tonumber)' >/dev/null; then
                       echo "✅ Code coverage OK (required: $REQUIRED%)"
                       exit 0
                     else
-                      MSG="Code coverage too low: $COVERED% (required: $REQUIRED%)"
+                      MSG="Code coverage too low: $PERCENT% (required: $REQUIRED%)"
                         echo "::error title=Coverage::$MSG"
                       exit 1
                     fi
