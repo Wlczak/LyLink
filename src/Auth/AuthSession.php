@@ -13,7 +13,6 @@ class AuthSession
             /**
              * @var Authorizator|mixed
              */
-
             $auth = $_SESSION['auth'];
             if ($auth instanceof Authorizator) {
                 return $auth;

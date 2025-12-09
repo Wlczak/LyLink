@@ -4,7 +4,8 @@
     "description": "A player to lyrics tracker",
     "autoload": {
         "psr-4": {
-            "Lylink\\": "src/"
+            "Lylink\\": "src/",
+            "Tests\\": "tests/"
         }
     },
     "authors": [
