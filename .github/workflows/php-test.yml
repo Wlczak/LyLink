@@ -91,6 +91,6 @@ jobs:
                       echo "✅ Code coverage OK (required: $REQUIRED%)"
                       exit 0
                     else
-                      echo "❌ Code coverage too low (required: $REQUIRED%)"
+                      echo "::error title=❌ Code coverage too low (required: $REQUIRED%)"
                       exit 1
                     fi
