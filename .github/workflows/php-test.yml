@@ -64,3 +64,4 @@ jobs:
                   fi
                           
                   echo "✅ Code coverage OK"
+              shell: bash
