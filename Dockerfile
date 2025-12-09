@@ -18,7 +18,7 @@ RUN npm install
 
 RUN npm run build
 
-FROM nginx:alpine AS lylink-nginx 
+FROM nginx:alpine-slim AS lylink-nginx 
 
 COPY ./public_html /var/www/html/public_html
 
