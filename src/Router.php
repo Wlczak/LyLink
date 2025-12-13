@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace Lylink;
 
+use AuthMiddleware;
 use Exception;
 use Lylink\Auth\AuthSession;
 use Lylink\Auth\DefaultAuth;
@@ -35,7 +36,7 @@ class Router
         // SimpleRouter::redirect('/', $env->BASE_DOMAIN . '/login', 307);
 
         ## Authenticated routes ##
-        SimpleRouter::group(['middleware' => \Lylink\Middleware\AuthMiddleware::class], function () {
+        SimpleRouter::group(['middleware' => AuthMiddleware::class], function () {
             SimpleRouter::partialGroup('/lyrics', LyricsRoute::setup());
             // SimpleRouter::get('/edit', [self::class, 'edit']);
             SimpleRouter::get('/settings', [self::class, 'settings']);
