@@ -374,7 +374,22 @@ class LyricsRoute extends Router implements Route
         } else {
 
             if ($info->item === null) {
-                die();
+                $song = [
+                    'name' => "No song is currently playing",
+                    'artist' => "",
+                    'duration' => 0,
+                    'duration_ms' => 0,
+                    'progress_ms' => 0,
+                    'imageUrl' => $env->BASE_DOMAIN . '/img/albumPlaceholer.svg',
+                    'id' => 0,
+                    'is_playing' => "false"
+                ];
+
+                echo $template = self::$twig->load('lyrics/spotify.twig')->render([
+                    'song' => $song,
+                    'allowEdit' => $settings->allow_edit
+                ]);
+                return;
             }
 
             $id = $info->item->id;
