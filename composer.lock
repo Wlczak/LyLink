@@ -820,16 +820,16 @@
         },
         {
             "name": "jwilsson/spotify-web-api-php",
-            "version": "6.3.0",
+            "version": "6.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jwilsson/spotify-web-api-php.git",
-                "reference": "39c4a7888b217eb097bbc6f42ebb1b0a406261b1"
+                "reference": "5c9f04c5c4826c74ba5d695b899054efdb870ef3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jwilsson/spotify-web-api-php/zipball/39c4a7888b217eb097bbc6f42ebb1b0a406261b1",
-                "reference": "39c4a7888b217eb097bbc6f42ebb1b0a406261b1",
+                "url": "https://api.github.com/repos/jwilsson/spotify-web-api-php/zipball/5c9f04c5c4826c74ba5d695b899054efdb870ef3",
+                "reference": "5c9f04c5c4826c74ba5d695b899054efdb870ef3",
                 "shasum": ""
             },
             "require": {
@@ -865,9 +865,9 @@
             ],
             "support": {
                 "issues": "https://github.com/jwilsson/spotify-web-api-php/issues",
-                "source": "https://github.com/jwilsson/spotify-web-api-php/tree/6.3.0"
+                "source": "https://github.com/jwilsson/spotify-web-api-php/tree/6.3.1"
             },
-            "time": "2025-10-12T07:04:38+00:00"
+            "time": "2025-12-06T07:07:13+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -4392,5 +4392,5 @@
     "prefer-lowest": false,
     "platform": {},
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
