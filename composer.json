@@ -27,6 +27,7 @@
         "symfony/cache": "^8.0",
         "twig/twig": "^3.21",
         "phpmailer/phpmailer": "^7.0",
-        "monolog/monolog": "^3.9"
+        "monolog/monolog": "^3.9",
+        "symfony/var-exporter": "^7"
     }
 }
