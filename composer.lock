@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d22609c4d913d407c520dcc11a9c5a65",
+    "content-hash": "060ff5e0a94f50ce9cd7b6d5f1ecc16a",
     "packages": [
         {
             "name": "doctrine/collections",
@@ -818,27 +818,27 @@
         },
         {
             "name": "jwilsson/spotify-web-api-php",
-            "version": "6.3.1",
+            "version": "7.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jwilsson/spotify-web-api-php.git",
-                "reference": "5c9f04c5c4826c74ba5d695b899054efdb870ef3"
+                "reference": "d0928c14c5bc70465c95bbf07ad9698c867e9f16"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jwilsson/spotify-web-api-php/zipball/5c9f04c5c4826c74ba5d695b899054efdb870ef3",
-                "reference": "5c9f04c5c4826c74ba5d695b899054efdb870ef3",
+                "url": "https://api.github.com/repos/jwilsson/spotify-web-api-php/zipball/d0928c14c5bc70465c95bbf07ad9698c867e9f16",
+                "reference": "d0928c14c5bc70465c95bbf07ad9698c867e9f16",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
-                "php": "^8.1"
+                "php": "^8.3"
             },
             "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.89",
                 "php-coveralls/php-coveralls": "^2.5",
                 "php-mock/php-mock-phpunit": "^2.7",
-                "phpunit/phpunit": "^10.2",
-                "squizlabs/php_codesniffer": "^3.0"
+                "phpunit/phpunit": "^12.0"
             },
             "type": "library",
             "autoload": {
@@ -863,9 +863,9 @@
             ],
             "support": {
                 "issues": "https://github.com/jwilsson/spotify-web-api-php/issues",
-                "source": "https://github.com/jwilsson/spotify-web-api-php/tree/6.3.1"
+                "source": "https://github.com/jwilsson/spotify-web-api-php/tree/7.0.0"
             },
-            "time": "2025-12-06T07:07:13+00:00"
+            "time": "2025-12-14T10:35:38+00:00"
         },
         {
             "name": "monolog/monolog",
@@ -4380,5 +4380,5 @@
     "prefer-lowest": false,
     "platform": {},
     "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "plugin-api-version": "2.6.0"
 }
