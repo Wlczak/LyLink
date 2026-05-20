@@ -18,5 +18,6 @@ class AuthMiddlewareTest extends TestCase
     {
         $middleware = new AuthMiddleware();
         $middleware->handle(new \Pecee\Http\Request());
+        $this->addToAssertionCount(1);
     }
 }

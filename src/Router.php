@@ -98,7 +98,9 @@ class Router
         $auth = new DefaultAuth();
         $data = $auth->login($username, $pass);
 
-        AuthSession::set($auth);
+        if ($data['success'] === true) {
+            AuthSession::set($auth);
+        }
 
         return self::$twig->load('login.twig')->render($data);
     }
@@ -133,6 +135,11 @@ class Router
         }
 
         $auth = new DefaultAuth();
+        $data = $auth->register($email, $username, $pass, $passCheck);
+
+        if ($data['success'] !== true) {
+            return self::$twig->load('register.twig')->render($data);
+        }
 
         $code = random_int(100000, 999999);
         $_SESSION['email_verify'] = ['email' => $email, 'username' => $username, 'code' => $code, "exp" => time() + 30 * 60];
@@ -140,9 +147,7 @@ class Router
         Mailer::prepareMail($email, $username, 'Email verification', self::$twig->load('email/verify_code.twig')->render(['code' => $code]), $env)->send();
         header('Location: ' . $env->BASE_DOMAIN . '/email/verify');
 
-        $data = $auth->register($email, $username, $pass, $passCheck);
-
-        return self::$twig->load('register.twig')->render($data);
+        return '';
     }
 
     function emailVerify(): string
@@ -171,17 +176,16 @@ class Router
          */
         $verify = $_SESSION['email_verify'];
 
-        /**
-         * @var int|null
-         */
-        $code = $_POST['code'];
+        $code = $_POST['code'] ?? null;
 
-        if ($code === null) {
+        if ($code === null || !is_numeric($code)) {
             header('Location: ' . $env->BASE_DOMAIN);
             die();
         }
 
-        if ($verify['code'] === $_POST['code']) {
+        $code = (int) $code;
+
+        if ($verify['code'] === $code) {
             $em = DoctrineRegistry::get();
             /**
              * @var User|null

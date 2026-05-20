@@ -15,6 +15,14 @@ class DefaultAuth implements Authorizator, AccountHandler
 {
     use Authorizable;
 
+    public function logout(): void
+    {
+        $this->authorized = false;
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            $_SESSION['authType'] = null;
+        }
+    }
+
     /**
      * @return array{errors: list<string>, success: bool, usermail: string}
      */
@@ -93,19 +101,17 @@ class DefaultAuth implements Authorizator, AccountHandler
         $em = DoctrineRegistry::get();
         $userRepo = $em->getRepository(User::class);
 
-        if (count($errors) > 0) {
-            $existingByEmail = $userRepo->findOneBy(['email' => $email]);
-            if ($existingByEmail !== null) {
-                $errors[] = 'Email is already registered';
-            }
-
-            $existingByUsername = $userRepo->findOneBy(['username' => $username]);
-            if ($existingByUsername !== null) {
-                $errors[] = 'Username is already taken';
-            }
+        $existingByEmail = $userRepo->findOneBy(['email' => $email]);
+        if ($existingByEmail !== null) {
+            $errors[] = 'Email is already registered';
         }
 
-        if (count($errors) > 0) {
+        $existingByUsername = $userRepo->findOneBy(['username' => $username]);
+        if ($existingByUsername !== null) {
+            $errors[] = 'Username is already taken';
+        }
+
+        if (count($errors) === 0) {
             $hash = password_hash($pass, PASSWORD_BCRYPT);
             $user = new User($email, $username, $hash);
 
@@ -120,15 +126,15 @@ class DefaultAuth implements Authorizator, AccountHandler
                 $em->persist($settings);
                 $em->flush();
                 return [
-                    'errors' => $errors,
+                    'errors' => [],
                     'success' => true,
                     'old' => [
                         'email' => $email,
                         'username' => $username
                     ]];
-            } catch (\Exception $e) {
-                $errors[] = 'Failed to create account';
-            }
+                } catch (\Exception $e) {
+                    $errors[] = 'Failed to create account';
+                }
         }
         return [
             'errors' => $errors,

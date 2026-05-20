@@ -10,17 +10,17 @@ class AuthMiddleware implements IMiddleware
 
     public function handle(Request $request): void
     {
-        $env = EnvStore::load();
         $auth = AuthSession::get();
-        if ($auth === null) {
-            header('Location: ' . $env->BASE_DOMAIN . '/login');
+        if ($auth === null || !$auth->isAuthorized()) {
+            try {
+                $env = EnvStore::load();
+                header('Location: ' . $env->BASE_DOMAIN . '/login');
+            } catch (\Throwable $e) {
+                return;
+            }
             return;
         }
 
-        if (!$auth->isAuthorized()) {
-            header('Location: ' . $env->BASE_DOMAIN . '/login');
-            return;
-        }
         return;
     }
 }
