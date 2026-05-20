@@ -8,6 +8,7 @@ use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Tools\SchemaTool;
 use Lylink\DoctrineRegistry;
+use Lylink\Models\Lyrics;
 use Lylink\Models\Settings;
 use Lylink\Models\User;
 use SQLite3;
@@ -19,8 +20,11 @@ class TestDatabaseHelper
     private static array $users = [];
     /** @var array<int,Settings> */
     private static array $settings = [];
+    /** @var array<int,Lyrics> */
+    public static array $lyrics = [];
     private static int $nextUserId = 1;
     private static int $nextSettingsId = 1;
+    private static int $nextLyricsId = 1;
 
     public static function getDatabasePath(): string
     {
@@ -32,8 +36,10 @@ class TestDatabaseHelper
         self::$fakeDatabase = !extension_loaded('pdo_sqlite') || !class_exists(SQLite3::class);
         self::$users = [];
         self::$settings = [];
+        self::$lyrics = [];
         self::$nextUserId = 1;
         self::$nextSettingsId = 1;
+        self::$nextLyricsId = 1;
 
         if (self::$fakeDatabase) {
             DoctrineRegistry::set(self::createFakeEntityManager());
@@ -66,6 +72,7 @@ class TestDatabaseHelper
         if (self::$fakeDatabase) {
             self::$users = [];
             self::$settings = [];
+            self::$lyrics = [];
             return;
         }
 
@@ -137,6 +144,83 @@ class TestDatabaseHelper
             {
             }
 
+            public function createQueryBuilder(string $alias, string|null $indexBy = null): object
+            {
+                if ($this->className !== Lyrics::class) {
+                    throw new \BadMethodCallException('Query builder not available for this entity');
+                }
+
+                return new class {
+                    /** @var array<string,mixed> */
+                    private array $parameters = [];
+
+                    public function where(string $expr): self
+                    {
+                        return $this;
+                    }
+
+                    public function andWhere(string $expr): self
+                    {
+                        return $this;
+                    }
+
+                    public function setParameters(mixed $parameters): self
+                    {
+                        $values = [];
+                        foreach ($parameters as $parameter) {
+                            $name = method_exists($parameter, 'getName') ? $parameter->getName() : null;
+                            $value = method_exists($parameter, 'getValue') ? $parameter->getValue() : null;
+                            if ($name !== null) {
+                                $values[$name] = $value;
+                            }
+                        }
+                        $this->parameters = $values;
+                        return $this;
+                    }
+
+                    public function getQuery(): object
+                    {
+                        return new class($this->parameters) {
+                            public function __construct(
+                                private array $parameters
+                            ) {
+                            }
+
+                            /**
+                             * @return list<object>
+                             */
+                            public function getResult(): array
+                            {
+                                $showId = (string) ($this->parameters['showId'] ?? '');
+                                $seasonNumber = $this->parameters['seasonNumber'] ?? null;
+                                $episodeNumber = $this->parameters['episodeNumber'] ?? null;
+
+                                $results = [];
+                                foreach (TestDatabaseHelper::$lyrics as $lyrics) {
+                                    if ($lyrics->jellyfinShowId !== $showId) {
+                                        continue;
+                                    }
+                                    if ($seasonNumber !== null && $lyrics->jellyfinSeasonNumber !== $seasonNumber) {
+                                        continue;
+                                    }
+                                    if ($episodeNumber !== null) {
+                                        if ($lyrics->jellyfinStartEpisodeNumber > $episodeNumber) {
+                                            continue;
+                                        }
+                                        if ($lyrics->jellyfinEndEpisodeNumber < $episodeNumber) {
+                                            continue;
+                                        }
+                                    }
+                                    $results[] = $lyrics;
+                                }
+
+                                return $results;
+                            }
+                        };
+                    }
+                };
+            }
+
             public function find(mixed $id, \Doctrine\DBAL\LockMode|int|null $lockMode = null, int|null $lockVersion = null): object|null
             {
                 return TestDatabaseHelper::fakeFind($this->className, $id);
@@ -179,6 +263,14 @@ class TestDatabaseHelper
                 self::setPrivateProperty($object, 'id', self::$nextSettingsId++);
             }
             self::$settings[$object->getUserId()] = $object;
+            return;
+        }
+
+        if ($object instanceof Lyrics) {
+            if ($object->getId() === null) {
+                self::setPrivateProperty($object, 'id', self::$nextLyricsId++);
+            }
+            self::$lyrics[$object->getId() ?? 0] = $object;
         }
     }
 
@@ -194,6 +286,14 @@ class TestDatabaseHelper
 
         if ($object instanceof Settings) {
             unset(self::$settings[$object->getUserId()]);
+            return;
+        }
+
+        if ($object instanceof Lyrics) {
+            $id = $object->getId();
+            if ($id !== null) {
+                unset(self::$lyrics[$id]);
+            }
         }
     }
 
@@ -211,6 +311,10 @@ class TestDatabaseHelper
             }
         }
 
+        if ($className === Lyrics::class && is_int($id) && isset(self::$lyrics[$id])) {
+            return self::$lyrics[$id];
+        }
+
         return null;
     }
 
@@ -225,6 +329,10 @@ class TestDatabaseHelper
 
         if ($className === Settings::class) {
             return array_values(self::$settings);
+        }
+
+        if ($className === Lyrics::class) {
+            return array_values(self::$lyrics);
         }
 
         return [];
@@ -271,6 +379,26 @@ class TestDatabaseHelper
                 }
                 if ($matches) {
                     $results[] = $settings;
+                }
+            }
+        }
+
+        if ($className === Lyrics::class) {
+            foreach (self::$lyrics as $lyrics) {
+                $matches = true;
+                foreach ($criteria as $field => $value) {
+                    if ($field === 'id' && $lyrics->getId() !== $value) {
+                        $matches = false;
+                    }
+                    if ($field === 'spotifyId' && $lyrics->spotifyId !== $value) {
+                        $matches = false;
+                    }
+                    if ($field === 'jellyfinShowId' && $lyrics->jellyfinShowId !== $value) {
+                        $matches = false;
+                    }
+                }
+                if ($matches) {
+                    $results[] = $lyrics;
                 }
             }
         }
