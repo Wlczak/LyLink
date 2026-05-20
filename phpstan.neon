@@ -1,6 +1,10 @@
 parameters:
     bootstrapFiles:
         - vendor/autoload.php
+    excludePaths:
+        analyse:
+            - tests/Fakes/SpotifyWebAPI.php
+            - tests/Helpers/TestDatabaseHelper.php
     ignoreErrors:
     level: 10
     paths:

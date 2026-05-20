@@ -1,23 +1,31 @@
 <?php
 
 namespace Lylink\Routes\Integrations\Api {
-    function file_get_contents(string $filename): string|false
+    final class IntegrationApiState
     {
-        return $GLOBALS['integration_api_input'] ?? '';
+        public static string $input = '';
+        /** @var list<string> */
+        public static array $headers = [];
+        public static int $responseCode = 200;
+    }
+
+    function file_get_contents(string $filename): string
+    {
+        return IntegrationApiState::$input;
     }
 
     function header(string $header, bool $replace = true, int $response_code = 0): void
     {
-        $GLOBALS['integration_api_headers'][] = $header;
+        IntegrationApiState::$headers[] = $header;
     }
 
-    function http_response_code(?int $response_code = null): int|false
+    function http_response_code(?int $response_code = null): int
     {
         if ($response_code !== null) {
-            $GLOBALS['integration_api_response_code'] = $response_code;
+            IntegrationApiState::$responseCode = $response_code;
         }
 
-        return $GLOBALS['integration_api_response_code'] ?? 200;
+        return IntegrationApiState::$responseCode;
     }
 }
 
@@ -25,8 +33,10 @@ namespace Tests\Routes\Integrations\Api {
 
     use Lylink\Auth\AuthSession;
     use Lylink\DoctrineRegistry;
+    use Lylink\Models\Settings;
     use Lylink\Models\User;
     use Lylink\Routes\Integrations\Api\IntegrationApi;
+    use Lylink\Routes\Integrations\Api\IntegrationApiState;
     use PHPUnit\Framework\TestCase;
     use Tests\Helpers\TestDatabaseHelper;
 
@@ -42,9 +52,9 @@ namespace Tests\Routes\Integrations\Api {
             $_POST = [];
             $_GET = [];
 
-            $GLOBALS['integration_api_input'] = '';
-            $GLOBALS['integration_api_headers'] = [];
-            $GLOBALS['integration_api_response_code'] = 200;
+            IntegrationApiState::$input = '';
+            IntegrationApiState::$headers = [];
+            IntegrationApiState::$responseCode = 200;
 
             TestDatabaseHelper::createTestDatabase();
         }
@@ -54,7 +64,10 @@ namespace Tests\Routes\Integrations\Api {
             $_SESSION = [];
             $_POST = [];
             $_GET = [];
-            unset($GLOBALS['integration_api_input'], $GLOBALS['integration_api_headers'], $GLOBALS['integration_api_response_code']);
+
+            IntegrationApiState::$input = '';
+            IntegrationApiState::$headers = [];
+            IntegrationApiState::$responseCode = 200;
 
             session_destroy();
             TestDatabaseHelper::dropTestDatabase();
@@ -62,29 +75,33 @@ namespace Tests\Routes\Integrations\Api {
 
         public function testAddJellyfinRejectsEmptyInput(): void
         {
-            $GLOBALS['integration_api_input'] = '';
+            IntegrationApiState::$input = '';
 
             $this::assertSame('', IntegrationApi::addJellyfin());
-            $this::assertSame(400, $GLOBALS['integration_api_response_code']);
+            $this::assertSame(400, IntegrationApiState::$responseCode);
         }
 
         public function testAddJellyfinRejectsMissingAuth(): void
         {
-            $GLOBALS['integration_api_input'] = json_encode([
+            $encoded = json_encode([
                 'address' => 'http://jellyfin.test',
                 'token' => 'token',
             ]);
+            $this::assertIsString($encoded);
+            IntegrationApiState::$input = $encoded;
 
             $this::assertSame('', IntegrationApi::addJellyfin());
-            $this::assertSame(401, $GLOBALS['integration_api_response_code']);
+            $this::assertSame(401, IntegrationApiState::$responseCode);
         }
 
         public function testAddJellyfinRejectsNullUser(): void
         {
-            $GLOBALS['integration_api_input'] = json_encode([
+            $encoded = json_encode([
                 'address' => 'http://jellyfin.test',
                 'token' => 'token',
             ]);
+            $this::assertIsString($encoded);
+            IntegrationApiState::$input = $encoded;
 
             $auth = new class implements \Lylink\Interfaces\Auth\Authorizator {
                 public function login(string $usernamemail, #[\SensitiveParameter] string $password): array
@@ -110,7 +127,7 @@ namespace Tests\Routes\Integrations\Api {
             AuthSession::set($auth);
 
             $this::assertSame('', IntegrationApi::addJellyfin());
-            $this::assertSame(401, $GLOBALS['integration_api_response_code']);
+            $this::assertSame(401, IntegrationApiState::$responseCode);
         }
 
         public function testAddJellyfinUpdatesSettings(): void
@@ -138,27 +155,29 @@ namespace Tests\Routes\Integrations\Api {
                     return true;
                 }
 
-                public function getUser(): ?User
+                public function getUser(): User
                 {
                     return $this->user;
                 }
             };
             AuthSession::set($auth);
 
-            $GLOBALS['integration_api_input'] = json_encode([
+            $encoded = json_encode([
                 'address' => 'http://jellyfin.test',
                 'token' => 'token',
             ]);
+            $this::assertIsString($encoded);
+            IntegrationApiState::$input = $encoded;
 
             $this::assertSame('{"success":true}', IntegrationApi::addJellyfin());
-            $this::assertSame(200, $GLOBALS['integration_api_response_code']);
+            $this::assertSame(200, IntegrationApiState::$responseCode);
 
-            $settings = DoctrineRegistry::get()->getRepository(\Lylink\Models\Settings::class)->findOneBy(['user_id' => $user->getId()]);
-            $this::assertNotNull($settings);
-            $this::assertSame('http://jellyfin.test', $settings?->jellyfin_server);
-            $this::assertSame('token', $settings?->jellyfin_token);
-            $this::assertTrue($settings?->jellyfin_connected ?? false);
-            $this::assertTrue($settings?->allow_jellyfin_login ?? false);
+            $settings = DoctrineRegistry::get()->getRepository(Settings::class)->findOneBy(['user_id' => $user->getId()]);
+            $this::assertInstanceOf(Settings::class, $settings);
+            $this::assertSame('http://jellyfin.test', $settings->jellyfin_server);
+            $this::assertSame('token', $settings->jellyfin_token);
+            $this::assertTrue($settings->jellyfin_connected);
+            $this::assertTrue($settings->allow_jellyfin_login);
         }
     }
 }

@@ -67,7 +67,7 @@ class RouterCoverageTest extends TestCase
         $this::assertStringContainsString('login ok router', $result);
         $auth = AuthSession::get();
         $this::assertInstanceOf(DefaultAuth::class, $auth);
-        $this::assertTrue($auth?->isAuthorized() ?? false);
+        $this::assertTrue($auth->isAuthorized());
 
         $_SESSION = [];
         $_POST = ['username' => 'router', 'password' => 'wrong'];
@@ -104,10 +104,11 @@ class RouterCoverageTest extends TestCase
 
         $this::assertStringContainsString('verify ', $verifyResult);
         $this::assertStringContainsString('ok', $verifyResult);
-        $this::assertNull($_SESSION['email_verify'] ?? null);
+        $this::assertArrayNotHasKey('email_verify', $_SESSION);
 
         $verifiedUser = DoctrineRegistry::get()->getRepository(User::class)->findOneBy(['email' => 'verify@test.test']);
-        $this::assertTrue($verifiedUser?->isEmailVerified() ?? false);
+        $this::assertInstanceOf(User::class, $verifiedUser);
+        $this::assertTrue($verifiedUser->isEmailVerified());
     }
 
     public function testSettingsAndInfo(): void

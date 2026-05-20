@@ -18,7 +18,7 @@ class IntegrationApi
     public static function addJellyfin(): string
     {
         $input = file_get_contents('php://input');
-        if ($input === false || $input === '') {
+        if ($input === '') {
             http_response_code(400);
             return '';
         }
@@ -49,6 +49,7 @@ class IntegrationApi
 
         $user->updateJellyfin($json['address'], $json['token'], true);
 
-        return json_encode(["success" => true]) !== false ? json_encode(["success" => true]) : '';
+        $response = json_encode(["success" => true]);
+        return is_string($response) ? $response : '';
     }
 }
