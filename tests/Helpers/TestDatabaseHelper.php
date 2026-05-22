@@ -2,10 +2,17 @@
 
 namespace Tests\Helpers;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\ORM\Decorator\EntityManagerDecorator;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Query\Parameter;
 use Doctrine\ORM\Tools\SchemaTool;
 use Lylink\DoctrineRegistry;
 use Lylink\Models\Lyrics;
@@ -109,16 +116,32 @@ class TestDatabaseHelper
         }
     }
 
-    private static function createFakeEntityManager(): EntityManager
+    private static function createFakeEntityManager(): EntityManagerInterface
     {
-        return new class extends EntityManager {
-            public function __construct()
+        $config = ORMSetup::createAttributeMetadataConfiguration(
+            paths: [__DIR__ . '/../../src/Models'],
+            isDevMode: true,
+        );
+
+        $connection = DriverManager::getConnection([
+            'driver' => 'pdo_sqlite',
+            'memory' => true,
+        ], $config);
+
+        $entityManager = new EntityManager($connection, $config);
+
+        return new class($entityManager) extends EntityManagerDecorator {
+            public function __construct(EntityManagerInterface $wrapped)
             {
+                parent::__construct($wrapped);
             }
 
+            /**
+             * @return EntityRepository<object>
+             */
             public function getRepository(string $className): EntityRepository
             {
-                return TestDatabaseHelper::createFakeRepository($className);
+                return TestDatabaseHelper::createFakeRepository($className, $this);
             }
 
             public function persist(object $object): void
@@ -137,63 +160,89 @@ class TestDatabaseHelper
         };
     }
 
-    private static function createFakeRepository(string $className): EntityRepository
+    /**
+     * @param class-string $className
+     * @return EntityRepository<object>
+     */
+    public static function createFakeRepository(string $className, EntityManagerInterface $entityManager): EntityRepository
     {
-        return new class($className) extends EntityRepository {
-            public function __construct(private string $className)
+        return new class($entityManager, $className) extends EntityRepository {
+            public function __construct(EntityManagerInterface $entityManager, private string $className)
             {
+                /** @var class-string $metadataClassName */
+                $metadataClassName = $className;
+                parent::__construct($entityManager, new ClassMetadata($metadataClassName));
             }
 
-            public function createQueryBuilder(string $alias, string|null $indexBy = null): object
+            public function createQueryBuilder(string $alias, string|null $indexBy = null): QueryBuilder
             {
                 if ($this->className !== Lyrics::class) {
                     throw new \BadMethodCallException('Query builder not available for this entity');
                 }
 
-                return new class {
-                    /** @var array<string,mixed> */
-                    private array $parameters = [];
+                return new class($this->getEntityManager()) extends QueryBuilder {
+                    /**
+                     * @var array<string, mixed>
+                     */
+                    private array $fakeParameters = [];
 
-                    public function where(string $expr): self
+                    public function __construct(EntityManagerInterface $entityManager)
+                    {
+                        parent::__construct($entityManager);
+                    }
+
+                    public function where(mixed ...$predicates): static
                     {
                         return $this;
                     }
 
-                    public function andWhere(string $expr): self
+                    public function andWhere(mixed ...$where): static
                     {
                         return $this;
                     }
 
-                    public function setParameters(mixed $parameters): self
+                    /**
+                     * @param ArrayCollection<int, Parameter> $parameters
+                     */
+                    public function setParameters(ArrayCollection $parameters): static
                     {
                         $values = [];
+
                         foreach ($parameters as $parameter) {
-                            $name = method_exists($parameter, 'getName') ? $parameter->getName() : null;
-                            $value = method_exists($parameter, 'getValue') ? $parameter->getValue() : null;
-                            if ($name !== null) {
-                                $values[$name] = $value;
-                            }
+                            $values[$parameter->getName()] = $parameter->getValue();
                         }
-                        $this->parameters = $values;
+
+                        $this->fakeParameters = $values;
+
                         return $this;
                     }
 
-                    public function getQuery(): object
+                    public function getQuery(): Query
                     {
-                        return new class($this->parameters) {
+                        /** @phpstan-ignore-next-line class.extendsFinalByPhpDoc */
+                        return new class($this->getEntityManager(), $this->fakeParameters) extends Query {
+                            /**
+                             * @param array<string, mixed> $fakeParameters
+                             */
                             public function __construct(
-                                private array $parameters
+                                EntityManagerInterface $entityManager,
+                                private array $fakeParameters
                             ) {
+                                parent::__construct($entityManager);
                             }
 
                             /**
+                             * @param string|int $hydrationMode
                              * @return list<object>
                              */
-                            public function getResult(): array
+                            public function getResult(string|int $hydrationMode = self::HYDRATE_OBJECT): array
                             {
-                                $showId = (string) ($this->parameters['showId'] ?? '');
-                                $seasonNumber = $this->parameters['seasonNumber'] ?? null;
-                                $episodeNumber = $this->parameters['episodeNumber'] ?? null;
+                                $showIdValue = $this->fakeParameters['showId'] ?? '';
+                                $showId = is_scalar($showIdValue) ? (string) $showIdValue : '';
+                                $seasonValue = $this->fakeParameters['seasonNumber'] ?? null;
+                                $seasonNumber = is_scalar($seasonValue) ? (int) $seasonValue : null;
+                                $episodeValue = $this->fakeParameters['episodeNumber'] ?? null;
+                                $episodeNumber = is_scalar($episodeValue) ? (int) $episodeValue : null;
 
                                 $results = [];
                                 foreach (TestDatabaseHelper::$lyrics as $lyrics) {
@@ -248,7 +297,7 @@ class TestDatabaseHelper
         };
     }
 
-    private static function fakePersist(object $object): void
+    public static function fakePersist(object $object): void
     {
         if ($object instanceof User) {
             if ($object->getId() === null) {
@@ -274,7 +323,7 @@ class TestDatabaseHelper
         }
     }
 
-    private static function fakeRemove(object $object): void
+    public static function fakeRemove(object $object): void
     {
         if ($object instanceof User) {
             $id = $object->getId();
@@ -297,7 +346,7 @@ class TestDatabaseHelper
         }
     }
 
-    private static function fakeFind(string $className, mixed $id): object|null
+    public static function fakeFind(string $className, mixed $id): object|null
     {
         if ($className === User::class && is_int($id) && isset(self::$users[$id])) {
             return self::$users[$id];
@@ -321,7 +370,7 @@ class TestDatabaseHelper
     /**
      * @return list<object>
      */
-    private static function fakeFindAll(string $className): array
+    public static function fakeFindAll(string $className): array
     {
         if ($className === User::class) {
             return array_values(self::$users);
@@ -342,7 +391,7 @@ class TestDatabaseHelper
      * @param array<string,mixed> $criteria
      * @return list<object>
      */
-    private static function fakeFindBy(string $className, array $criteria): array
+    public static function fakeFindBy(string $className, array $criteria): array
     {
         $results = [];
 
@@ -406,7 +455,10 @@ class TestDatabaseHelper
         return $results;
     }
 
-    private static function fakeFindOneBy(string $className, array $criteria): object|null
+    /**
+     * @param array<string,mixed> $criteria
+     */
+    public static function fakeFindOneBy(string $className, array $criteria): object|null
     {
         $results = self::fakeFindBy($className, $criteria);
         return $results[0] ?? null;
@@ -438,7 +490,12 @@ class TestDatabaseHelper
     private static function setPrivateProperty(object $object, string $property, mixed $value): void
     {
         $ref = new \ReflectionObject($object);
-        while (!$ref->hasProperty($property) && $ref = $ref->getParentClass()) {
+        while (!$ref->hasProperty($property)) {
+            $parent = $ref->getParentClass();
+            if ($parent === false) {
+                return;
+            }
+            $ref = $parent;
         }
 
         if (!$ref->hasProperty($property)) {

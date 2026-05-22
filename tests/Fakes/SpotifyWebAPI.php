@@ -14,10 +14,11 @@ class Session
     public static int $nextTokenExpiration = 9999999999;
 
     public function __construct(
-        private string $clientId = '',
-        private string $clientSecret = '',
-        private string $redirectUri = ''
+        string $clientId = '',
+        string $clientSecret = '',
+        string $redirectUri = ''
     ) {
+        $unused = [$clientId, $clientSecret, $redirectUri];
     }
 
     public function refreshAccessToken(): void
@@ -34,6 +35,9 @@ class Session
         return self::$nextTokenExpiration;
     }
 
+    /**
+     * @param array<string, mixed> $options
+     */
     public function getAuthorizeUrl(array $options = []): string
     {
         return self::$nextAuthorizeUrl ?? 'https://example.test/auth';
@@ -49,6 +53,7 @@ class SpotifyWebAPI
 {
     public static mixed $nextPlaybackInfo = null;
     public static mixed $nextTrack = null;
+    /** @var array{display_name:string} */
     public static array $nextMe = ['display_name' => 'Test User'];
     public static ?string $lastAccessToken = null;
 
@@ -57,9 +62,12 @@ class SpotifyWebAPI
         self::$lastAccessToken = $token;
     }
 
-    public function me(): object|array
+    /**
+     * @return array{display_name:string}
+     */
+    public function me(): array
     {
-        return (object) self::$nextMe;
+        return self::$nextMe;
     }
 
     public function getMyCurrentPlaybackInfo(): mixed
