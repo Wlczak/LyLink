@@ -40,10 +40,7 @@ class SpotifyIntegration extends Router implements IntegrationRoute
 
             $api = new SpotifyWebAPI();
             $api->setAccessToken($session->getAccessToken());
-            /**
-             * @var array{display_name:string}
-             */
-            $spotifyUser = (array) $api->me();
+            $spotifyUser = $api->me();
 
             $spotifyUsername = $spotifyUser['display_name'];
             $settings->connectSpotify($token, $spotifyUsername);

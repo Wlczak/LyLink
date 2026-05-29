@@ -12,7 +12,8 @@ session_start();
 session_regenerate_id();
 
 if (isset($_SESSION['email_verify'])) {
-    if (time() > $_SESSION['email_verify']['exp']) {
+    $emailVerify = $_SESSION['email_verify'];
+    if (is_array($emailVerify) && isset($emailVerify['exp']) && is_int($emailVerify['exp']) && time() > $emailVerify['exp']) {
         unset($_SESSION['email_verify']);
     }
 }
@@ -20,14 +21,14 @@ if (isset($_SESSION['email_verify'])) {
 $dotenv = Dotenv::createImmutable(__DIR__ . '/../config');
 $dotenv->safeLoad();
 
-$devMode = $_ENV['DEV_MODE'] === "true"  ?true : false;
+$devMode = ($_ENV['DEV_MODE'] ?? 'false') === 'true';
 
 if ($devMode) {
 } else {
     error_reporting(E_ALL & ~E_DEPRECATED);
 
     set_error_handler(function ($severity, $message, $file, $line) {
-        if (!(error_reporting() & $severity)) {
+        if ((error_reporting() & $severity) === 0) {
             return false;
         }
         throw new ErrorException($message, 0, $severity, $file, $line);
@@ -39,8 +40,8 @@ if (!$devMode) {
     register_shutdown_function(function () {
         $fatalTypes = [E_ERROR, E_PARSE, E_CORE_ERROR, E_CORE_WARNING, E_COMPILE_ERROR, E_COMPILE_WARNING];
         $err = error_get_last();
-        if ($err && in_array($err['type'], $fatalTypes, true)) {
-            if (ob_get_level()) {
+        if (is_array($err) && in_array($err['type'], $fatalTypes, true)) {
+            if (ob_get_level() > 0) {
                 while (ob_get_level()) {
                     ob_end_clean();
                 }
@@ -95,8 +96,8 @@ try {
         $log->pushHandler(new StreamHandler('../logs/logs.log', Level::Info));
         $log->addRecord(Level::Error, $e->getMessage(), ['ray' => $errorRay, 'code' => $e->getCode(), 'message' => $e->getMessage(), 'file' => $e->getFile(), 'line' => $e->getLine(), 'trace' => $e->getTraceAsString()]);
 
-        if ($e->getMessage() == "Check settings on developer.spotify.com/dashboard, the user may not be registered.") {
-            echo $template = self::$twig->load('whitelist.twig')->render();
+        if ($e->getMessage() === "Check settings on developer.spotify.com/dashboard, the user may not be registered.") {
+            echo $twig->load('whitelist.twig')->render();
             die();
         }
 
