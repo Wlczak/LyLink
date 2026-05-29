@@ -1,9 +1,15 @@
 parameters:
+    bootstrapFiles:
+        - vendor/autoload.php
     ignoreErrors:
     level: 10
     paths:
         - src
+        - public_html
         - bin
         - tests
+        - templates
+    parallel:
+        maximumNumberOfProcesses: 1
 includes:
   - vendor/phpstan/phpstan-strict-rules/rules.neon

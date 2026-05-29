@@ -2,12 +2,20 @@
 
 namespace Tests\Helpers;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\ORM\Decorator\EntityManagerDecorator;
 use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMSetup;
 use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\Mapping\ClassMetadata;
+use Doctrine\ORM\Query;
+use Doctrine\ORM\QueryBuilder;
+use Doctrine\ORM\Query\Parameter;
 use Doctrine\ORM\Tools\SchemaTool;
 use Lylink\DoctrineRegistry;
+use Lylink\Models\Lyrics;
 use Lylink\Models\Settings;
 use Lylink\Models\User;
 use SQLite3;
@@ -19,8 +27,11 @@ class TestDatabaseHelper
     private static array $users = [];
     /** @var array<int,Settings> */
     private static array $settings = [];
+    /** @var array<int,Lyrics> */
+    public static array $lyrics = [];
     private static int $nextUserId = 1;
     private static int $nextSettingsId = 1;
+    private static int $nextLyricsId = 1;
 
     public static function getDatabasePath(): string
     {
@@ -32,8 +43,10 @@ class TestDatabaseHelper
         self::$fakeDatabase = !extension_loaded('pdo_sqlite') || !class_exists(SQLite3::class);
         self::$users = [];
         self::$settings = [];
+        self::$lyrics = [];
         self::$nextUserId = 1;
         self::$nextSettingsId = 1;
+        self::$nextLyricsId = 1;
 
         if (self::$fakeDatabase) {
             DoctrineRegistry::set(self::createFakeEntityManager());
@@ -66,6 +79,7 @@ class TestDatabaseHelper
         if (self::$fakeDatabase) {
             self::$users = [];
             self::$settings = [];
+            self::$lyrics = [];
             return;
         }
 
@@ -102,16 +116,32 @@ class TestDatabaseHelper
         }
     }
 
-    private static function createFakeEntityManager(): EntityManager
+    private static function createFakeEntityManager(): EntityManagerInterface
     {
-        return new class extends EntityManager {
-            public function __construct()
+        $config = ORMSetup::createAttributeMetadataConfiguration(
+            paths: [__DIR__ . '/../../src/Models'],
+            isDevMode: true,
+        );
+
+        $connection = DriverManager::getConnection([
+            'driver' => 'pdo_sqlite',
+            'memory' => true,
+        ], $config);
+
+        $entityManager = new EntityManager($connection, $config);
+
+        return new class($entityManager) extends EntityManagerDecorator {
+            public function __construct(EntityManagerInterface $wrapped)
             {
+                parent::__construct($wrapped);
             }
 
+            /**
+             * @return EntityRepository<object>
+             */
             public function getRepository(string $className): EntityRepository
             {
-                return TestDatabaseHelper::createFakeRepository($className);
+                return TestDatabaseHelper::createFakeRepository($className, $this);
             }
 
             public function persist(object $object): void
@@ -130,11 +160,114 @@ class TestDatabaseHelper
         };
     }
 
-    private static function createFakeRepository(string $className): EntityRepository
+    /**
+     * @param class-string $className
+     * @return EntityRepository<object>
+     */
+    public static function createFakeRepository(string $className, EntityManagerInterface $entityManager): EntityRepository
     {
-        return new class($className) extends EntityRepository {
-            public function __construct(private string $className)
+        return new class($entityManager, $className) extends EntityRepository {
+            public function __construct(EntityManagerInterface $entityManager, private string $className)
             {
+                /** @var class-string $metadataClassName */
+                $metadataClassName = $className;
+                parent::__construct($entityManager, new ClassMetadata($metadataClassName));
+            }
+
+            public function createQueryBuilder(string $alias, string|null $indexBy = null): QueryBuilder
+            {
+                if ($this->className !== Lyrics::class) {
+                    throw new \BadMethodCallException('Query builder not available for this entity');
+                }
+
+                return new class($this->getEntityManager()) extends QueryBuilder {
+                    /**
+                     * @var array<string, mixed>
+                     */
+                    private array $fakeParameters = [];
+
+                    public function __construct(EntityManagerInterface $entityManager)
+                    {
+                        parent::__construct($entityManager);
+                    }
+
+                    public function where(mixed ...$predicates): static
+                    {
+                        return $this;
+                    }
+
+                    public function andWhere(mixed ...$where): static
+                    {
+                        return $this;
+                    }
+
+                    /**
+                     * @param ArrayCollection<int, Parameter> $parameters
+                     */
+                    public function setParameters(ArrayCollection $parameters): static
+                    {
+                        $values = [];
+
+                        foreach ($parameters as $parameter) {
+                            $values[$parameter->getName()] = $parameter->getValue();
+                        }
+
+                        $this->fakeParameters = $values;
+
+                        return $this;
+                    }
+
+                    public function getQuery(): Query
+                    {
+                        /** @phpstan-ignore-next-line class.extendsFinalByPhpDoc */
+                        return new class($this->getEntityManager(), $this->fakeParameters) extends Query {
+                            /**
+                             * @param array<string, mixed> $fakeParameters
+                             */
+                            public function __construct(
+                                EntityManagerInterface $entityManager,
+                                private array $fakeParameters
+                            ) {
+                                parent::__construct($entityManager);
+                            }
+
+                            /**
+                             * @param string|int $hydrationMode
+                             * @return list<object>
+                             */
+                            public function getResult(string|int $hydrationMode = self::HYDRATE_OBJECT): array
+                            {
+                                $showIdValue = $this->fakeParameters['showId'] ?? '';
+                                $showId = is_scalar($showIdValue) ? (string) $showIdValue : '';
+                                $seasonValue = $this->fakeParameters['seasonNumber'] ?? null;
+                                $seasonNumber = is_scalar($seasonValue) ? (int) $seasonValue : null;
+                                $episodeValue = $this->fakeParameters['episodeNumber'] ?? null;
+                                $episodeNumber = is_scalar($episodeValue) ? (int) $episodeValue : null;
+
+                                $results = [];
+                                foreach (TestDatabaseHelper::$lyrics as $lyrics) {
+                                    if ($lyrics->jellyfinShowId !== $showId) {
+                                        continue;
+                                    }
+                                    if ($seasonNumber !== null && $lyrics->jellyfinSeasonNumber !== $seasonNumber) {
+                                        continue;
+                                    }
+                                    if ($episodeNumber !== null) {
+                                        if ($lyrics->jellyfinStartEpisodeNumber > $episodeNumber) {
+                                            continue;
+                                        }
+                                        if ($lyrics->jellyfinEndEpisodeNumber < $episodeNumber) {
+                                            continue;
+                                        }
+                                    }
+                                    $results[] = $lyrics;
+                                }
+
+                                return $results;
+                            }
+                        };
+                    }
+                };
             }
 
             public function find(mixed $id, \Doctrine\DBAL\LockMode|int|null $lockMode = null, int|null $lockVersion = null): object|null
@@ -164,7 +297,7 @@ class TestDatabaseHelper
         };
     }
 
-    private static function fakePersist(object $object): void
+    public static function fakePersist(object $object): void
     {
         if ($object instanceof User) {
             if ($object->getId() === null) {
@@ -179,10 +312,18 @@ class TestDatabaseHelper
                 self::setPrivateProperty($object, 'id', self::$nextSettingsId++);
             }
             self::$settings[$object->getUserId()] = $object;
+            return;
+        }
+
+        if ($object instanceof Lyrics) {
+            if ($object->getId() === null) {
+                self::setPrivateProperty($object, 'id', self::$nextLyricsId++);
+            }
+            self::$lyrics[$object->getId() ?? 0] = $object;
         }
     }
 
-    private static function fakeRemove(object $object): void
+    public static function fakeRemove(object $object): void
     {
         if ($object instanceof User) {
             $id = $object->getId();
@@ -194,10 +335,18 @@ class TestDatabaseHelper
 
         if ($object instanceof Settings) {
             unset(self::$settings[$object->getUserId()]);
+            return;
+        }
+
+        if ($object instanceof Lyrics) {
+            $id = $object->getId();
+            if ($id !== null) {
+                unset(self::$lyrics[$id]);
+            }
         }
     }
 
-    private static function fakeFind(string $className, mixed $id): object|null
+    public static function fakeFind(string $className, mixed $id): object|null
     {
         if ($className === User::class && is_int($id) && isset(self::$users[$id])) {
             return self::$users[$id];
@@ -211,13 +360,17 @@ class TestDatabaseHelper
             }
         }
 
+        if ($className === Lyrics::class && is_int($id) && isset(self::$lyrics[$id])) {
+            return self::$lyrics[$id];
+        }
+
         return null;
     }
 
     /**
      * @return list<object>
      */
-    private static function fakeFindAll(string $className): array
+    public static function fakeFindAll(string $className): array
     {
         if ($className === User::class) {
             return array_values(self::$users);
@@ -227,6 +380,10 @@ class TestDatabaseHelper
             return array_values(self::$settings);
         }
 
+        if ($className === Lyrics::class) {
+            return array_values(self::$lyrics);
+        }
+
         return [];
     }
 
@@ -234,7 +391,7 @@ class TestDatabaseHelper
      * @param array<string,mixed> $criteria
      * @return list<object>
      */
-    private static function fakeFindBy(string $className, array $criteria): array
+    public static function fakeFindBy(string $className, array $criteria): array
     {
         $results = [];
 
@@ -275,10 +432,33 @@ class TestDatabaseHelper
             }
         }
 
+        if ($className === Lyrics::class) {
+            foreach (self::$lyrics as $lyrics) {
+                $matches = true;
+                foreach ($criteria as $field => $value) {
+                    if ($field === 'id' && $lyrics->getId() !== $value) {
+                        $matches = false;
+                    }
+                    if ($field === 'spotifyId' && $lyrics->spotifyId !== $value) {
+                        $matches = false;
+                    }
+                    if ($field === 'jellyfinShowId' && $lyrics->jellyfinShowId !== $value) {
+                        $matches = false;
+                    }
+                }
+                if ($matches) {
+                    $results[] = $lyrics;
+                }
+            }
+        }
+
         return $results;
     }
 
-    private static function fakeFindOneBy(string $className, array $criteria): object|null
+    /**
+     * @param array<string,mixed> $criteria
+     */
+    public static function fakeFindOneBy(string $className, array $criteria): object|null
     {
         $results = self::fakeFindBy($className, $criteria);
         return $results[0] ?? null;
@@ -310,7 +490,12 @@ class TestDatabaseHelper
     private static function setPrivateProperty(object $object, string $property, mixed $value): void
     {
         $ref = new \ReflectionObject($object);
-        while (!$ref->hasProperty($property) && $ref = $ref->getParentClass()) {
+        while (!$ref->hasProperty($property)) {
+            $parent = $ref->getParentClass();
+            if ($parent === false) {
+                return;
+            }
+            $ref = $parent;
         }
 
         if (!$ref->hasProperty($property)) {
