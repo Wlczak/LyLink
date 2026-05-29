@@ -85,9 +85,9 @@ class DefaultAuthTest extends TestCase
 
         $user = DoctrineRegistry::get()->getRepository(User::class)->findOneBy(["email" => $this->email]);
         $this::assertInstanceOf(User::class, $user);
-        $this::assertTrue($user?->isEmailVerified() === false);
+        $this::assertFalse($user->isEmailVerified());
 
-        $settings = DoctrineRegistry::get()->getRepository(Settings::class)->findOneBy(["user_id" => $user?->getId()]);
+        $settings = DoctrineRegistry::get()->getRepository(Settings::class)->findOneBy(["user_id" => $user->getId()]);
         $this::assertInstanceOf(Settings::class, $settings);
     }
 

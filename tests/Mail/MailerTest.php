@@ -14,7 +14,7 @@ class MailerTest extends TestCase
         $targetMail = 'test@test.test';
         $targetUsername = 'test';
         $subject = 'test';
-        $body = 'test';
+        $body = '<p>test &amp; <strong>more</strong></p>';
 
         $mail = Mailer::prepareMail($targetMail, $targetUsername, $subject, $body, $env);
 
@@ -22,8 +22,14 @@ class MailerTest extends TestCase
         $this::assertSame([[$targetMail, $targetUsername]], $mail->getToAddresses());
         $this::assertSame("LyLink - " . $subject, $mail->Subject);
         $this::assertSame($body, $mail->Body);
+        $this::assertSame('test & more', $mail->AltBody);
         $this::assertSame($env->SMTP_HOST, $mail->Host);
 
+        $this::assertTrue($mail->SMTPAuth);
+        $this::assertSame(PHPMailer::ENCRYPTION_SMTPS, $mail->SMTPSecure);
+        $this::assertSame(465, $mail->Port);
+        $this::assertSame('LyLink', $mail->FromName);
+        $this::assertSame($env->SMTP_USERNAME, $mail->From);
         $this::assertSame($env->SMTP_PASSWORD, $mail->Password);
         $this::assertSame($env->SMTP_USERNAME, $mail->Username);
     }

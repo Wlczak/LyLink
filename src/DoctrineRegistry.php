@@ -2,21 +2,21 @@
 
 namespace Lylink;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 
 class DoctrineRegistry
 {
-    private static EntityManager $entityManager;
+    private static EntityManagerInterface $entityManager;
 
-    public static function get(): EntityManager
+    public static function get(): EntityManagerInterface
     {
         return self::$entityManager;
     }
 
     /**
-     * @param EntityManager $entityManager
+     * @param EntityManagerInterface $entityManager
      */
-    public static function set(EntityManager $entityManager): void
+    public static function set(EntityManagerInterface $entityManager): void
     {
         self::$entityManager = $entityManager;
     }

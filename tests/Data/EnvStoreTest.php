@@ -15,6 +15,25 @@ class EnvStoreTest extends PHPUnit\Framework\TestCase
         $this::assertInstanceOf(EnvStore::class, $env);
     }
 
+    public function testLoad(): void
+    {
+        $_ENV['SMTP_HOST'] = 'smtp.test.test';
+        $_ENV['SMTP_USERNAME'] = 'test@test.test';
+        $_ENV['SMTP_PASSWORD'] = 'secret';
+        $_ENV['CLIENT_ID'] = 'client';
+        $_ENV['CLIENT_SECRET'] = 'secret';
+        $_ENV['BASE_DOMAIN'] = $this->default_base_domain;
+
+        $env = EnvStore::load();
+
+        $this::assertSame('smtp.test.test', $env->SMTP_HOST);
+        $this::assertSame('test@test.test', $env->SMTP_USERNAME);
+        $this::assertSame('secret', $env->SMTP_PASSWORD);
+        $this::assertSame('client', $env->CLIENT_ID);
+        $this::assertSame('secret', $env->CLIENT_SECRET);
+        $this::assertSame($this->default_base_domain, $env->BASE_DOMAIN);
+    }
+
     public function testConstructor(): void
     {
         $env = new EnvStore(stmp_host: 'stmp.test.test', stmp_username: 'test@test.test', stmp_password: 'test', client_id: 'test', client_secret: 'test', base_domain: $this->default_base_domain);
