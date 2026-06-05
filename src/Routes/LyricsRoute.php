@@ -301,16 +301,7 @@ class LyricsRoute extends Router implements Route
          * @var Lyrics|null
          */
         $lyrics = $em->getRepository(Lyrics::class)->find($id);
-        $authSession = AuthSession::get();
-        $user = $authSession === null ? null : $authSession->getUser();
-        $userId = 0;
-        if ($user !== null) {
-            $userIdFromModel = $user->getId();
-            if ($userIdFromModel !== null) {
-                $userId = $userIdFromModel;
-            }
-        }
-        $settings = Settings::getSettings($userId);
+        $settings = Settings::getSettings($auth);
 
         if ($lyrics === null || $settings->allow_edit === false) {
             header('Location: ' . $env->BASE_DOMAIN . '/lyrics/jellyfin');
