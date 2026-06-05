@@ -5,7 +5,6 @@ namespace Lylink\Routes;
 use Closure;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Query\Parameter;
-use function Symfony\Component\String\s;
 use Lylink\Auth\AuthSession;
 use Lylink\Data\CurrentSong;
 use Lylink\Data\EnvStore;
@@ -302,7 +301,7 @@ class LyricsRoute extends Router implements Route
          * @var Lyrics|null
          */
         $lyrics = $em->getRepository(Lyrics::class)->find($id);
-        $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
+        $settings = Settings::getSettings($auth);
 
         if ($lyrics === null || $settings->allow_edit === false) {
             header('Location: ' . $env->BASE_DOMAIN . '/lyrics/jellyfin');
