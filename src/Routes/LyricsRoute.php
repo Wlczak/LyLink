@@ -5,7 +5,6 @@ namespace Lylink\Routes;
 use Closure;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Query\Parameter;
-use function Symfony\Component\String\s;
 use Lylink\Auth\AuthSession;
 use Lylink\Data\CurrentSong;
 use Lylink\Data\EnvStore;
