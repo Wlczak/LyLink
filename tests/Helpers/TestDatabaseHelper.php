@@ -103,7 +103,7 @@ class TestDatabaseHelper
         if ($results !== false) {
 
             /**
-             * @var array<string,mixed>|false
+             * @var non-empty-array<string,mixed>|false
              */
             $assoc = $results->fetchArray(SQLITE3_ASSOC);
             if ($assoc === false) {
