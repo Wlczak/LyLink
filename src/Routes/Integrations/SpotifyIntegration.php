@@ -77,8 +77,7 @@ class SpotifyIntegration extends Router implements IntegrationRoute
 
                 $settings = Settings::getSettings(AuthSession::get()?->getUser()?->getId() ?? 0);
                 $token = $session->getAccessToken();
-
-                $session = $_SESSION['spotify_session'];
+                
                 $api = new SpotifyWebAPI();
                 $api->setAccessToken($session->getAccessToken());
                 /**
@@ -93,7 +92,6 @@ class SpotifyIntegration extends Router implements IntegrationRoute
                 header('Location: ' . $env->BASE_DOMAIN . '/settings');
 
                 return "";
-
             } else {
                 return "";
             }
@@ -110,7 +108,6 @@ class SpotifyIntegration extends Router implements IntegrationRoute
         $api = new SpotifyWebAPI();
 
         return "";
-
     }
 
     public static function connect(): string
