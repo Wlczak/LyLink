@@ -22,7 +22,7 @@ class Mailer
         $mail->setFrom($env->SMTP_USERNAME, 'LyLink');
         $mail->addAddress($targetMail, $targetUsername); //Add a recipient
 
-                             //Content
+        //Content
         $mail->isHTML(true); //Set email format to HTML
         $mail->Subject = 'LyLink - ' . $subject;
         $mail->Body = $body;

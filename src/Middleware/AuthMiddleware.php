@@ -1,5 +1,7 @@
 <?php
 
+namespace Lylink\Middleware;
+
 use Lylink\Auth\AuthSession;
 use Lylink\Data\EnvStore;
 use Pecee\Http\Middleware\IMiddleware;

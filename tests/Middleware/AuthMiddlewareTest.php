@@ -2,8 +2,8 @@
 
 namespace Tests\Middleware;
 
-use AuthMiddleware;
 use Lylink\Auth\DefaultAuth;
+use Lylink\Middleware\AuthMiddleware;
 use PHPUnit\Framework\TestCase;
 
 class AuthMiddlewareTest extends TestCase

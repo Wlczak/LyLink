@@ -3,7 +3,6 @@ declare (strict_types = 1);
 
 namespace Lylink;
 
-use AuthMiddleware;
 use Exception;
 use Lylink\Auth\AuthSession;
 use Lylink\Auth\DefaultAuth;
@@ -12,6 +11,7 @@ use Lylink\Interfaces\Datatypes\PlaybackInfo;
 use Lylink\Mail\Mailer;
 use Lylink\Models\Settings;
 use Lylink\Models\User;
+use Lylink\Middleware\AuthMiddleware;
 use Lylink\Routes\Integrations\Api\IntegrationApi;
 use Lylink\Routes\Integrations\JellyfinIntegration;
 use Lylink\Routes\Integrations\SpotifyIntegration;
